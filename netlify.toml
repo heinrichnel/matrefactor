@@ -1,0 +1,56 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Site configuration for matanuskatransportt
+# Site ID: 58378633-127a-44c4-878e-61f92936861d
+
+[build.environment]
+  # Node version - updated to recommended version for this project
+  NODE_VERSION = "22.15.1"
+
+  # SECURITY NOTE: Environment variables should be set in the Netlify UI
+  # rather than in this file to avoid exposing sensitive information.
+  # See Site settings > Build & deploy > Environment variables
+
+  # Required environment variables include:
+  # - Firebase configuration
+  # - Wialon integration credentials
+  # - Google Maps API keys
+  # - Cloud Run URLs
+  # - Service account credentials
+
+  # For development reference, see .env.production file for required variables
+
+  # Essential production variables
+  VITE_ENV_MODE = "production"
+  VITE_USE_EMULATOR = "false"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
