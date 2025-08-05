@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import Card, { CardContent } from '../ui/Card';
-import Button from '../ui/Button';
-import { format } from 'date-fns';
-import { Camera, Download, Upload, Trash2, Check, X } from 'lucide-react';
-import { generateInspectionPDF } from '../../utils/pdfGenerators';
+import { format } from "date-fns";
+import { Camera, Check, Download, Trash2, Upload, X } from "lucide-react";
+import React, { useState } from "react";
+import { generateInspectionPDF } from "../../../utils/pdfGenerators";
+import Button from "../../ui/Button";
+import Card, { CardContent } from "../../ui/Card";
 
 export interface InspectionItem {
   id: string;
   name: string;
-  status: 'Pass' | 'Fail' | 'NA';
+  status: "Pass" | "Fail" | "NA";
   comments?: string;
   images?: string[];
 }
@@ -20,7 +20,7 @@ export interface InspectionReport {
   inspectionDate: string;
   inspector: string;
   items: InspectionItem[];
-  overallCondition: 'Pass' | 'Fail';
+  overallCondition: "Pass" | "Fail";
   notes?: string;
   attachments?: string[];
   signatureUrl?: string;
@@ -34,42 +34,42 @@ interface InspectionReportFormProps {
 }
 
 const defaultInspectionItems = [
-  { id: 'item-1', name: 'Headlights', status: 'Pass' as const },
-  { id: 'item-2', name: 'Brake Lights', status: 'Pass' as const },
-  { id: 'item-3', name: 'Indicators', status: 'Pass' as const },
-  { id: 'item-4', name: 'Wipers', status: 'Pass' as const },
-  { id: 'item-5', name: 'Horn', status: 'Pass' as const },
-  { id: 'item-6', name: 'Tires', status: 'Pass' as const },
-  { id: 'item-7', name: 'Brakes', status: 'Pass' as const },
-  { id: 'item-8', name: 'Suspension', status: 'Pass' as const },
-  { id: 'item-9', name: 'Oil Level', status: 'Pass' as const },
-  { id: 'item-10', name: 'Coolant Level', status: 'Pass' as const },
-  { id: 'item-11', name: 'Washer Fluid', status: 'Pass' as const },
-  { id: 'item-12', name: 'Battery', status: 'Pass' as const },
-  { id: 'item-13', name: 'Seat Belts', status: 'Pass' as const },
-  { id: 'item-14', name: 'Mirrors', status: 'Pass' as const },
-  { id: 'item-15', name: 'First Aid Kit', status: 'Pass' as const },
-  { id: 'item-16', name: 'Fire Extinguisher', status: 'Pass' as const },
-  { id: 'item-17', name: 'Warning Triangle', status: 'Pass' as const },
-  { id: 'item-18', name: 'Jack & Tools', status: 'Pass' as const },
+  { id: "item-1", name: "Headlights", status: "Pass" as const },
+  { id: "item-2", name: "Brake Lights", status: "Pass" as const },
+  { id: "item-3", name: "Indicators", status: "Pass" as const },
+  { id: "item-4", name: "Wipers", status: "Pass" as const },
+  { id: "item-5", name: "Horn", status: "Pass" as const },
+  { id: "item-6", name: "Tires", status: "Pass" as const },
+  { id: "item-7", name: "Brakes", status: "Pass" as const },
+  { id: "item-8", name: "Suspension", status: "Pass" as const },
+  { id: "item-9", name: "Oil Level", status: "Pass" as const },
+  { id: "item-10", name: "Coolant Level", status: "Pass" as const },
+  { id: "item-11", name: "Washer Fluid", status: "Pass" as const },
+  { id: "item-12", name: "Battery", status: "Pass" as const },
+  { id: "item-13", name: "Seat Belts", status: "Pass" as const },
+  { id: "item-14", name: "Mirrors", status: "Pass" as const },
+  { id: "item-15", name: "First Aid Kit", status: "Pass" as const },
+  { id: "item-16", name: "Fire Extinguisher", status: "Pass" as const },
+  { id: "item-17", name: "Warning Triangle", status: "Pass" as const },
+  { id: "item-18", name: "Jack & Tools", status: "Pass" as const },
 ];
 
 const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
   initialData,
   onSave,
   onCancel,
-  onGeneratePDF
+  onGeneratePDF,
 }) => {
   const [data, setData] = useState<InspectionReport>(
     initialData || {
       id: `insp-${Date.now()}`,
       reportNumber: `INSP-${Date.now().toString().slice(-6)}`,
-      vehicleId: '',
+      vehicleId: "",
       inspectionDate: new Date().toISOString(),
-      inspector: '',
+      inspector: "",
       items: [...defaultInspectionItems],
-      overallCondition: 'Pass',
-      notes: '',
+      overallCondition: "Pass",
+      notes: "",
       attachments: [],
     }
   );
@@ -84,14 +84,12 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
   const handleItemChange = (itemId: string, field: keyof InspectionItem, value: any) => {
     setData((prev) => ({
       ...prev,
-      items: prev.items.map((item) =>
-        item.id === itemId ? { ...item, [field]: value } : item
-      ),
+      items: prev.items.map((item) => (item.id === itemId ? { ...item, [field]: value } : item)),
     }));
 
     // Auto-update overall condition if any item fails
-    if (field === 'status' && value === 'Fail') {
-      setData((prev) => ({ ...prev, overallCondition: 'Fail' }));
+    if (field === "status" && value === "Fail") {
+      setData((prev) => ({ ...prev, overallCondition: "Fail" }));
     }
   };
 
@@ -99,9 +97,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
     setData((prev) => ({
       ...prev,
       items: prev.items.map((item) =>
-        item.id === itemId
-          ? { ...item, images: [...(item.images || []), imageUrl] }
-          : item
+        item.id === itemId ? { ...item, images: [...(item.images || []), imageUrl] } : item
       ),
     }));
   };
@@ -143,12 +139,12 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
 
   const renderStatusClass = (status: string) => {
     switch (status) {
-      case 'Pass':
-        return 'bg-green-100 text-green-800';
-      case 'Fail':
-        return 'bg-red-100 text-red-800';
+      case "Pass":
+        return "bg-green-100 text-green-800";
+      case "Fail":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -186,7 +182,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                   </tr>
                   <tr>
                     <td className="py-2 pr-4 font-medium">Date:</td>
-                    <td>{format(new Date(data.inspectionDate), 'dd-MMM-yyyy')}</td>
+                    <td>{format(new Date(data.inspectionDate), "dd-MMM-yyyy")}</td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4 font-medium">Inspector:</td>
@@ -195,7 +191,9 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                   <tr>
                     <td className="py-2 pr-4 font-medium">Overall Condition:</td>
                     <td>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${renderStatusClass(data.overallCondition)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${renderStatusClass(data.overallCondition)}`}
+                      >
                         {data.overallCondition}
                       </span>
                     </td>
@@ -229,7 +227,9 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                     <tr key={item.id} className="border-b">
                       <td className="py-3 px-4">{item.name}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${renderStatusClass(item.status)}`}>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${renderStatusClass(item.status)}`}
+                        >
                           {item.status}
                         </span>
                       </td>
@@ -238,8 +238,15 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                         {item.images && item.images.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {item.images.map((img, idx) => (
-                              <div key={idx} className="w-12 h-12 bg-gray-200 rounded overflow-hidden">
-                                <img src={img} alt={`${item.name} image ${idx + 1}`} className="w-full h-full object-cover" />
+                              <div
+                                key={idx}
+                                className="w-12 h-12 bg-gray-200 rounded overflow-hidden"
+                              >
+                                <img
+                                  src={img}
+                                  alt={`${item.name} image ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
                               </div>
                             ))}
                           </div>
@@ -261,7 +268,11 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                 {data.attachments.map((attachment, idx) => (
                   <div key={idx} className="border rounded-md p-2 flex flex-col items-center">
                     <div className="w-24 h-24 bg-gray-100 rounded flex items-center justify-center">
-                      <img src={attachment} alt={`Attachment ${idx + 1}`} className="max-w-full max-h-full" />
+                      <img
+                        src={attachment}
+                        alt={`Attachment ${idx + 1}`}
+                        className="max-w-full max-h-full"
+                      />
                     </div>
                     <span className="text-sm mt-2">Attachment {idx + 1}</span>
                   </div>
@@ -269,7 +280,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
               </div>
             </div>
           )}
-          
+
           <div className="mt-8 pt-6 border-t">
             <div className="flex justify-between">
               <div>
@@ -285,7 +296,9 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                 )}
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-500">Generated on {format(new Date(), 'dd-MMM-yyyy HH:mm')}</p>
+                <p className="text-sm text-gray-500">
+                  Generated on {format(new Date(), "dd-MMM-yyyy HH:mm")}
+                </p>
                 <p className="text-sm text-gray-500">Report ID: {data.id}</p>
               </div>
             </div>
@@ -325,19 +338,17 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                   type="text"
                   className="form-input rounded-md w-full border-gray-300"
                   value={data.reportNumber}
-                  onChange={(e) => handleChange('reportNumber', e.target.value)}
+                  onChange={(e) => handleChange("reportNumber", e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vehicle ID
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle ID</label>
                 <input
                   type="text"
                   className="form-input rounded-md w-full border-gray-300"
                   value={data.vehicleId}
                   placeholder="e.g. 28H"
-                  onChange={(e) => handleChange('vehicleId', e.target.value)}
+                  onChange={(e) => handleChange("vehicleId", e.target.value)}
                 />
               </div>
               <div>
@@ -347,9 +358,9 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                 <input
                   type="date"
                   className="form-input rounded-md w-full border-gray-300"
-                  value={format(new Date(data.inspectionDate), 'yyyy-MM-dd')}
+                  value={format(new Date(data.inspectionDate), "yyyy-MM-dd")}
                   onChange={(e) =>
-                    handleChange('inspectionDate', new Date(e.target.value).toISOString())
+                    handleChange("inspectionDate", new Date(e.target.value).toISOString())
                   }
                 />
               </div>
@@ -361,7 +372,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                   type="text"
                   className="form-input rounded-md w-full border-gray-300"
                   value={data.inspector}
-                  onChange={(e) => handleChange('inspector', e.target.value)}
+                  onChange={(e) => handleChange("inspector", e.target.value)}
                 />
               </div>
             </div>
@@ -371,14 +382,12 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
             <h3 className="font-medium text-lg mb-3">Additional Information</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                 <textarea
                   className="form-textarea rounded-md w-full border-gray-300"
                   rows={5}
-                  value={data.notes || ''}
-                  onChange={(e) => handleChange('notes', e.target.value)}
+                  value={data.notes || ""}
+                  onChange={(e) => handleChange("notes", e.target.value)}
                   placeholder="Enter any additional notes or observations..."
                 />
               </div>
@@ -391,8 +400,8 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                     <input
                       type="radio"
                       className="form-radio"
-                      checked={data.overallCondition === 'Pass'}
-                      onChange={() => handleChange('overallCondition', 'Pass')}
+                      checked={data.overallCondition === "Pass"}
+                      onChange={() => handleChange("overallCondition", "Pass")}
                     />
                     <span className="ml-2">Pass</span>
                   </label>
@@ -400,17 +409,15 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                     <input
                       type="radio"
                       className="form-radio"
-                      checked={data.overallCondition === 'Fail'}
-                      onChange={() => handleChange('overallCondition', 'Fail')}
+                      checked={data.overallCondition === "Fail"}
+                      onChange={() => handleChange("overallCondition", "Fail")}
                     />
                     <span className="ml-2">Fail</span>
                   </label>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Attachments
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Attachments</label>
                 <div className="mt-1 flex items-center">
                   <label className="cursor-pointer">
                     <div className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center">
@@ -440,7 +447,11 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                         key={idx}
                         className="relative group border rounded-md overflow-hidden w-16 h-16"
                       >
-                        <img src={url} alt={`Attachment ${idx}`} className="w-full h-full object-cover" />
+                        <img
+                          src={url}
+                          alt={`Attachment ${idx}`}
+                          className="w-full h-full object-cover"
+                        />
                         <button
                           className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() =>
@@ -485,8 +496,8 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                         onChange={(e) =>
                           handleItemChange(
                             item.id,
-                            'status',
-                            e.target.value as 'Pass' | 'Fail' | 'NA'
+                            "status",
+                            e.target.value as "Pass" | "Fail" | "NA"
                           )
                         }
                       >
@@ -500,10 +511,8 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                         type="text"
                         className="form-input rounded-md w-full border-gray-300"
                         placeholder="Add comments"
-                        value={item.comments || ''}
-                        onChange={(e) =>
-                          handleItemChange(item.id, 'comments', e.target.value)
-                        }
+                        value={item.comments || ""}
+                        onChange={(e) => handleItemChange(item.id, "comments", e.target.value)}
                       />
                     </td>
                     <td className="py-3 px-4">
@@ -514,7 +523,11 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                               key={idx}
                               className="relative group border rounded-md overflow-hidden w-12 h-12"
                             >
-                              <img src={img} alt={`${item.name} image ${idx}`} className="w-full h-full object-cover" />
+                              <img
+                                src={img}
+                                alt={`${item.name} image ${idx}`}
+                                className="w-full h-full object-cover"
+                              />
                               <button
                                 className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={onClick}

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Card, CardContent } from '../ui/Card';
-import Button from '../ui/Button';
-import { Wrench, Truck, File, Link2, Save, Plus, Trash } from 'lucide-react';
+import { File, Link2, Plus, Save, Trash, Truck, Wrench } from "lucide-react";
+import React, { useState } from "react";
+import Button from "../../ui/Button";
+import { Card, CardContent } from "../../ui/Card";
 
 interface DemandPartsFormProps {
   onSubmit?: (data: DemandPartsFormData) => void;
@@ -18,12 +18,12 @@ export interface DemandPartsFormData {
   createdDate: string;
   createdTime: string;
   demandBy: string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'RECEIVED' | 'CANCELLED';
+  status: "OPEN" | "IN_PROGRESS" | "RECEIVED" | "CANCELLED";
   poId?: string;
   workOrderId?: string;
   vehicleId?: string;
   notes?: string;
-  urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'EMERGENCY';
+  urgency: "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY";
 }
 
 interface DemandPart {
@@ -31,69 +31,63 @@ interface DemandPart {
   sku: string;
   description: string;
   quantity: number;
-  status: 'PENDING' | 'ORDERED' | 'RECEIVED' | 'CANCELLED';
+  status: "PENDING" | "ORDERED" | "RECEIVED" | "CANCELLED";
 }
 
 const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
   onSubmit,
   onCancel,
   initialData,
-  workOrderId = '',
-  vehicleId = ''
+  workOrderId = "",
+  vehicleId = "",
 }) => {
-  const [formData, setFormData] = useState<DemandPartsFormData>(initialData || {
-    action: '',
-    parts: [{ id: '1', sku: '', description: '', quantity: 1, status: 'PENDING' }],
-    createdDate: new Date().toISOString().split('T')[0],
-    createdTime: new Date().toTimeString().split(' ')[0].substring(0, 5),
-    demandBy: '',
-    status: 'OPEN',
-    workOrderId,
-    vehicleId,
-    urgency: 'MEDIUM',
-    notes: ''
-  });
+  const [formData, setFormData] = useState<DemandPartsFormData>(
+    initialData || {
+      action: "",
+      parts: [{ id: "1", sku: "", description: "", quantity: 1, status: "PENDING" }],
+      createdDate: new Date().toISOString().split("T")[0],
+      createdTime: new Date().toTimeString().split(" ")[0].substring(0, 5),
+      demandBy: "",
+      status: "OPEN",
+      workOrderId,
+      vehicleId,
+      urgency: "MEDIUM",
+      notes: "",
+    }
+  );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handle adding a new part
   const handleAddPart = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       parts: [
-        ...prev.parts, 
-        { 
+        ...prev.parts,
+        {
           id: String(prev.parts.length + 1),
-          sku: '', 
-          description: '', 
-          quantity: 1, 
-          status: 'PENDING' 
-        }
-      ]
+          sku: "",
+          description: "",
+          quantity: 1,
+          status: "PENDING",
+        },
+      ],
     }));
   };
 
   // Handle removing a part
   const handleRemovePart = (id: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      parts: prev.parts.filter(part => part.id !== id)
+      parts: prev.parts.filter((part) => part.id !== id),
     }));
   };
 
   // Handle part field changes
-  const handlePartChange = (
-    id: string, 
-    field: keyof DemandPart, 
-    value: string | number
-  ) => {
-    setFormData(prev => ({
+  const handlePartChange = (id: string, field: keyof DemandPart, value: string | number) => {
+    setFormData((prev) => ({
       ...prev,
-      parts: prev.parts.map(part => 
-        part.id === id 
-          ? { ...part, [field]: value } 
-          : part
-      )
+      parts: prev.parts.map((part) => (part.id === id ? { ...part, [field]: value } : part)),
     }));
   };
 
@@ -101,7 +95,7 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       if (onSubmit) {
@@ -135,21 +129,19 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="E.g., Repair front brakes, Replace oil filter..."
                 value={formData.action}
-                onChange={(e) => setFormData(prev => ({ ...prev, action: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, action: e.target.value }))}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Demanded By
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Demanded By</label>
               <input
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Enter name"
                 value={formData.demandBy}
-                onChange={(e) => setFormData(prev => ({ ...prev, demandBy: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, demandBy: e.target.value }))}
                 required
               />
             </div>
@@ -163,27 +155,31 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                   type="date"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                   value={formData.createdDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, createdDate: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, createdDate: e.target.value }))
+                  }
                   required
                 />
                 <input
                   type="time"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                   value={formData.createdTime}
-                  onChange={(e) => setFormData(prev => ({ ...prev, createdTime: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, createdTime: e.target.value }))
+                  }
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Urgency
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Urgency</label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={formData.urgency}
-                onChange={(e) => setFormData(prev => ({ ...prev, urgency: e.target.value as any }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, urgency: e.target.value as any }))
+                }
                 required
               >
                 <option value="LOW">Low</option>
@@ -201,8 +197,8 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Enter vehicle ID"
-                value={formData.vehicleId || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, vehicleId: e.target.value }))}
+                value={formData.vehicleId || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, vehicleId: e.target.value }))}
               />
             </div>
 
@@ -214,8 +210,8 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Enter work order ID"
-                value={formData.workOrderId || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, workOrderId: e.target.value }))}
+                value={formData.workOrderId || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, workOrderId: e.target.value }))}
               />
             </div>
 
@@ -227,8 +223,8 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Will be filled when PO is created"
-                value={formData.poId || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, poId: e.target.value }))}
+                value={formData.poId || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, poId: e.target.value }))}
                 disabled={!formData.poId}
               />
             </div>
@@ -237,34 +233,49 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
           <div className="mb-6">
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-lg font-medium">Required Parts</h3>
-              <Button 
+              <Button
                 type="button"
-                size="sm" 
-                variant="outline" 
+                size="sm"
+                variant="outline"
                 onClick={handleAddPart}
                 icon={<Plus className="w-4 h-4 mr-1" />}
               >
                 Add Part
               </Button>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       SKU
                     </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Description
                     </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Quantity
                     </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Status
                     </th>
-                    <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Action
                     </th>
                   </tr>
@@ -278,7 +289,7 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                           className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                           placeholder="Part SKU"
                           value={part.sku}
-                          onChange={(e) => handlePartChange(part.id, 'sku', e.target.value)}
+                          onChange={(e) => handlePartChange(part.id, "sku", e.target.value)}
                           required
                         />
                       </td>
@@ -288,7 +299,7 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                           className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                           placeholder="Part description"
                           value={part.description}
-                          onChange={(e) => handlePartChange(part.id, 'description', e.target.value)}
+                          onChange={(e) => handlePartChange(part.id, "description", e.target.value)}
                           required
                         />
                       </td>
@@ -298,7 +309,9 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                           className="w-20 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                           min="1"
                           value={part.quantity}
-                          onChange={(e) => handlePartChange(part.id, 'quantity', parseInt(e.target.value) || 1)}
+                          onChange={(e) =>
+                            handlePartChange(part.id, "quantity", parseInt(e.target.value) || 1)
+                          }
                           required
                         />
                       </td>
@@ -306,7 +319,7 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
                         <select
                           className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                           value={part.status}
-                          onChange={(e) => handlePartChange(part.id, 'status', e.target.value)}
+                          onChange={(e) => handlePartChange(part.id, "status", e.target.value)}
                         >
                           <option value="PENDING">Pending</option>
                           <option value="ORDERED">Ordered</option>
@@ -332,25 +345,19 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
             <textarea
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="Any additional information about these parts..."
-              value={formData.notes || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              value={formData.notes || ""}
+              onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
             />
           </div>
 
           <div className="flex justify-end space-x-3">
             {onCancel && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClick}
-              >
+              <Button type="button" variant="outline" onClick={onClick}>
                 Cancel
               </Button>
             )}
@@ -360,7 +367,7 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
               icon={<Save className="w-4 h-4 mr-2" />}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Demand'}
+              {isSubmitting ? "Submitting..." : "Submit Demand"}
             </Button>
           </div>
         </form>

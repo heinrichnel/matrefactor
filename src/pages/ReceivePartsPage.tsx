@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import PageWrapper from '../components/ui/PageWrapper';
-import PartsReceivingForm from '../components/forms/PartsReceivingForm';
-import { collection, query, where, getDocs, updateDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import React, { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import PartsReceivingForm from "../components/forms/workshop/PartsReceivingForm";
+import PageWrapper from "../components/ui/PageWrapper";
+import { db } from "../firebase";
 
 /**
  * Receive Parts Page
@@ -11,32 +20,29 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
  */
 const ReceivePartsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const poNumber = searchParams.get('poNumber');
+  const poNumber = searchParams.get("poNumber");
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleReceiveParts = async (receivedParts: any[]) => {
     try {
       setIsLoading(true);
-      console.log('Parts received:', receivedParts);
-      
+      console.log("Parts received:", receivedParts);
+
       // 1. Update inventory quantities in Firestore
       for (const part of receivedParts) {
         // Check if part exists in inventory
-        const partsQuery = query(
-          collection(db, "parts"),
-          where("sku", "==", part.sku)
-        );
-        
+        const partsQuery = query(collection(db, "parts"), where("sku", "==", part.sku));
+
         const partsSnapshot = await getDocs(partsQuery);
-        
+
         if (!partsSnapshot.empty) {
           // Update existing part quantity
           const partDoc = partsSnapshot.docs[0];
           const currentQuantity = parseInt(partDoc.data().quantity) || 0;
           await updateDoc(doc(db, "parts", partDoc.id), {
             quantity: currentQuantity + part.receivingQuantity,
-            lastUpdated: serverTimestamp()
+            lastUpdated: serverTimestamp(),
           });
         } else {
           // Add new part to inventory
@@ -50,69 +56,72 @@ const ReceivePartsPage: React.FC = () => {
             manufacturer: part.manufacturer || "Unknown",
             supplier: part.supplier || "Unknown",
             createdAt: serverTimestamp(),
-            lastUpdated: serverTimestamp()
+            lastUpdated: serverTimestamp(),
           });
         }
       }
-      
+
       // 2. Update purchase order status if poNumber is provided
       if (poNumber) {
-        const poQuery = query(
-          collection(db, "partOrders"),
-          where("orderNumber", "==", poNumber)
-        );
-        
+        const poQuery = query(collection(db, "partOrders"), where("orderNumber", "==", poNumber));
+
         const poSnapshot = await getDocs(poQuery);
-        
+
         if (!poSnapshot.empty) {
           const orderDoc = poSnapshot.docs[0];
           const orderData = orderDoc.data();
-          
+
           // Update parts status
-          const updatedParts = orderData.parts.map(orderPart => {
-            const receivedPart = receivedParts.find(rp => rp.sku === orderPart.sku);
-            
+          const updatedParts = orderData.parts.map((orderPart) => {
+            const receivedPart = receivedParts.find((rp) => rp.sku === orderPart.sku);
+
             if (receivedPart) {
               return {
                 ...orderPart,
-                quantityReceived: (orderPart.quantityReceived || 0) + receivedPart.receivingQuantity,
-                status: receivedPart.receivingQuantity >= orderPart.quantityOrdered ? 'RECEIVED' : 'PARTIALLY_RECEIVED'
+                quantityReceived:
+                  (orderPart.quantityReceived || 0) + receivedPart.receivingQuantity,
+                status:
+                  receivedPart.receivingQuantity >= orderPart.quantityOrdered
+                    ? "RECEIVED"
+                    : "PARTIALLY_RECEIVED",
               };
             }
             return orderPart;
           });
-          
+
           // Determine overall order status
-          const allReceived = updatedParts.every(part => part.status === 'RECEIVED');
-          const anyReceived = updatedParts.some(part => part.status === 'RECEIVED' || part.status === 'PARTIALLY_RECEIVED');
-          
+          const allReceived = updatedParts.every((part) => part.status === "RECEIVED");
+          const anyReceived = updatedParts.some(
+            (part) => part.status === "RECEIVED" || part.status === "PARTIALLY_RECEIVED"
+          );
+
           let orderStatus = orderData.status;
           if (allReceived) {
-            orderStatus = 'RECEIVED';
+            orderStatus = "RECEIVED";
           } else if (anyReceived) {
-            orderStatus = 'PARTIALLY_RECEIVED';
+            orderStatus = "PARTIALLY_RECEIVED";
           }
-          
+
           await updateDoc(doc(db, "partOrders", orderDoc.id), {
             parts: updatedParts,
             status: orderStatus,
-            lastUpdated: serverTimestamp()
+            lastUpdated: serverTimestamp(),
           });
         }
       }
-      
+
       // 3. Create audit trail
       await addDoc(collection(db, "inventoryAudit"), {
         type: "RECEIVE_PARTS",
         poNumber: poNumber || "Direct Receipt",
         parts: receivedParts,
         timestamp: serverTimestamp(),
-        userId: "current-user-id" // This should come from authentication context
+        userId: "current-user-id", // This should come from authentication context
       });
-      
+
       // Show success message
-      alert('Parts received successfully! Inventory has been updated.');
-      navigate('/workshop/parts-inventory');
+      alert("Parts received successfully! Inventory has been updated.");
+      navigate("/workshop/parts-inventory");
     } catch (error) {
       console.error("Error receiving parts:", error);
       alert("Failed to update inventory. Please try again.");
@@ -132,11 +141,11 @@ const ReceivePartsPage: React.FC = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Receive Parts Shipment</h1>
           <p className="text-gray-600">
-            Record incoming parts and update inventory levels. 
-            Use this form when parts arrive from suppliers.
+            Record incoming parts and update inventory levels. Use this form when parts arrive from
+            suppliers.
           </p>
         </div>
-        
+
         {isLoading ? (
           <div className="flex justify-center items-center py-10">
             <div className="spinner-border text-primary" role="status">

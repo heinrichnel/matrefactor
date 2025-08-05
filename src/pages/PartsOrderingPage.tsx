@@ -26,8 +26,8 @@ import { Badge } from "../components/ui/badge";
 // Firebase will be dynamically imported when needed
 
 // Import related forms
-import DemandPartsForm, { DemandPartsFormData } from "../components/forms/DemandPartsForm";
-import PartsReceivingForm from "../components/forms/PartsReceivingForm";
+import DemandPartsForm, { DemandPartsFormData } from "../components/forms/workshop/DemandPartsForm";
+import PartsReceivingForm from "../components/forms/workshop/PartsReceivingForm";
 
 interface PartOrder {
   id: string;

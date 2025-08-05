@@ -7,9 +7,9 @@
  * for trip planning and route selection.
  */
 import React, { useEffect, useState } from "react";
-import { useSyncContext } from "../../context/SyncContext";
-import { useFormSubmit, useRouteOptions, validateForm } from "../../utils/formIntegration";
-import FormSelector from "./FormSelector";
+import { useSyncContext } from "../../../context/SyncContext";
+import { useFormSubmit, useRouteOptions, validateForm } from "../../../utils/formIntegration";
+import FormSelector from "../FormSelector";
 
 interface RouteSelectionFormProps {
   onComplete?: (data: RouteSelectionData) => void;

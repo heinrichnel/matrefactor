@@ -1,9 +1,9 @@
 // src/pages/FormsIntegrationPage.tsx
 import React, { useState } from "react";
 import FleetSelectionForm from "../components/forms/FleetSelectionForm";
-import InventorySelectionForm from "../components/forms/InventorySelectionForm";
-import RouteSelectionForm from "../components/forms/RouteSelectionForm";
+import RouteSelectionForm from "../components/forms/trips/RouteSelectionForm";
 import TyreSelectionForm from "../components/forms/TyreSelectionForm";
+import InventorySelectionForm from "../components/forms/workshop/InventorySelectionForm";
 import { useSyncContext } from "../context/SyncContext";
 
 /**

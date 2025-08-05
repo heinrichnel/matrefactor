@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { DriverBehaviorEvent } from '../../types';
-import { useAppContext } from '../../context/AppContext';
-import { useDriverBehavior } from '../../context/DriverBehaviorContext';
-import Button from '../../components/ui/Button';
-import DriverPerformanceOverview from '../../components/DriverManagement/PerformanceAnalytics';
-import DriverBehaviorEventForm from '../../components/forms/DriverBehaviorEventForm';
-import DriverBehaviorEventDetails from '../../components/DriverManagement/DriverBehaviorEventDetails';
-import CARReportForm from '../../components/forms/CARReportForm';
-import CARReportList from '../../components/lists/CARReportList';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
-import { 
-  User, 
-  FileText, 
-  Plus, 
-  RefreshCw, 
-  AlertTriangle, 
-  Filter, 
-  Search, 
-  Download, 
-  BookOpen 
-} from 'lucide-react';
-import SyncIndicator from '../../components/ui/SyncIndicator';
+import {
+  AlertTriangle,
+  BookOpen,
+  Download,
+  FileText,
+  Filter,
+  Plus,
+  RefreshCw,
+  Search,
+  User,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import DriverBehaviorEventDetails from "../../components/DriverManagement/DriverBehaviorEventDetails";
+import DriverPerformanceOverview from "../../components/DriverManagement/PerformanceAnalytics";
+import DriverBehaviorEventForm from "../../components/forms/driver/DriverBehaviorEventForm";
+import CARReportForm from "../../components/forms/qc/CARReportForm";
+import CARReportList from "../../components/lists/CARReportList";
+import Button from "../../components/ui/Button";
+import SyncIndicator from "../../components/ui/SyncIndicator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
+import { useAppContext } from "../../context/AppContext";
+import { useDriverBehavior } from "../../context/DriverBehaviorContext";
+import { DriverBehaviorEvent } from "../../types";
 
 /**
  * Driver Behavior Events Page Component
- * 
+ *
  * This component displays driver behavior events with filtering capabilities
  * and allows users to:
  * - View detailed driver performance metrics
@@ -37,48 +37,45 @@ import SyncIndicator from '../../components/ui/SyncIndicator';
 const DriverBehaviorPage: React.FC = () => {
   // Local UI state
   const [isSyncing, setIsSyncing] = useState(false);
-  const [activeTab, setActiveTab] = useState('performance');
+  const [activeTab, setActiveTab] = useState("performance");
   const [showEventForm, setShowEventForm] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [showCARForm, setShowCARForm] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<DriverBehaviorEvent | null>(null);
-  
+
   // Search and filtering state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterSeverity, setFilterSeverity] = useState('all');
-  const [filterEventType, setFilterEventType] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterSeverity, setFilterSeverity] = useState("all");
+  const [filterEventType, setFilterEventType] = useState("all");
   const [showWebBookOnly, setShowWebBookOnly] = useState(false);
-  const [dateRange] = useState<{start: Date | null, end: Date | null}>({
+  const [dateRange] = useState<{ start: Date | null; end: Date | null }>({
     start: null,
-    end: null
+    end: null,
   });
-  
+
   // Get application context for data and operations
-  const { 
-    importDriverBehaviorEventsFromWebhook,
-    isLoading, 
-    driverBehaviorEvents 
-  } = useAppContext();
-  
+  const { importDriverBehaviorEventsFromWebhook, isLoading, driverBehaviorEvents } =
+    useAppContext();
+
   // Get driver behavior specific context with real-time updates from Firestore
   const { events, webBookEvents, loading, error } = useDriverBehavior();
-  
+
   // Subscribe to driver behavior events when the component mounts
   useEffect(() => {
     console.log("Subscribing to driver behavior events");
-    
+
     // Real-time updates are now handled by the DriverBehaviorContext provider
     // The useDriverBehavior hook already provides real-time data from Firestore
-    
+
     // Check if we have any events, if not and we're online, trigger a sync
-    if ((driverBehaviorEvents.length === 0 && events.length === 0) && navigator.onLine) {
+    if (driverBehaviorEvents.length === 0 && events.length === 0 && navigator.onLine) {
       handleSyncNow();
     }
-    
+
     // Log the number of events coming from the context
     console.log(`Real-time driver behavior events loaded: ${events.length}`);
     console.log(`Web book events loaded: ${webBookEvents.length}`);
-    
+
     // Cleanup function is not needed as the subscription is managed by the DriverBehaviorContext
   }, [driverBehaviorEvents.length, events.length, webBookEvents.length]);
 
@@ -96,11 +93,11 @@ const DriverBehaviorPage: React.FC = () => {
       if (result) {
         alert(`Manual sync complete. Imported: ${result.imported}, Skipped: ${result.skipped}`);
       } else {
-        alert('Manual sync completed but no data was returned.');
+        alert("Manual sync completed but no data was returned.");
       }
     } catch (error) {
-      console.error('Error during manual sync:', error);
-      alert(`Manual sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error during manual sync:", error);
+      alert(`Manual sync failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setIsSyncing(false);
     }
@@ -111,55 +108,68 @@ const DriverBehaviorPage: React.FC = () => {
     setSelectedEvent(event);
     setShowEventDetails(true);
   };
-  
+
   // Export data handler
   const handleExportData = () => {
     try {
       // Get the data to export (filtered or all)
       const dataToExport = getFilteredEvents();
-      
+
       // Convert to CSV
-      const headers = ['Date', 'Driver', 'Event Type', 'Severity', 'Fleet No', 'Location', 'Description'];
+      const headers = [
+        "Date",
+        "Driver",
+        "Event Type",
+        "Severity",
+        "Fleet No",
+        "Location",
+        "Description",
+      ];
       const csvContent = [
-        headers.join(','),
-        ...dataToExport.map(event => [
-          event.eventDate || '',
-          event.driverName || '',
-          event.eventType || '',
-          event.severity || '',
-          event.fleetNumber || '',
-          event.location || '',
-          `"${(event.description || '').replace(/"/g, '""')}"`
-        ].join(','))
-      ].join('\n');
-      
+        headers.join(","),
+        ...dataToExport.map((event) =>
+          [
+            event.eventDate || "",
+            event.driverName || "",
+            event.eventType || "",
+            event.severity || "",
+            event.fleetNumber || "",
+            event.location || "",
+            `"${(event.description || "").replace(/"/g, '""')}"`,
+          ].join(",")
+        ),
+      ].join("\n");
+
       // Create download link
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `driver-behavior-events-${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `driver-behavior-events-${new Date().toISOString().split("T")[0]}.csv`
+      );
+      link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Error exporting data:', error);
-      alert('Failed to export data. Please try again.');
+      console.error("Error exporting data:", error);
+      alert("Failed to export data. Please try again.");
     }
   };
 
   // Get unique event types for filtering
   const getUniqueEventTypes = () => {
     const displayEvents = showWebBookOnly ? webBookEvents : events;
-    return [...new Set(displayEvents.map(event => event.eventType))];
+    return [...new Set(displayEvents.map((event) => event.eventType))];
   };
 
   // Filter events based on search term and filters
   const getFilteredEvents = () => {
     const displayEvents = showWebBookOnly ? webBookEvents : driverBehaviorEvents;
-    
-    return displayEvents.filter(event => {
+
+    return displayEvents.filter((event) => {
       // Search term filter
       const matchesSearch =
         !searchTerm ||
@@ -167,31 +177,28 @@ const DriverBehaviorPage: React.FC = () => {
         (event.eventType?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
         (event.driverName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
         (event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-      
+
       // Severity filter
-      const matchesSeverity = 
-        filterSeverity === 'all' || 
-        event.severity === filterSeverity;
-      
+      const matchesSeverity = filterSeverity === "all" || event.severity === filterSeverity;
+
       // Event type filter
-      const matchesEventType = 
-        filterEventType === 'all' || 
-        event.eventType === filterEventType;
-      
+      const matchesEventType = filterEventType === "all" || event.eventType === filterEventType;
+
       // Date range filter
-      const matchesDateRange = 
-        !dateRange.start || !dateRange.end ||
-        (event.eventDate && 
+      const matchesDateRange =
+        !dateRange.start ||
+        !dateRange.end ||
+        (event.eventDate &&
           new Date(event.eventDate) >= dateRange.start &&
           new Date(event.eventDate) <= dateRange.end);
-      
+
       return matchesSearch && matchesSeverity && matchesEventType && matchesDateRange;
     });
   };
 
   // Get filtered events
   const filteredEvents = getFilteredEvents();
-  
+
   // Get unique event types
   const eventTypes = getUniqueEventTypes();
 
@@ -202,7 +209,9 @@ const DriverBehaviorPage: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Driver Behavior Management</h1>
           <div className="flex items-center mt-1">
-            <p className="text-lg text-gray-600 mr-3">Monitor driver behavior and manage corrective actions</p>
+            <p className="text-lg text-gray-600 mr-3">
+              Monitor driver behavior and manage corrective actions
+            </p>
             <SyncIndicator />
           </div>
         </div>
@@ -218,12 +227,12 @@ const DriverBehaviorPage: React.FC = () => {
           </Button>
           <Button
             onClick={handleSyncNow}
-            icon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}
+            icon={<RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />}
             variant="outline"
             disabled={isSyncing || isLoading.importDriverBehavior}
             isLoading={isLoading.importDriverBehavior}
           >
-            {isSyncing || isLoading.importDriverBehavior ? 'Syncing...' : 'Sync Now'}
+            {isSyncing || isLoading.importDriverBehavior ? "Syncing..." : "Sync Now"}
           </Button>
         </div>
       </div>
@@ -289,11 +298,11 @@ const DriverBehaviorPage: React.FC = () => {
                       className="pl-10 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="Search by driver, fleet #, etc."
                       value={searchTerm}
-                      onChange={e => setSearchTerm(e.target.value)}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
                   <div className="relative">
@@ -303,10 +312,10 @@ const DriverBehaviorPage: React.FC = () => {
                     <select
                       className="pl-10 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       value={filterEventType}
-                      onChange={e => setFilterEventType(e.target.value)}
+                      onChange={(e) => setFilterEventType(e.target.value)}
                     >
                       <option value="all">All Event Types</option>
-                      {eventTypes.map(type => (
+                      {eventTypes.map((type) => (
                         <option key={type} value={type}>
                           {type}
                         </option>
@@ -314,7 +323,7 @@ const DriverBehaviorPage: React.FC = () => {
                     </select>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
                   <div className="relative">
@@ -324,7 +333,7 @@ const DriverBehaviorPage: React.FC = () => {
                     <select
                       className="pl-10 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       value={filterSeverity}
-                      onChange={e => setFilterSeverity(e.target.value)}
+                      onChange={(e) => setFilterSeverity(e.target.value)}
                     >
                       <option value="all">All Severities</option>
                       <option value="low">Low</option>
@@ -335,7 +344,7 @@ const DriverBehaviorPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap items-center justify-between mt-4 gap-4">
                 <div className="flex items-center">
                   <input
@@ -343,13 +352,13 @@ const DriverBehaviorPage: React.FC = () => {
                     id="webBookOnly"
                     className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     checked={showWebBookOnly}
-                    onChange={e => setShowWebBookOnly(e.target.checked)}
+                    onChange={(e) => setShowWebBookOnly(e.target.checked)}
                   />
                   <label htmlFor="webBookOnly" className="text-sm text-gray-700">
                     Show Web-Book Events Only
                   </label>
                 </div>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -360,18 +369,48 @@ const DriverBehaviorPage: React.FC = () => {
                 </Button>
               </div>
             </div>
-            
+
             {/* Events Table */}
             <div className="bg-white shadow overflow-hidden border-b border-gray-200 rounded-md">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fleet #</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Date
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Driver
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Event Type
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Fleet #
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Severity
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -390,21 +429,34 @@ const DriverBehaviorPage: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    filteredEvents.map(event => (
+                    filteredEvents.map((event) => (
                       <tr key={event.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {event.eventDate ? new Date(event.eventDate).toLocaleDateString() : 'N/A'}
+                          {event.eventDate ? new Date(event.eventDate).toLocaleDateString() : "N/A"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{event.driverName || 'Unknown'}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{event.eventType || 'N/A'}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{event.fleetNumber || 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {event.driverName || "Unknown"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {event.eventType || "N/A"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {event.fleetNumber || "N/A"}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            ${event.severity === 'critical' ? 'bg-red-100 text-red-800' :
-                              event.severity === 'high' ? 'bg-orange-100 text-orange-800' :
-                                event.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-green-100 text-green-800'}`}>
-                            {event.severity || 'low'}
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            ${
+                              event.severity === "critical"
+                                ? "bg-red-100 text-red-800"
+                                : event.severity === "high"
+                                  ? "bg-orange-100 text-orange-800"
+                                  : event.severity === "medium"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {event.severity || "low"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

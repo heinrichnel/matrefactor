@@ -1,6 +1,6 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import IncidentReportForm from '../components/forms/IncidentReportForm';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import IncidentReportForm from "../components/forms/qc/IncidentReportForm";
 
 /**
  * Report New Incident Page
@@ -11,17 +11,17 @@ const ReportNewIncidentPage: React.FC = () => {
 
   const handleSubmit = (data: any) => {
     // In a real app, this would save to Firebase
-    console.log('Submitting incident report:', data);
-    
+    console.log("Submitting incident report:", data);
+
     // Show success message
-    alert('Incident report submitted successfully!');
-    
+    alert("Incident report submitted successfully!");
+
     // Navigate back to incidents list
-    navigate('/compliance/incidents');
+    navigate("/compliance/incidents");
   };
 
   const handleCancel = () => {
-    navigate('/compliance/incidents');
+    navigate("/compliance/incidents");
   };
 
   return (
@@ -29,15 +29,13 @@ const ReportNewIncidentPage: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-gray-800">Report New Incident</h1>
       </div>
-      
+
       <p className="text-gray-600">
-        Complete the form below to report a new safety incident. All incidents should be reported within 24 hours.
+        Complete the form below to report a new safety incident. All incidents should be reported
+        within 24 hours.
       </p>
-      
-      <IncidentReportForm 
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-      />
+
+      <IncidentReportForm onSubmit={handleSubmit} onCancel={handleCancel} />
     </div>
   );
 };

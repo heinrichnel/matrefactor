@@ -14,7 +14,7 @@ const withSuspense = (Comp: React.LazyExoticComponent<any>) => (
  * Top-level / dashboard pages
  * ----------------------------- */
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
-const YearToDateKPIs = lazy(() => import("./pages/YearToDateKPIs"));
+const YearToDateKPIs = lazy(() => import("./pages/analytics/YearToDateKPIs"));
 const ComplianceDashboard = lazy(() => import("./pages/ComplianceDashboard"));
 
 /* -----------------------------
@@ -25,7 +25,7 @@ const TripManagementPage = lazy(() => import("./pages/TripManagementPage"));
 const TripCalendarPage = lazy(() => import("./pages/TripCalendarPage"));
 const TripTimelinePage = lazy(() => import("./pages/TripTimelinePage"));
 const TripReportPage = lazy(() => import("./pages/TripReportPage"));
-const ActiveTripsPage = lazy(() => import("./pages/ActiveTripsPageEnhanced"));
+const ActiveTripsPage = lazy(() => import("./pages/trips/ActiveTripsPageEnhanced"));
 const CompletedTrips = lazy(() => import("./pages/CompletedTrips"));
 const AddTripPage = lazy(() => import("./pages/AddTripPage"));
 const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage"));
@@ -48,7 +48,7 @@ const MissedLoadsTracker = lazy(() => import("./pages/MissedLoadsTracker"));
 const DieselDashboard = lazy(() => import("./pages/DieselDashboard"));
 const DieselAnalysis = lazy(() => import("./pages/DieselAnalysis"));
 const DieselDashboardComponent = lazy(() => import("./pages/diesel/DieselDashboardComponent"));
-const AddFuelEntryPage = lazy(() => import("./pages/diesel/AddFuelEntryPage"));
+const DieselIntegratedPage = lazy(() => import("./pages/diesel/DieselIntegratedPage"));
 const FuelLogs = lazy(() => import("./pages/diesel/FuelLogs"));
 const FuelTheftDetection = lazy(() => import("./pages/diesel/FuelTheftDetection"));
 const DriverFuelBehavior = lazy(() => import("./pages/diesel/DriverFuelBehavior"));
@@ -132,7 +132,7 @@ const TyreMobilePage = lazy(() => import("./pages/mobile/TyreMobilePage"));
  * ----------------------------- */
 const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
 const CustomerReports = lazy(() => import("./pages/CustomerReports"));
-const ActiveCustomers = lazy(() => import("./pages/ActiveCustomers"));
+const ActiveCustomers = lazy(() => import("./pages/clients/ActiveCustomers"));
 const ClientDetail = lazy(() => import("./pages/ClientDetail"));
 const VendorScorecard = lazy(() => import("./pages/VendorScorecard"));
 const RetentionMetrics = lazy(() => import("./pages/RetentionMetrics"));
@@ -218,7 +218,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="analysis" element={withSuspense(DieselAnalysis)} />
           <Route path="manage" element={withSuspense(DieselManagementPage)} />
           <Route path="fuel-logs" element={withSuspense(FuelLogs)} />
-          <Route path="add-entry" element={withSuspense(AddFuelEntryPage)} />
+          <Route path="integrated" element={withSuspense(DieselIntegratedPage)} />
           <Route path="fuel-theft" element={withSuspense(FuelTheftDetection)} />
           <Route path="driver-fuel" element={withSuspense(DriverFuelBehavior)} />
           <Route path="efficiency" element={withSuspense(FuelEfficiencyReport)} />

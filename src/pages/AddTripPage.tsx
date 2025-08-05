@@ -1,121 +1,60 @@
-import React from 'react';
+import { Truck } from "lucide-react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import TripForm from "../components/forms/trips/TripForm";
+import Card, { CardContent, CardHeader } from "../components/ui/Card";
 
+/**
+ * @deprecated Use TripManagementPage with modal form instead
+ * This standalone page is being phased out in favor of an integrated modal approach
+ *
+ * Redirect to TripManagementPage after a short delay for better user experience
+ */
 const AddTripPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to trip management page after a delay
+    const redirectTimer = setTimeout(() => {
+      navigate("/trips");
+    }, 5000);
+
+    return () => clearTimeout(redirectTimer);
+  }, [navigate]);
+
+  const handleSubmit = (data: any) => {
+    console.log("Trip data:", data);
+    navigate("/trips");
+  };
+
+  const handleCancel = () => {
+    navigate("/trips");
+  };
+
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Add New Trip</h1>
-      
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold mb-4">Trip Details</h2>
-        
-        <form>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Trip Name</label>
-              <input 
-                type="text" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter trip name"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Trip Type</label>
-              <select 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option>Select trip type</option>
-                <option>Delivery</option>
-                <option>Pickup</option>
-                <option>Round Trip</option>
-                <option>Transfer</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-              <input 
-                type="date" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-              <input 
-                type="date" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Origin</label>
-              <input 
-                type="text" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter origin location"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
-              <input 
-                type="text" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter destination location"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Driver</label>
-              <select 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option>Select driver</option>
-                <option>Driver 1</option>
-                <option>Driver 2</option>
-                <option>Driver 3</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Vehicle</label>
-              <select 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option>Select vehicle</option>
-                <option>Vehicle 1</option>
-                <option>Vehicle 2</option>
-                <option>Vehicle 3</option>
-              </select>
-            </div>
-            
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-              <textarea 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={4}
-                placeholder="Add any additional notes or instructions"
-              />
-            </div>
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+        <div className="flex">
+          <div>
+            <p className="text-sm text-yellow-700">
+              This page is deprecated. Please use the Add Trip button on the Trip Management page
+              instead. You will be redirected in 5 seconds...
+            </p>
           </div>
-          
-          <div className="mt-6 flex justify-end space-x-3">
-            <button 
-              type="button"
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Create Trip
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
+
+      <Card className="max-w-4xl mx-auto">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Truck size={20} className="text-blue-500" />
+            <h2 className="text-xl font-semibold">Add New Trip</h2>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <TripForm onSubmit={handleSubmit} onCancel={handleCancel} />
+        </CardContent>
+      </Card>
     </div>
   );
 };

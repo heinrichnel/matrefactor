@@ -7,9 +7,9 @@
  * for inventory management and workshop operations.
  */
 import React, { useEffect, useState } from "react";
-import { useSyncContext } from "../../context/SyncContext";
-import { useFormSubmit, useInventoryOptions, validateForm } from "../../utils/formIntegration";
-import FormSelector from "./FormSelector";
+import { useSyncContext } from "../../../context/SyncContext";
+import { useFormSubmit, useInventoryOptions, validateForm } from "../../../utils/formIntegration";
+import FormSelector from "../FormSelector";
 
 interface InventorySelectionFormProps {
   onComplete?: (data: InventorySelectionData) => void;

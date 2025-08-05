@@ -6,7 +6,8 @@ import { formatCurrency } from '../../utils/helpers';
 import Button from '../../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
-import { 
+import FuelEntryForm, { FuelEntryData } from '../../components/forms/diesel/FuelEntryForm';
+import {
   Fuel,
   TrendingUp,
   AlertCircle,
@@ -15,7 +16,8 @@ import {
   Settings,
   ChevronRight,
   CreditCard,
-  Truck
+  Truck,
+  Plus
 } from 'lucide-react';
 
 interface DieselManagementPageProps {
@@ -26,27 +28,35 @@ const DieselManagementPage: React.FC<DieselManagementPageProps> = ({ className =
   const { dieselRecords, dieselNorms, isLoading } = useAppContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
-  
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const handleAddFuelEntry = async (data: FuelEntryData) => {
+    console.log('Form data:', data);
+    // Here you would submit to Firebase/Firestore
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setShowAddForm(false);
+  };
+
   // Calculate summary statistics
   const totalLiters = dieselRecords.reduce((total, record) => total + record.liters, 0);
   const totalCost = dieselRecords.reduce((total, record) => total + record.cost, 0);
-  
+
   // Filter records from the last 30 days
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const recentRecords = dieselRecords.filter(
     record => new Date(record.timestamp) >= thirtyDaysAgo
   );
-  
+
   const recentLiters = recentRecords.reduce((total, record) => total + record.liters, 0);
   const recentCost = recentRecords.reduce((total, record) => total + record.cost, 0);
-  
+
   // Calculate flagged records
   const flaggedRecords = dieselRecords.filter(record => record.flagged);
-  const flaggedPercentage = dieselRecords.length > 0 
-    ? (flaggedRecords.length / dieselRecords.length) * 100 
+  const flaggedPercentage = dieselRecords.length > 0
+    ? (flaggedRecords.length / dieselRecords.length) * 100
     : 0;
-  
+
   // Get top 5 vehicles by consumption
   const vehicleConsumption: Record<string, { liters: number, cost: number }> = {};
   dieselRecords.forEach(record => {
@@ -56,28 +66,74 @@ const DieselManagementPage: React.FC<DieselManagementPageProps> = ({ className =
     vehicleConsumption[record.vehicleId].liters += record.liters;
     vehicleConsumption[record.vehicleId].cost += record.cost;
   });
-  
+
   const topVehicles = Object.entries(vehicleConsumption)
     .sort((a, b) => b[1].liters - a[1].liters)
     .slice(0, 5);
-  
+
   return (
-    <div className={`space-y-6 ${className}`}>
+          <div className={`space-y-6 ${className}`}>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Diesel Management</h1>
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setShowAddForm(true)}
+          >
+            <Plus className="h-4 w-4" />
+            Add Fuel Entry
+          </Button>
+        </div>
+
+        {showAddForm && (
+          <Card className="mb-4">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Add New Fuel Entry</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAddForm(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <FuelEntryForm
+                onSubmit={async (data: FuelEntryData) => {
+                  console.log('Form data:', data);
+                  // Here you would submit to Firebase/Firestore
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  setShowAddForm(false);
+                }}
+                onCancel={() => setShowAddForm(false)}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <p>Loading...</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Total Consumption Card */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Diesel Management</h1>
           <p className="text-gray-600">Track and manage diesel consumption across your fleet</p>
         </div>
         <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => navigate('/diesel-reports')}
             className="flex items-center"
           >
             <FileText className="mr-1 h-4 w-4" />
             Reports
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => navigate('/diesel-settings')}
             className="flex items-center"
@@ -221,11 +277,11 @@ const DieselManagementPage: React.FC<DieselManagementPageProps> = ({ className =
             Vehicles
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="dashboard">
           <DieselDashboard />
         </TabsContent>
-        
+
         <TabsContent value="analytics">
           <Card>
             <CardHeader>
@@ -243,7 +299,7 @@ const DieselManagementPage: React.FC<DieselManagementPageProps> = ({ className =
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="vehicles">
           <Card>
             <CardHeader>
@@ -271,7 +327,7 @@ const DieselManagementPage: React.FC<DieselManagementPageProps> = ({ className =
                     </div>
                   </div>
                 ))}
-                
+
                 {topVehicles.length === 0 && (
                   <div className="text-center py-8">
                     <Truck className="mx-auto h-12 w-12 text-gray-400" />

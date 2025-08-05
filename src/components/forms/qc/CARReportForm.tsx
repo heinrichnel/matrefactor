@@ -2,21 +2,21 @@
 import React, { useEffect, useState } from "react";
 
 // ─── Types ───────────────────────────────────────────────────────
-import { CARReport, DriverBehaviorEvent, RESPONSIBLE_PERSONS } from "../../types";
+import { CARReport, DriverBehaviorEvent, RESPONSIBLE_PERSONS } from "../../../types";
 
 // ─── Context ─────────────────────────────────────────────────────
-import { useAppContext } from "../../context/AppContext";
+import { useAppContext } from "../../../context/AppContext";
 
 // ─── UI Components ───────────────────────────────────────────────
-import Button from "../ui/Button";
-import { Input, Select, TextArea } from "../ui/FormElements";
-import Modal from "../ui/Modal";
+import Button from "../../ui/Button";
+import { Input, Select, TextArea } from "../../ui/FormElements";
+import Modal from "../../ui/Modal";
 
 // ─── Icons ───────────────────────────────────────────────────────
 import { FileText, Save, X } from "lucide-react";
 
 // ─── Utilities ───────────────────────────────────────────────────
-import { formatDate } from "../../utils/helpers";
+import { formatDate } from "../../../utils/helpers";
 
 interface CARReportFormProps {
   isOpen: boolean;

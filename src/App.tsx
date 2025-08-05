@@ -46,7 +46,6 @@ import DriverPerformancePage from "./components/DriverManagement/DriverPerforman
 import MapsView from "./components/Map/MapsView";
 import LoadConfirmation from "./components/TripManagement/LoadConfirmation";
 import TripTemplateManager from "./components/TripManagement/TripTemplateManager";
-import ActiveTripsPage from "./pages/ActiveTripsPageEnhanced";
 import AddTripPage from "./pages/AddTripPage";
 import FlagsInvestigations from "./pages/FlagsInvestigationsPage";
 import FleetManagementPage from "./pages/FleetManagementPage";
@@ -57,6 +56,7 @@ import TripCalendarPage from "./pages/TripCalendarPage";
 import TripDashboard from "./pages/TripDashboard";
 import TripManagementPage from "./pages/TripManagementPage";
 import TripReportPage from "./pages/TripReportPage";
+import ActiveTripsPage from "./pages/trips/ActiveTripsPageEnhanced";
 import MainTripWorkflow from "./pages/trips/MainTripWorkflow";
 import TripDetailsPage from "./pages/trips/TripDetailsPage";
 import TripTimelinePage from "./pages/trips/TripTimelinePage";
@@ -310,8 +310,10 @@ const App: React.FC = () => {
                               <ActiveCustomers
                                 clients={[]}
                                 searchTerm=""
-                                onSelectClient={() => {}}
-                                onAddClient={() => {}}
+                                onSelectClient={(clientId) =>
+                                  console.log("Selected client:", clientId)
+                                }
+                                onAddClient={() => console.log("Add client clicked")}
                               />
                             }
                           />

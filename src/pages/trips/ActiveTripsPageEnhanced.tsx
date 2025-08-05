@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   CheckCircle,
   Clock,
+  Eye,
   Filter,
   Globe,
   MapPin,
@@ -11,17 +11,17 @@ import {
   RefreshCw,
   Trash2,
   Truck as TruckIcon,
-  Eye,
 } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "../components/ui/Card";
-import { useRealtimeTrips } from "../hooks/useRealtimeTrips";
-import Modal from "../components/ui/Modal";
-import { formatCurrency, SupportedCurrency } from "../lib/currency";
+import { Card, CardContent, CardHeader } from "../../components/ui/Card";
+import Modal from "../../components/ui/Modal";
+import { useRealtimeTrips } from "../../hooks/useRealtimeTrips";
+import { formatCurrency, SupportedCurrency } from "../../lib/currency";
 
 // Firestore (pas aan as jou paaie anders is)
-import { doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 // -------------------- Types --------------------
 type ImportSource = "web_book" | "manual" | "webhook" | "csv";
@@ -68,7 +68,11 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
   const [statusFilter, setStatusFilter] = useState<string>("");
 
   // Real-time trips from Firestore
-  const { trips: rtTrips, loading, error } = useRealtimeTrips({
+  const {
+    trips: rtTrips,
+    loading,
+    error,
+  } = useRealtimeTrips({
     onlyWebBook: filterWebBookOnly || undefined,
     status: statusFilter || undefined,
   });
@@ -182,10 +186,10 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
     const cb = trip.costBreakdown || {};
     const cost =
       (cb.fuel || 0) +
-      (cb.maintenance || 0) +
-      (cb.driver || 0) +
-      (cb.tolls || 0) +
-      (cb.other || 0) ||
+        (cb.maintenance || 0) +
+        (cb.driver || 0) +
+        (cb.tolls || 0) +
+        (cb.other || 0) ||
       trip.totalCost ||
       0;
 
@@ -246,9 +250,7 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
 
     // Update local mirror (webhook/csv arrays)
     if (editingTrip.importSource === "webhook") {
-      setWebhookTrips((prev) =>
-        prev.map((t) => (t.id === editingTrip.id ? updatedTrip : t))
-      );
+      setWebhookTrips((prev) => prev.map((t) => (t.id === editingTrip.id ? updatedTrip : t)));
     } else if (editingTrip.importSource === "csv") {
       setCsvTrips((prev) => prev.map((t) => (t.id === editingTrip.id ? updatedTrip : t)));
     }
@@ -507,9 +509,7 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Globe className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-medium text-green-600">
-              Real-time updates enabled
-            </span>
+            <span className="text-sm font-medium text-green-600">Real-time updates enabled</span>
           </div>
         </div>
       </div>
@@ -524,7 +524,7 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 items-center">
-          <label className="flex items-center">
+            <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filterWebBookOnly}
@@ -594,9 +594,7 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
                 </div>
               )}
               {csvError && (
-                <div className="bg-red-100 text-red-700 px-4 py-2 rounded text-sm">
-                  {csvError}
-                </div>
+                <div className="bg-red-100 text-red-700 px-4 py-2 rounded text-sm">{csvError}</div>
               )}
             </div>
           )}
@@ -710,10 +708,7 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
                       onClick={() => navigate(`/trips/${trip.id}`)}
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                        <Link
-                          to={`/trips/${trip.id}`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
+                        <Link to={`/trips/${trip.id}`} onClick={(e) => e.stopPropagation()}>
                           {trip.loadRef}
                         </Link>
                         {trip.importSource === "webhook" && (
@@ -843,9 +838,7 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
                               onClick={() => handleDeliver(trip)}
                             >
                               <PackageCheck className="w-4 h-4 mr-1" />
-                              {actionLoading === trip.id + ":deliver"
-                                ? "Delivering..."
-                                : "Deliver"}
+                              {actionLoading === trip.id + ":deliver" ? "Delivering..." : "Deliver"}
                             </button>
                           )}
 
@@ -878,20 +871,12 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
         onClose={() => setConfirm({ open: false })}
         title="Confirm action"
       >
-        <p className="mb-4">
-          Are you sure you want to {confirm.action} this trip?
-        </p>
+        <p className="mb-4">Are you sure you want to {confirm.action} this trip?</p>
         <div className="flex justify-end gap-2">
-          <button
-            className="px-4 py-2 border rounded"
-            onClick={() => setConfirm({ open: false })}
-          >
+          <button className="px-4 py-2 border rounded" onClick={() => setConfirm({ open: false })}>
             Cancel
           </button>
-          <button
-          className="px-4 py-2 bg-red-600 text-white rounded"
-          onClick={confirmYes}
-          >
+          <button className="px-4 py-2 bg-red-600 text-white rounded" onClick={confirmYes}>
             Yes, {confirm.action}
           </button>
         </div>
@@ -901,9 +886,7 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
       <Modal
         isOpen={!!editingTrip}
         onClose={() => setEditingTrip(null)}
-        title={`Edit Trip Costs${
-          editingTrip?.importSource === "webhook" ? " (Webhook)" : ""
-        }`}
+        title={`Edit Trip Costs${editingTrip?.importSource === "webhook" ? " (Webhook)" : ""}`}
         maxWidth="2xl"
       >
         {editingTrip && (
@@ -913,13 +896,12 @@ const ActiveTripsPageEnhanced: React.FC<{ displayCurrency?: SupportedCurrency }>
                 <span className="font-medium">Trip:</span> {editingTrip.loadRef}
               </p>
               <p>
-                <span className="font-medium">Route:</span>{" "}
-                {editingTrip.origin} → {editingTrip.destination}
+                <span className="font-medium">Route:</span> {editingTrip.origin} →{" "}
+                {editingTrip.destination}
               </p>
               {editingTrip.externalId && (
                 <p>
-                  <span className="font-medium">External ID:</span>{" "}
-                  {editingTrip.externalId}
+                  <span className="font-medium">External ID:</span> {editingTrip.externalId}
                 </p>
               )}
             </div>
