@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TripForm } from "../../components/forms/trips/TripForm";
 import { Button } from "../../components/ui";
 import { canProceedToNextStep, defaultTripWorkflowConfig } from "../../config/tripWorkflowConfig";
 import CostEntryForm from "./CostEntryForm";
@@ -7,7 +8,6 @@ import PaymentTrackingPanel from "./PaymentTrackingPanel";
 import ReportingPanel from "./ReportingPanel";
 import SystemCostGenerator from "./SystemCostGenerator";
 import TripCompletionPanel from "./TripCompletionPanel";
-import TripForm from "./TripForm";
 import TripInvoicingPanel from "./TripInvoicingPanel";
 
 const MainTripWorkflow = () => {

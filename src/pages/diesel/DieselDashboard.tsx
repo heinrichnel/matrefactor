@@ -49,8 +49,9 @@ const syncDieselFromWialon = async () => {
 
 const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => {
   const { dieselRecords, deleteDieselRecord, isLoading } = useAppContext();
-  // Access the sync context for sync status indicator
-  const { syncStatus } = useSyncContext();
+
+  // Sync context will be used with SyncIndicator component if needed
+  useSyncContext();
 
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -112,16 +113,28 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
         }
 
         // Filter by search term
-        if (searchTerm && !record.vehicleId.toLowerCase().includes(searchTerm.toLowerCase())) {
+        if (
+          searchTerm &&
+          record.vehicleId &&
+          !record.vehicleId.toLowerCase().includes(searchTerm.toLowerCase())
+        ) {
           return false;
         }
 
         // Filter by date range
-        if (dateRange.from && new Date(record.timestamp) < new Date(dateRange.from)) {
+        if (
+          dateRange.from &&
+          record.timestamp &&
+          new Date(record.timestamp) < new Date(dateRange.from)
+        ) {
           return false;
         }
 
-        if (dateRange.to && new Date(record.timestamp) > new Date(dateRange.to + "T23:59:59")) {
+        if (
+          dateRange.to &&
+          record.timestamp &&
+          new Date(record.timestamp) > new Date(dateRange.to + "T23:59:59")
+        ) {
           return false;
         }
 
@@ -179,11 +192,15 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
   );
 
   // Get unique vehicles for filtering
+  // This was previously used with the FleetSelector but is now commented out since we updated to use
+  // the value/onChange pattern instead of selectedVehicles/availableVehicles
+  /*
   const uniqueVehicles = Array.from(
     new Set(
       dieselRecords.map((record) => mapToExtendedRecord(record).vehicleId || record.fleetNumber)
     )
   );
+  */
 
   // Handle vehicle selection
   const handleVehicleSelection = (vehicles: string[]) => {
@@ -345,10 +362,9 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
           <div className="mt-4">
             <FleetSelector
               label="Filter by fleet:"
-              selectedVehicles={selectedVehicles}
-              onVehicleSelect={handleVehicleSelection}
-              availableVehicles={uniqueVehicles}
-              allowMultiple={false}
+              value={selectedVehicles[0] || ""}
+              onChange={(vehicle) => handleVehicleSelection([vehicle])}
+              placeholder="Select vehicle"
             />
           </div>
         </CardHeader>
@@ -451,19 +467,23 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(record.timestamp)}
+                        {record.timestamp ? formatDate(record.timestamp) : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatNumber(record.liters)} L
+                        {record.liters !== undefined ? `${formatNumber(record.liters)} L` : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatCurrency(record.cost)}
+                        {record.cost !== undefined ? formatCurrency(record.cost) : "N/A"}
                         <div className="text-xs text-gray-500">
-                          {formatCurrency(record.cost / record.liters)}/L
+                          {record.cost !== undefined && record.liters && record.liters > 0
+                            ? `${formatCurrency(record.cost / record.liters)}/L`
+                            : "N/A"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatNumber(record.odometer, 0)} km
+                        {record.odometer !== undefined
+                          ? `${formatNumber(record.odometer, 0)} km`
+                          : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -544,8 +564,12 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
                   <div className="p-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <div className="font-medium text-lg">{record.vehicleId}</div>
-                        <div className="text-sm text-gray-600">{formatDate(record.timestamp)}</div>
+                        <div className="font-medium text-lg">
+                          {record.vehicleId || "Unknown Vehicle"}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {record.timestamp ? formatDate(record.timestamp) : "N/A"}
+                        </div>
                       </div>
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -571,19 +595,27 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
                     <div className="mt-4 grid grid-cols-2 gap-4">
                       <div>
                         <div className="text-sm text-gray-500">Liters</div>
-                        <div className="text-lg font-medium">{formatNumber(record.liters)} L</div>
+                        <div className="text-lg font-medium">
+                          {record.liters !== undefined ? `${formatNumber(record.liters)} L` : "N/A"}
+                        </div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-500">Cost</div>
-                        <div className="text-lg font-medium">{formatCurrency(record.cost)}</div>
+                        <div className="text-lg font-medium">
+                          {record.cost !== undefined ? formatCurrency(record.cost) : "N/A"}
+                        </div>
                         <div className="text-xs text-gray-500">
-                          {formatCurrency(record.cost / record.liters)}/L
+                          {record.cost !== undefined && record.liters && record.liters > 0
+                            ? `${formatCurrency(record.cost / record.liters)}/L`
+                            : "N/A"}
                         </div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-500">Odometer</div>
                         <div className="text-lg font-medium">
-                          {formatNumber(record.odometer, 0)} km
+                          {record.odometer !== undefined
+                            ? `${formatNumber(record.odometer, 0)} km`
+                            : "N/A"}
                         </div>
                       </div>
                       <div>

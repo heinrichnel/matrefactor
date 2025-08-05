@@ -1,7 +1,7 @@
 // src/AppRoutes.tsx
 import React, { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import Layout from "./components/layout/Layout"; // adjust alias/path if needed
+import Layout from "./components/layout/Layout";
 
 // A tiny helper to keep JSX clean
 const withSuspense = (Comp: React.LazyExoticComponent<any>) => (
@@ -22,15 +22,9 @@ const ComplianceDashboard = lazy(() => import("./pages/ComplianceDashboard"));
  * ----------------------------- */
 const TripDashboardPage = lazy(() => import("./pages/TripDashboardPage"));
 const TripManagementPage = lazy(() => import("./pages/trips/TripManagementPage"));
-const TripCalendarPage = lazy(() => import("./pages/TripCalendarPage"));
-const TripTimelinePage = lazy(() => import("./pages/TripTimelinePage"));
-const TripReportPage = lazy(() => import("./pages/TripReportPage"));
 const ActiveTripsPage = lazy(() => import("./pages/trips/ActiveTripsPageEnhanced"));
 const CompletedTrips = lazy(() => import("./pages/trips/CompletedTrips"));
 const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage"));
-const TripInvoicingPanel = lazy(() => import("./pages/trips/TripInvoicingPanel"));
-const TripCompletionPanel = lazy(() => import("./pages/trips/TripCompletionPanel"));
-const FlagInvestigationPanel = lazy(() => import("./pages/trips/FlagInvestigationPanel"));
 const SystemCostGenerator = lazy(() => import("./pages/trips/SystemCostGenerator"));
 const PaymentTrackingPanel = lazy(() => import("./pages/trips/PaymentTrackingPanel"));
 const ReportingPanel = lazy(() => import("./pages/trips/ReportingPanel"));
@@ -38,7 +32,12 @@ const LoadPlanningPage = lazy(() => import("./pages/LoadPlanningPage"));
 const LoadPlanningComponentPage = lazy(() => import("./pages/LoadPlanningComponentPage"));
 const RoutePlanningPage = lazy(() => import("./pages/RoutePlanningPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/RouteOptimizationPage"));
-const TripCalendarTop = lazy(() => import("./pages/TripCalendarPage"));
+const TripCalendarPage = lazy(() => import("./pages/TripCalendarPage"));
+const TripTimelinePage = lazy(() => import("./pages/TripTimelinePage"));
+const TripReportPage = lazy(() => import("./pages/TripReportPage"));
+const TripInvoicingPanel = lazy(() => import("./pages/trips/TripInvoicingPanel"));
+const TripCompletionPanel = lazy(() => import("./pages/trips/TripCompletionPanel"));
+const FlagInvestigationPanel = lazy(() => import("./pages/trips/FlagInvestigationPanel"));
 const MissedLoadsTracker = lazy(() => import("./pages/MissedLoadsTracker"));
 
 /* -----------------------------
@@ -61,18 +60,10 @@ const FuelStations = lazy(() => import("./pages/diesel/FuelStations"));
 /* -----------------------------
  * Drivers
  * ----------------------------- */
-const DriverManagementPageIntegrated = lazy(() => import("./pages/drivers/DriverManagementPageIntegrated"));
+const DriverManagementPageIntegrated = lazy(
+  () => import("./pages/drivers/DriverManagementPageIntegrated")
+);
 const DriverManagementPage = lazy(() => import("./pages/drivers/DriverManagementPage"));
-
-/* -----------------------------
- * Clients
- * ----------------------------- */
-const ClientManagementPage = lazy(() => import("./pages/clients/ClientManagementPageIntegrated"));
-
-/* -----------------------------
- * Form Testing
- * ----------------------------- */
-const FormsTestWrapper = lazy(() => import("./pages/dashboard/FormsTestWrapper"));
 const DriverDashboard = lazy(() => import("./pages/drivers/DriverDashboard"));
 const DriverDetailsPage = lazy(() => import("./pages/drivers/DriverDetailsPage"));
 const DriverBehaviorPage = lazy(() => import("./pages/drivers/DriverBehaviorPage"));
@@ -86,6 +77,21 @@ const TrainingRecords = lazy(() => import("./pages/drivers/TrainingRecords"));
 const LicenseManagement = lazy(() => import("./pages/drivers/LicenseManagement"));
 const AddNewDriver = lazy(() => import("./pages/drivers/AddNewDriver"));
 const EditDriver = lazy(() => import("./pages/drivers/EditDriver"));
+
+/* -----------------------------
+ * Clients
+ * ----------------------------- */
+const ClientManagementPage = lazy(() => import("./pages/clients/ClientManagementPageIntegrated"));
+const CustomerDashboard = lazy(() => import("./pages/clients/CustomerDashboard"));
+const CustomerReports = lazy(() => import("./pages/CustomerReports"));
+const ActiveCustomers = lazy(() => import("./pages/clients/ActiveCustomers"));
+const ClientDetail = lazy(() => import("./pages/ClientDetail"));
+const RetentionMetrics = lazy(() => import("./pages/RetentionMetrics"));
+
+/* -----------------------------
+ * Form Testing
+ * ----------------------------- */
+const FormsTestWrapper = lazy(() => import("./pages/dashboard/FormsTestWrapper"));
 
 /* -----------------------------
  * Invoices
@@ -118,7 +124,7 @@ const InventoryReportsPage = lazy(() => import("./pages/Inventory/InventoryRepor
 const PartsInventoryPage = lazy(() => import("./pages/PartsInventoryPage"));
 const PartsOrderingPage = lazy(() => import("./pages/PartsOrderingPage"));
 const ReceivePartsPage = lazy(() => import("./pages/ReceivePartsPage"));
-const JobCardManagement = lazy(() => import("./pages/JobCardManagement"));
+const JobCardManagement = lazy(() => import("./pages/workshop/JobCardManagement"));
 const JobCardKanbanBoard = lazy(() => import("./pages/workshop/JobCardKanbanBoard"));
 const InspectionManagement = lazy(() => import("./pages/workshop/InspectionManagement"));
 
@@ -127,24 +133,17 @@ const InspectionManagement = lazy(() => import("./pages/workshop/InspectionManag
  * ----------------------------- */
 const TyreManagementPage = lazy(() => import("./pages/tyres/TyreManagementPage"));
 const TyreReferenceManagerPage = lazy(() => import("./pages/tyres/TyreReferenceManagerPage"));
-const AddNewTyrePage = lazy(() => import("./pages/tyres/AddNewTyrePage"));
 const TyrePerformanceDashboard = lazy(() => import("./pages/TyrePerformanceDashboard"));
 const TyreHistoryPage = lazy(() => import("./pages/TyreHistoryPage"));
 const TyreFleetMap = lazy(() => import("./pages/TyreFleetMap"));
 const TyreStores = lazy(() => import("./pages/TyreStores"));
 const VehicleTyreView = lazy(() => import("./pages/VehicleTyreView"));
-const VehicleTyreViewA = lazy(() => import("./pages/VehicleTyreViewA"));
 const TyreMobilePage = lazy(() => import("./pages/mobile/TyreMobilePage"));
 
 /* -----------------------------
- * Customers / Analytics
+ * Analytics
  * ----------------------------- */
-const CustomerDashboard = lazy(() => import("./pages/clients/CustomerDashboard"));
-const CustomerReports = lazy(() => import("./pages/CustomerReports"));
-const ActiveCustomers = lazy(() => import("./pages/clients/ActiveCustomers"));
-const ClientDetail = lazy(() => import("./pages/ClientDetail"));
 const VendorScorecard = lazy(() => import("./pages/VendorScorecard"));
-const RetentionMetrics = lazy(() => import("./pages/RetentionMetrics"));
 const PerformanceAnalyticsPage = lazy(() => import("./pages/PerformanceAnalytics"));
 
 /* -----------------------------
@@ -165,7 +164,6 @@ const FlagsInvestigationsPage = lazy(() => import("./pages/FlagsInvestigationsPa
  * Cost / Indirect costs
  * ----------------------------- */
 const IndirectCostBreakdown = lazy(() => import("./pages/trips/IndirectCostBreakdown"));
-
 const QAReviewPanel = lazy(() => import("./pages/QAReviewPanel"));
 const POApprovalSummary = lazy(() => import("./pages/POApprovalSummary"));
 const PurchaseOrderTracker = lazy(() => import("./pages/PurchaseOrderTracker"));
@@ -177,18 +175,29 @@ const ReportNewIncidentPage = lazy(() => import("./pages/ReportNewIncidentPage")
  * ----------------------------- */
 const NotFound = () => <div className="p-6">404 – Page not found</div>;
 
-interface Trip {} // Add the Trip interface or import it
+// Use a proper type definition instead of empty interface
+interface Trip {
+  id: string;
+  // Add other trip properties as needed
+}
 
 export const AppRoutes: React.FC = () => {
-  const [showTripForm, setShowTripForm] = React.useState(false);
-  const [editingTrip, setEditingTrip] = React.useState<Trip | undefined>(undefined);
+  const [, setShowTripForm] = React.useState(false);
+  const [, setEditingTrip] = React.useState<Trip | null>(null);
+
+  // Create a wrapper function that matches the expected prop type
+  const handleEditingTripChange = (trip: Trip | undefined) => {
+    setEditingTrip(trip || null);
+  };
 
   return (
     <Routes>
       {/* All app pages live under the Layout */}
       <Route
         path="/"
-        element={<Layout setShowTripForm={setShowTripForm} setEditingTrip={setEditingTrip} />}
+        element={
+          <Layout setShowTripForm={setShowTripForm} setEditingTrip={handleEditingTripChange} />
+        }
       >
         {/* Default redirect to /dashboard */}
         <Route index element={<Navigate to="/dashboard" replace />} />
@@ -205,18 +214,19 @@ export const AppRoutes: React.FC = () => {
           <Route path="manage" element={withSuspense(TripManagementPage)} />
           <Route path="active" element={withSuspense(ActiveTripsPage)} />
           <Route path="completed" element={withSuspense(CompletedTrips)} />
-        {/* Trips */}
-        <Route path="trips">
-          <Route index element={withSuspense(TripDashboardPage)} />
-          <Route path="dashboard" element={withSuspense(TripDashboardPage)} />
-          <Route path="manage" element={withSuspense(TripManagementPage)} />
-          <Route path="active" element={withSuspense(ActiveTripsPage)} />
-          <Route path="completed" element={withSuspense(CompletedTrips)} />
           <Route path="system-costs/:tripId" element={withSuspense(SystemCostGenerator)} />
           <Route path="payments/:tripId" element={withSuspense(PaymentTrackingPanel)} />
           <Route path="reports/:tripId" element={withSuspense(ReportingPanel)} />
           <Route path="load-planning" element={withSuspense(LoadPlanningPage)} />
           <Route path="load-planning/component" element={withSuspense(LoadPlanningComponentPage)} />
+          <Route path="calendar" element={withSuspense(TripCalendarPage)} />
+          <Route path="timeline" element={withSuspense(TripTimelinePage)} />
+          <Route path="report" element={withSuspense(TripReportPage)} />
+          <Route path=":tripId" element={withSuspense(TripDetailsPage)} />
+          <Route path="invoicing/:tripId" element={withSuspense(TripInvoicingPanel)} />
+          <Route path="completion/:tripId" element={withSuspense(TripCompletionPanel)} />
+          <Route path="flags/:tripId" element={withSuspense(FlagInvestigationPanel)} />
+          <Route path="missed-loads" element={withSuspense(MissedLoadsTracker)} />
         </Route>
 
         {/* Diesel */}
@@ -241,19 +251,19 @@ export const AppRoutes: React.FC = () => {
         <Route path="drivers">
           <Route index element={withSuspense(DriverManagementPage)} />
           <Route path="dashboard" element={withSuspense(DriverDashboard)} />
-          <Route path="integrated" element={withSuspense(DriverManagementPage)} />
+          <Route path="integrated" element={withSuspense(DriverManagementPageIntegrated)} />
           <Route path="manage" element={withSuspense(DriverManagementPage)} />
           <Route path="details/:driverId" element={withSuspense(DriverDetailsPage)} />
           <Route path="behavior" element={withSuspense(DriverBehaviorPage)} />
-        {/* Drivers */}
-        <Route path="drivers">
-          <Route index element={withSuspense(DriverManagementPage)} />
-          <Route path="dashboard" element={withSuspense(DriverDashboard)} />
-          <Route path="integrated" element={withSuspense(DriverManagementPageIntegrated)} />
-          <Route path="manage" element={withSuspense(DriverManagementPage)} />
+          <Route path="safety-scores" element={withSuspense(SafetyScores)} />
+          <Route path="performance-analytics" element={withSuspense(PerformanceAnalytics)} />
+          <Route path="rewards" element={withSuspense(DriverRewards)} />
+          <Route path="scheduling" element={withSuspense(DriverScheduling)} />
+          <Route path="violations" element={withSuspense(DriverViolations)} />
+          <Route path="hours-of-service" element={withSuspense(HoursOfService)} />
           <Route path="training" element={withSuspense(TrainingRecords)} />
           <Route path="licenses" element={withSuspense(LicenseManagement)} />
-          <Route path="new" element={withSuspense(AddNewDriver)} />
+          <Route path="add" element={withSuspense(AddNewDriver)} />
           <Route path="edit/:driverId" element={withSuspense(EditDriver)} />
         </Route>
 
@@ -262,6 +272,11 @@ export const AppRoutes: React.FC = () => {
           <Route index element={withSuspense(ActiveCustomers)} />
           <Route path="integrated" element={withSuspense(ClientManagementPage)} />
           <Route path="manage" element={withSuspense(ClientManagementPage)} />
+          <Route path="dashboard" element={withSuspense(CustomerDashboard)} />
+          <Route path="reports" element={withSuspense(CustomerReports)} />
+          <Route path="active" element={withSuspense(ActiveCustomers)} />
+          <Route path="detail/:id" element={withSuspense(ClientDetail)} />
+          <Route path="retention" element={withSuspense(RetentionMetrics)} />
         </Route>
 
         {/* Forms Testing */}
@@ -314,25 +329,15 @@ export const AppRoutes: React.FC = () => {
           <Route index element={withSuspense(TyreManagementPage)} />
           <Route path="manage" element={withSuspense(TyreManagementPage)} />
           <Route path="reference" element={withSuspense(TyreReferenceManagerPage)} />
-          <Route path="new" element={withSuspense(AddNewTyrePage)} />
           <Route path="performance" element={withSuspense(TyrePerformanceDashboard)} />
           <Route path="history" element={withSuspense(TyreHistoryPage)} />
           <Route path="fleet-map" element={withSuspense(TyreFleetMap)} />
           <Route path="stores" element={withSuspense(TyreStores)} />
-          <Route path="vehicle-view/:vehicleId" element={withSuspense(VehicleTyreView)} />
-          <Route path="vehicle-view-a/:vehicleId" element={withSuspense(VehicleTyreViewA)} />
+          <Route path="vehicle-view" element={withSuspense(VehicleTyreView)} />
           <Route path="mobile" element={withSuspense(TyreMobilePage)} />
         </Route>
 
-        {/* Customers / Analytics */}
-        <Route path="customers">
-          <Route index element={withSuspense(CustomerDashboard)} />
-          <Route path="dashboard" element={withSuspense(CustomerDashboard)} />
-          <Route path="reports" element={withSuspense(CustomerReports)} />
-          <Route path="active" element={withSuspense(ActiveCustomers)} />
-          <Route path="detail/:id" element={withSuspense(ClientDetail)} />
-          <Route path="retention" element={withSuspense(RetentionMetrics)} />
-        </Route>
+        {/* Analytics */}
         <Route path="analytics">
           <Route index element={withSuspense(PerformanceAnalyticsPage)} />
           <Route path="vendor-scorecard" element={withSuspense(VendorScorecard)} />
@@ -359,7 +364,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="load-planning/component" element={withSuspense(LoadPlanningComponentPage)} />
         <Route path="route-planning" element={withSuspense(RoutePlanningPage)} />
         <Route path="route-optimization" element={withSuspense(RouteOptimizationPage)} />
-        <Route path="trip-calendar" element={withSuspense(TripCalendarTop)} />
+        <Route path="trip-calendar" element={withSuspense(TripCalendarPage)} />
         <Route path="incident/new" element={withSuspense(ReportNewIncidentPage)} />
         <Route path="missed-loads" element={withSuspense(MissedLoadsTracker)} />
 
