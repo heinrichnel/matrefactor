@@ -15,12 +15,13 @@ import CostForm from "../../components/forms/cost/CostForm";
 import TripPlanningForm from "../../components/forms/trips/TripPlanningForm";
 import CostList from "../../components/lists/CostList";
 import InvoiceSubmissionModal from "../../components/Models/Invoice/InvoiceSubmissionModal";
+import SystemCostGenerator from "../../components/SystemCostGenerator";
 import TripReport from "../../components/TripManagement/TripReport";
 import Button from "../../components/ui/Button";
 import { Card, CardContent, CardHeader } from "../../components/ui/Card";
 import Modal from "../../components/ui/Modal";
 import { useAppContext } from "../../context/AppContext";
-import { AdditionalCost, CostEntry, DelayReason, Trip } from "../../types";
+import { CostEntry, DelayReason, Trip } from "../../types";
 import {
   calculateKPIs,
   canCompleteTrip,
@@ -29,7 +30,6 @@ import {
   getFlaggedCostsCount,
   getUnresolvedFlagsCount,
 } from "../../utils/helpers";
-import SystemCostGenerator from "./SystemCostGenerator";
 
 interface TripDetailsProps {
   trip: Trip;
@@ -37,15 +37,8 @@ interface TripDetailsProps {
 }
 
 const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
-  const {
-    addCostEntry,
-    updateCostEntry,
-    deleteCostEntry,
-    updateTrip,
-    addAdditionalCost,
-    removeAdditionalCost,
-    addDelayReason,
-  } = useAppContext();
+  const { addCostEntry, updateCostEntry, deleteCostEntry, updateTrip, addDelayReason } =
+    useAppContext();
   const [showCostForm, setShowCostForm] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showSystemCostGenerator, setShowSystemCostGenerator] = useState(false);
@@ -257,6 +250,9 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
   };
 
   // Handle additional cost management
+  // These functions are currently not used by InvoiceSubmissionModal
+  // but kept for potential future use
+  /*
   const handleAddAdditionalCost = (cost: Omit<AdditionalCost, "id">, files?: FileList) => {
     try {
       addAdditionalCost(trip.id, cost, files);
@@ -274,6 +270,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
       alert("Error removing additional cost. Please try again.");
     }
   };
+  */
 
   const closeCostForm = () => {
     setShowCostForm(false);
@@ -774,17 +771,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
             title="Generate System Costs"
             maxWidth="2xl"
           >
-            <SystemCostGenerator
-              trip={{
-                id: trip.id,
-                distance: trip.distanceKm || 0,
-                duration: trip.duration || 0,
-                vehicleType: trip.fleetNumber || "",
-                driverId: trip.driverName || "",
-                route: trip.route || "",
-              }}
-              onGenerateSystemCosts={handleGenerateSystemCosts}
-            />
+            <SystemCostGenerator trip={trip} onGenerateSystemCosts={handleGenerateSystemCosts} />
           </Modal>
 
           <Modal
@@ -808,8 +795,6 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
           trip={trip}
           onClose={() => setShowInvoiceSubmission(false)}
           onSubmit={handleInvoiceSubmission}
-          onAddAdditionalCost={handleAddAdditionalCost}
-          onRemoveAdditionalCost={handleRemoveAdditionalCost}
         />
       )}
 

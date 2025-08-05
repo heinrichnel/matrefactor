@@ -1,24 +1,24 @@
-import React, { useState } from "react";
-import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
-import Modal from "../../components/ui/Modal";
-import { Input, Select, TextArea } from "../../components/ui/FormElements";
 import {
-  DollarSign,
-  Plus,
-  Edit,
-  Trash2,
   AlertTriangle,
-  TrendingDown,
   Calendar,
+  CheckCircle,
+  DollarSign,
+  Edit,
+  FileText,
   MapPin,
+  Plus,
+  Save,
+  Trash2,
+  TrendingDown,
   User,
   X,
-  Save,
-  CheckCircle,
-  FileText,
 } from "lucide-react";
-import { MissedLoad, MISSED_LOAD_REASONS, CLIENTS } from "../../types";
+import React, { useState } from "react";
+import Button from "../../components/ui/Button";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import { Input, Select, TextArea } from "../../components/ui/FormElements";
+import Modal from "../../components/ui/Modal";
+import { CLIENTS, MISSED_LOAD_REASONS, MissedLoad } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 
 interface MissedLoadsTrackerProps {
@@ -515,7 +515,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                       </Button>
                       <Button
                         size="sm"
-                        variant="destructive"
+                        variant="danger"
                         onClick={() => handleDelete(load.id)}
                         icon={<Trash2 className="w-3 h-3 mr-1" />}
                       >
