@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link, Outlet } from 'react-router-dom';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
+import React from "react";
+import { Link, Outlet } from "react-router-dom";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 
 /**
  * This is a test wrapper for all of our form components and pages
@@ -15,52 +15,52 @@ const FormsTestWrapper: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="mb-4">
-            Use this page to test all form components that have been refactored with the new architecture.
-            Select from the links below to test different form components.
+            Use this page to test all form components that have been refactored with the new
+            architecture. Select from the links below to test different form components.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link 
-              to="/forms-test/drivers" 
+            <Link
+              to="/forms-test/drivers"
               className="bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold p-4 rounded flex flex-col items-center justify-center text-center"
             >
               <span className="text-xl mb-2">👤</span>
               Driver Form
             </Link>
-            
-            <Link 
-              to="/forms-test/clients" 
+
+            <Link
+              to="/forms-test/clients"
               className="bg-green-100 hover:bg-green-200 text-green-700 font-semibold p-4 rounded flex flex-col items-center justify-center text-center"
             >
               <span className="text-xl mb-2">🏢</span>
               Client Form
             </Link>
-            
-            <Link 
-              to="/forms-test/vehicles" 
+
+            <Link
+              to="/forms-test/vehicles"
               className="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 font-semibold p-4 rounded flex flex-col items-center justify-center text-center"
             >
               <span className="text-xl mb-2">🚚</span>
               Vehicle Form
             </Link>
-            
-            <Link 
-              to="/forms-test/trips" 
+
+            <Link
+              to="/forms-test/trips"
               className="bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold p-4 rounded flex flex-col items-center justify-center text-center"
             >
               <span className="text-xl mb-2">🛣️</span>
               Trip Form
             </Link>
-            
-            <Link 
-              to="/forms-test/invoices" 
+
+            <Link
+              to="/forms-test/invoices"
               className="bg-red-100 hover:bg-red-200 text-red-700 font-semibold p-4 rounded flex flex-col items-center justify-center text-center"
             >
               <span className="text-xl mb-2">📄</span>
               Invoice Form
             </Link>
-            
-            <Link 
-              to="/forms-test/diesel" 
+
+            <Link
+              to="/forms-test/diesel"
               className="bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold p-4 rounded flex flex-col items-center justify-center text-center"
             >
               <span className="text-xl mb-2">⛽</span>
@@ -78,7 +78,7 @@ const FormsTestWrapper: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* This will render the child route component */}
       <Outlet />
     </div>

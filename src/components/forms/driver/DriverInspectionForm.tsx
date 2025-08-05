@@ -1,55 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Clipboard, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
-import { useFleetData, Vehicle } from '../../hooks/useFleetData';
-import Button from '../../components/ui/Button';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { firestore } from '../../firebase';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Clipboard, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
+import { useFleetData, Vehicle } from "../../../hooks/useFleetData";
+import Button from "../../ui/Button";
+import Card, { CardContent, CardHeader } from "../../ui/Card";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { firestore } from "../../../firebase";
 
 interface InspectionItem {
   name: string;
-  status: 'passed' | 'failed' | null;
+  status: "passed" | "failed" | null;
   comments: string;
 }
 
 const defaultInspectionItems: InspectionItem[] = [
-  { name: 'Tire Pressure', status: null, comments: '' },
-  { name: 'Lights (Headlights, Brake Lights, Turn Signals)', status: null, comments: '' },
-  { name: 'Oil Level', status: null, comments: '' },
-  { name: 'Brake Fluid', status: null, comments: '' },
-  { name: 'Windshield Wipers & Fluid', status: null, comments: '' },
-  { name: 'Horn', status: null, comments: '' },
-  { name: 'Seat Belts', status: null, comments: '' },
-  { name: 'Mirrors', status: null, comments: '' },
-  { name: 'Fuel Level', status: null, comments: '' },
-  { name: 'Body Damage', status: null, comments: '' }
+  { name: "Tire Pressure", status: null, comments: "" },
+  { name: "Lights (Headlights, Brake Lights, Turn Signals)", status: null, comments: "" },
+  { name: "Oil Level", status: null, comments: "" },
+  { name: "Brake Fluid", status: null, comments: "" },
+  { name: "Windshield Wipers & Fluid", status: null, comments: "" },
+  { name: "Horn", status: null, comments: "" },
+  { name: "Seat Belts", status: null, comments: "" },
+  { name: "Mirrors", status: null, comments: "" },
+  { name: "Fuel Level", status: null, comments: "" },
+  { name: "Body Damage", status: null, comments: "" },
 ];
 
 const DriverInspectionForm: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const fleetNumber = searchParams.get('fleet');
+  const fleetNumber = searchParams.get("fleet");
   const navigate = useNavigate();
-  
+
   const { vehicles, loading } = useFleetData();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  
-  const [driverName, setDriverName] = useState('');
+
+  const [driverName, setDriverName] = useState("");
   const [inspectionItems, setInspectionItems] = useState<InspectionItem[]>(defaultInspectionItems);
-  const [additionalComments, setAdditionalComments] = useState('');
+  const [additionalComments, setAdditionalComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+
   useEffect(() => {
     if (vehicles && fleetNumber) {
-      const foundVehicle = vehicles.find(v => v.fleetNumber === fleetNumber);
+      const foundVehicle = vehicles.find((v) => v.fleetNumber === fleetNumber);
       if (foundVehicle) {
         setVehicle(foundVehicle);
       }
     }
   }, [vehicles, fleetNumber]);
 
-  const handleStatusChange = (index: number, status: 'passed' | 'failed') => {
+  const handleStatusChange = (index: number, status: "passed" | "failed") => {
     const updatedItems = [...inspectionItems];
     updatedItems[index].status = status;
     setInspectionItems(updatedItems);
@@ -62,21 +62,18 @@ const DriverInspectionForm: React.FC = () => {
   };
 
   const isFormValid = () => {
-    return (
-      driverName.trim() !== '' &&
-      inspectionItems.every(item => item.status !== null)
-    );
+    return driverName.trim() !== "" && inspectionItems.every((item) => item.status !== null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!vehicle || !isFormValid()) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const inspectionData = {
         driverName,
@@ -88,13 +85,13 @@ const DriverInspectionForm: React.FC = () => {
         additionalComments,
         timestamp: serverTimestamp(),
       };
-      
-      await addDoc(collection(firestore, 'inspections'), inspectionData);
-      
+
+      await addDoc(collection(firestore, "inspections"), inspectionData);
+
       setIsSubmitted(true);
     } catch (error) {
-      console.error('Error submitting inspection:', error);
-      alert('Error submitting inspection. Please try again.');
+      console.error("Error submitting inspection:", error);
+      alert("Error submitting inspection. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -115,8 +112,10 @@ const DriverInspectionForm: React.FC = () => {
           <div className="text-center">
             <XCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
             <h2 className="text-xl font-semibold text-red-600 mb-2">Vehicle Not Found</h2>
-            <p className="mb-4">The fleet number provided is invalid or does not exist in the system.</p>
-            <Button onClick={onClick}>Return to Workshop</Button>
+            <p className="mb-4">
+              The fleet number provided is invalid or does not exist in the system.
+            </p>
+            <Button onClick={() => navigate("/workshop")}>Return to Workshop</Button>
           </div>
         </CardContent>
       </Card>
@@ -131,12 +130,16 @@ const DriverInspectionForm: React.FC = () => {
             <CheckCircle2 className="w-12 h-12 mx-auto text-green-500 mb-4" />
             <h2 className="text-xl font-semibold text-green-600 mb-2">Inspection Submitted</h2>
             <p className="mb-4">Thank you for completing the vehicle inspection.</p>
-            <Button onClick={() => {
-              setInspectionItems(defaultInspectionItems);
-              setDriverName('');
-              setAdditionalComments('');
-              setIsSubmitted(false);
-            }}>Complete Another Inspection</Button>
+            <Button
+              onClick={() => {
+                setInspectionItems(defaultInspectionItems);
+                setDriverName("");
+                setAdditionalComments("");
+                setIsSubmitted(false);
+              }}
+            >
+              Complete Another Inspection
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -153,18 +156,18 @@ const DriverInspectionForm: React.FC = () => {
               <h2 className="text-xl font-bold">Driver Inspection Form</h2>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-1" 
-                onClick={() => navigate('/workshop/inspection-history')}
+              <Button
+                variant="outline"
+                className="flex items-center gap-1"
+                onClick={() => navigate("/workshop/inspection-history")}
               >
                 <Clipboard className="w-4 h-4" />
                 View Inspection History
               </Button>
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-1" 
-                onClick={onClick}
+              <Button
+                variant="outline"
+                className="flex items-center gap-1"
+                onClick={() => navigate("/workshop")}
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Workshop
@@ -220,29 +223,29 @@ const DriverInspectionForm: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={onClick}
+                          onClick={() => handleStatusChange(index, "passed")}
                           className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${
-                            item.status === 'passed' 
-                              ? 'bg-green-100 text-green-800 border border-green-300' 
-                              : 'bg-gray-100 text-gray-600'
+                            item.status === "passed"
+                              ? "bg-green-100 text-green-800 border border-green-300"
+                              : "bg-gray-100 text-gray-600"
                           }`}
                         >
                           <CheckCircle2 className="w-4 h-4" /> Pass
                         </button>
                         <button
                           type="button"
-                          onClick={onClick}
+                          onClick={() => handleStatusChange(index, "failed")}
                           className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${
-                            item.status === 'failed' 
-                              ? 'bg-red-100 text-red-800 border border-red-300' 
-                              : 'bg-gray-100 text-gray-600'
+                            item.status === "failed"
+                              ? "bg-red-100 text-red-800 border border-red-300"
+                              : "bg-gray-100 text-gray-600"
                           }`}
                         >
                           <XCircle className="w-4 h-4" /> Fail
                         </button>
                       </div>
                     </div>
-                    {item.status === 'failed' && (
+                    {item.status === "failed" && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Comments (Required for Failed Items)
@@ -252,7 +255,7 @@ const DriverInspectionForm: React.FC = () => {
                           rows={2}
                           value={item.comments}
                           onChange={(e) => handleCommentsChange(index, e.target.value)}
-                          required={item.status === 'failed'}
+                          required={item.status === "failed"}
                         />
                       </div>
                     )}
@@ -262,7 +265,10 @@ const DriverInspectionForm: React.FC = () => {
             </div>
 
             <div className="mb-6">
-              <label htmlFor="additionalComments" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="additionalComments"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Additional Comments
               </label>
               <textarea
@@ -275,12 +281,8 @@ const DriverInspectionForm: React.FC = () => {
             </div>
 
             <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={!isFormValid() || isSubmitting}
-                className="px-6 py-2"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Inspection'}
+              <Button type="submit" disabled={!isFormValid() || isSubmitting} className="px-6 py-2">
+                {isSubmitting ? "Submitting..." : "Submit Inspection"}
               </Button>
             </div>
           </form>

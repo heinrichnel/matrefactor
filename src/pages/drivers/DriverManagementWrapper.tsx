@@ -1,5 +1,5 @@
-import React from 'react';
-import DriverManagementPage from './DriverManagementPageIntegrated';
+import React from "react";
+import DriverManagementPage from "./DriverManagementPageIntegrated";
 
 const DriverManagementWrapper: React.FC = () => {
   return (

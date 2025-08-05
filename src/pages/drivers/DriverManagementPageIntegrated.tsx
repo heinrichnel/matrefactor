@@ -27,8 +27,8 @@ const mockDrivers = [
     emergencyContact: {
       name: "Jane Doe",
       relationship: "Wife",
-      phone: "082-555-5678"
-    }
+      phone: "082-555-5678",
+    },
   },
   {
     id: "2",
@@ -49,8 +49,8 @@ const mockDrivers = [
     emergencyContact: {
       name: "Mike Smith",
       relationship: "Husband",
-      phone: "083-555-1234"
-    }
+      phone: "083-555-1234",
+    },
   },
   {
     id: "3",
@@ -97,15 +97,15 @@ const DriverManagementPage: React.FC = () => {
   const handleAddDriver = async (driverData: DriverData): Promise<void> => {
     setProcessing(true);
     setErrorMessage(null);
-    
+
     try {
       // In a real app, this would be handled by the form's submit handler
       // For the mock version, just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       setSubmitSuccess(true);
       setShowDriverForm(false);
-      
+
       // Reset success message after delay
       setTimeout(() => {
         setSubmitSuccess(null);
@@ -117,7 +117,8 @@ const DriverManagementPage: React.FC = () => {
     } finally {
       setProcessing(false);
     }
-  };  const handleEditDriver = (driver: any) => {
+  };
+  const handleEditDriver = (driver: any) => {
     setSelectedDriver(driver);
     setShowDriverForm(true);
   };

@@ -1,124 +1,124 @@
-import React, { useState } from 'react';
-import { PlusCircle, Building, Search, Filter } from 'lucide-react';
-import Modal from '../../components/ui/Modal';
-import Button from '../../components/ui/Button';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import { ClientData } from '../../hooks/useClientFormData';
-import ClientForm from '../../components/forms/client/ClientForm';
+import { Building, Filter, PlusCircle, Search } from "lucide-react";
+import React, { useState } from "react";
+import ClientForm from "../../components/forms/client/ClientForm";
+import Button from "../../components/ui/Button";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import Modal from "../../components/ui/Modal";
+import { ClientData } from "../../hooks/useClientFormData";
 
 // Mock data for clients
 const mockClients = [
   {
-    id: '1',
-    companyName: 'ABC Logistics',
-    tradingAs: 'ABC Transport',
-    registrationNumber: 'ABC123456',
-    vatNumber: '4530123456',
-    phone: '011-555-1234',
-    email: 'info@abclogistics.co.za',
-    website: 'www.abclogistics.co.za',
+    id: "1",
+    companyName: "ABC Logistics",
+    tradingAs: "ABC Transport",
+    registrationNumber: "ABC123456",
+    vatNumber: "4530123456",
+    phone: "011-555-1234",
+    email: "info@abclogistics.co.za",
+    website: "www.abclogistics.co.za",
     address: {
-      street: '123 Freight Lane',
-      city: 'Johannesburg',
-      province: 'Gauteng',
-      postalCode: '2001',
-      country: 'South Africa'
+      street: "123 Freight Lane",
+      city: "Johannesburg",
+      province: "Gauteng",
+      postalCode: "2001",
+      country: "South Africa",
     },
-    industry: 'Logistics',
-    paymentTerms: 'net30',
+    industry: "Logistics",
+    paymentTerms: "net30",
     creditLimit: 50000,
-    status: 'active' as const,
+    status: "active" as const,
     contacts: [
       {
-        name: 'John Smith',
-        position: 'Operations Manager',
-        phone: '082-555-1234',
-        email: 'john@abclogistics.co.za',
-        isPrimary: true
-      }
-    ]
+        name: "John Smith",
+        position: "Operations Manager",
+        phone: "082-555-1234",
+        email: "john@abclogistics.co.za",
+        isPrimary: true,
+      },
+    ],
   },
   {
-    id: '2',
-    companyName: 'XYZ Mining',
-    tradingAs: 'XYZ Resources',
-    registrationNumber: 'XYZ789012',
-    vatNumber: '4690789012',
-    phone: '012-555-6789',
-    email: 'info@xyzmining.co.za',
-    website: 'www.xyzmining.co.za',
+    id: "2",
+    companyName: "XYZ Mining",
+    tradingAs: "XYZ Resources",
+    registrationNumber: "XYZ789012",
+    vatNumber: "4690789012",
+    phone: "012-555-6789",
+    email: "info@xyzmining.co.za",
+    website: "www.xyzmining.co.za",
     address: {
-      street: '456 Mineral Avenue',
-      city: 'Pretoria',
-      province: 'Gauteng',
-      postalCode: '0001',
-      country: 'South Africa'
+      street: "456 Mineral Avenue",
+      city: "Pretoria",
+      province: "Gauteng",
+      postalCode: "0001",
+      country: "South Africa",
     },
-    industry: 'Mining',
-    paymentTerms: 'net60',
+    industry: "Mining",
+    paymentTerms: "net60",
     creditLimit: 100000,
-    status: 'active' as const
+    status: "active" as const,
   },
   {
-    id: '3',
-    companyName: 'Cape Fresh Produce',
-    tradingAs: 'Cape Fresh',
-    registrationNumber: 'CFP345678',
-    vatNumber: '4870345678',
-    phone: '021-555-9012',
-    email: 'orders@capefresh.co.za',
-    website: 'www.capefresh.co.za',
+    id: "3",
+    companyName: "Cape Fresh Produce",
+    tradingAs: "Cape Fresh",
+    registrationNumber: "CFP345678",
+    vatNumber: "4870345678",
+    phone: "021-555-9012",
+    email: "orders@capefresh.co.za",
+    website: "www.capefresh.co.za",
     address: {
-      street: '789 Harvest Road',
-      city: 'Cape Town',
-      province: 'Western Cape',
-      postalCode: '8001',
-      country: 'South Africa'
+      street: "789 Harvest Road",
+      city: "Cape Town",
+      province: "Western Cape",
+      postalCode: "8001",
+      country: "South Africa",
     },
-    industry: 'Agriculture',
-    paymentTerms: 'cod',
+    industry: "Agriculture",
+    paymentTerms: "cod",
     creditLimit: 25000,
-    status: 'inactive' as const
-  }
+    status: "inactive" as const,
+  },
 ];
 
 const ClientManagementPage: React.FC = () => {
   const [showClientForm, setShowClientForm] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [industryFilter, setIndustryFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [industryFilter, setIndustryFilter] = useState("all");
   const [clients] = useState(mockClients);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
-  
+
   // Filter clients based on search query, status filter, and industry filter
-  const filteredClients = clients.filter(client => {
-    const matchesSearch = 
+  const filteredClients = clients.filter((client) => {
+    const matchesSearch =
       client.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (client.tradingAs && client.tradingAs.toLowerCase().includes(searchQuery.toLowerCase())) ||
       client.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (client.vatNumber && client.vatNumber.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-    const matchesStatus = statusFilter === 'all' || client.status === statusFilter;
-    const matchesIndustry = industryFilter === 'all' || client.industry === industryFilter;
-    
+
+    const matchesStatus = statusFilter === "all" || client.status === statusFilter;
+    const matchesIndustry = industryFilter === "all" || client.industry === industryFilter;
+
     return matchesSearch && matchesStatus && matchesIndustry;
   });
 
   const handleAddClient = async (clientData: any): Promise<void> => {
     setIsSubmitting(true);
     setErrorMessage(null);
-    
+
     try {
       // In a real app, this would be handled by the form's submit handler
       // For the mock version, just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       setSubmitSuccess(true);
       setShowClientForm(false);
-      
+
       // Reset success message after delay
       setTimeout(() => {
         setSubmitSuccess(null);
@@ -136,25 +136,25 @@ const ClientManagementPage: React.FC = () => {
     setSelectedClient(client);
     setShowClientForm(true);
   };
-  
+
   // Get status badge color
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'inactive':
-        return 'bg-gray-100 text-gray-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'blacklisted':
-        return 'bg-red-100 text-red-800';
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "inactive":
+        return "bg-gray-100 text-gray-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "blacklisted":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
-  
+
   // Get a list of unique industries for filtering
-  const industries = Array.from(new Set(clients.map(client => client.industry).filter(Boolean)));
+  const industries = Array.from(new Set(clients.map((client) => client.industry).filter(Boolean)));
 
   return (
     <div className="container mx-auto p-4">
@@ -162,8 +162,8 @@ const ClientManagementPage: React.FC = () => {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Building className="h-6 w-6" /> Client Management
         </h1>
-        
-        <Button 
+
+        <Button
           onClick={() => {
             setSelectedClient(null);
             setShowClientForm(true);
@@ -180,7 +180,9 @@ const ClientManagementPage: React.FC = () => {
         <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
           <div className="flex">
             <div>
-              <p className="text-sm text-green-700">Client was {selectedClient ? 'updated' : 'added'} successfully!</p>
+              <p className="text-sm text-green-700">
+                Client was {selectedClient ? "updated" : "added"} successfully!
+              </p>
             </div>
           </div>
         </div>
@@ -213,7 +215,7 @@ const ClientManagementPage: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             <div className="flex items-center">
               <Filter className="h-5 w-5 text-gray-400 mr-2" />
               <select
@@ -228,7 +230,7 @@ const ClientManagementPage: React.FC = () => {
                 <option value="blacklisted">Blacklisted</option>
               </select>
             </div>
-            
+
             <div className="flex items-center">
               <Filter className="h-5 w-5 text-gray-400 mr-2" />
               <select
@@ -237,8 +239,10 @@ const ClientManagementPage: React.FC = () => {
                 onChange={(e) => setIndustryFilter(e.target.value)}
               >
                 <option value="all">All Industries</option>
-                {industries.map(industry => (
-                  <option key={industry} value={industry}>{industry}</option>
+                {industries.map((industry) => (
+                  <option key={industry} value={industry}>
+                    {industry}
+                  </option>
                 ))}
               </select>
             </div>
@@ -257,15 +261,15 @@ const ClientManagementPage: React.FC = () => {
               <Building className="w-16 h-16 mx-auto mb-4 opacity-30" />
               <p className="text-lg font-medium">No clients found</p>
               <p className="text-sm mt-2">
-                {searchQuery || statusFilter !== 'all' || industryFilter !== 'all'
-                  ? 'Try changing your search or filter criteria' 
-                  : 'Start by adding a new client'}
+                {searchQuery || statusFilter !== "all" || industryFilter !== "all"
+                  ? "Try changing your search or filter criteria"
+                  : "Start by adding a new client"}
               </p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
               {filteredClients.map((client) => (
-                <div 
+                <div
                   key={client.id}
                   className="py-4 hover:bg-gray-50 transition cursor-pointer"
                   onClick={() => handleEditClient(client)}
@@ -274,15 +278,26 @@ const ClientManagementPage: React.FC = () => {
                     <div>
                       <h3 className="font-medium text-lg">
                         {client.companyName}
-                        {client.tradingAs && <span className="text-gray-500 text-sm ml-2">t/a {client.tradingAs}</span>}
+                        {client.tradingAs && (
+                          <span className="text-gray-500 text-sm ml-2">t/a {client.tradingAs}</span>
+                        )}
                       </h3>
                       <div className="text-sm text-gray-500">
-                        <p>Reg: {client.registrationNumber} {client.vatNumber && `• VAT: ${client.vatNumber}`}</p>
-                        <p>{client.phone} • {client.email}</p>
-                        <p>{client.address.street}, {client.address.city}, {client.address.province}</p>
+                        <p>
+                          Reg: {client.registrationNumber}{" "}
+                          {client.vatNumber && `• VAT: ${client.vatNumber}`}
+                        </p>
+                        <p>
+                          {client.phone} • {client.email}
+                        </p>
+                        <p>
+                          {client.address.street}, {client.address.city}, {client.address.province}
+                        </p>
                       </div>
                       <div className="flex mt-2 gap-2">
-                        <span className={`text-xs px-2 py-1 rounded ${getStatusColor(client.status)}`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${getStatusColor(client.status)}`}
+                        >
                           {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
                         </span>
                         {client.industry && (
@@ -294,7 +309,8 @@ const ClientManagementPage: React.FC = () => {
                     </div>
                     <div className="text-sm text-right">
                       <div>
-                        <span className="font-medium">Payment Terms:</span> {client.paymentTerms.replace(/^net/i, 'Net ')}
+                        <span className="font-medium">Payment Terms:</span>{" "}
+                        {client.paymentTerms.replace(/^net/i, "Net ")}
                       </div>
                       {client.creditLimit && (
                         <div className="text-gray-500">
@@ -323,7 +339,7 @@ const ClientManagementPage: React.FC = () => {
         title={selectedClient ? "Edit Client" : "Add New Client"}
         maxWidth="2xl"
       >
-        <ClientForm 
+        <ClientForm
           isOpen={showClientForm}
           onClose={() => setShowClientForm(false)}
           initialValues={selectedClient || {}}

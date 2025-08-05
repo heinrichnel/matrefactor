@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Trip, DelayReason } from "../../types";
+import { Trip, DelayReason } from "../../../types";
 
 interface TripPlanningFormProps {
   trip: Trip;
@@ -30,7 +30,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
           fieldChanged: field as string,
           oldValue: String((prev as any)[field] ?? ""),
           newValue: String(value),
-          changeType: 'update',
+          changeType: "update",
         },
       ]);
       onUpdate(updated);
@@ -57,29 +57,37 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
     setDelaySeverity("");
   };
 
-  const formatDate = (dt?: string) =>
-    dt ? new Date(dt).toLocaleString() : "N/A";
+  const formatDate = (dt?: string) => (dt ? new Date(dt).toLocaleString() : "N/A");
 
   // Timeline points using real Trip fields
   const timeline = [
-    { label: "Planned Departure", date: localTrip.plannedDepartureDateTime, actual: localTrip.actualDepartureDateTime },
-    { label: "Planned Arrival", date: localTrip.plannedArrivalDateTime, actual: localTrip.actualArrivalDateTime },
-    { label: "Planned Offload", date: localTrip.plannedOffloadDateTime, actual: localTrip.actualOffloadDateTime },
+    {
+      label: "Planned Departure",
+      date: localTrip.plannedDepartureDateTime,
+      actual: localTrip.actualDepartureDateTime,
+    },
+    {
+      label: "Planned Arrival",
+      date: localTrip.plannedArrivalDateTime,
+      actual: localTrip.actualArrivalDateTime,
+    },
+    {
+      label: "Planned Offload",
+      date: localTrip.plannedOffloadDateTime,
+      actual: localTrip.actualOffloadDateTime,
+    },
   ];
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
       <h2 className="text-xl font-bold mb-4">Trip Planning & Timeline</h2>
-      <form
-        onSubmit={e => e.preventDefault()}
-        className="grid grid-cols-1 gap-4"
-      >
+      <form onSubmit={(e) => e.preventDefault()} className="grid grid-cols-1 gap-4">
         <div>
           <label className="block font-semibold mb-1">Route</label>
           <input
             className="border rounded p-2 w-full"
             value={localTrip.route}
-            onChange={e => handleChange("route", e.target.value)}
+            onChange={(e) => handleChange("route", e.target.value)}
             required
           />
         </div>
@@ -88,7 +96,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
           <input
             className="border rounded p-2 w-full"
             value={localTrip.driverName}
-            onChange={e => handleChange("driverName", e.target.value)}
+            onChange={(e) => handleChange("driverName", e.target.value)}
             required
           />
         </div>
@@ -97,7 +105,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
           <input
             className="border rounded p-2 w-full"
             value={localTrip.fleetNumber}
-            onChange={e => handleChange("fleetNumber", e.target.value)}
+            onChange={(e) => handleChange("fleetNumber", e.target.value)}
             required
           />
         </div>
@@ -108,7 +116,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               type="datetime-local"
               className="border rounded p-2 w-full"
               value={localTrip.plannedDepartureDateTime?.slice(0, 16) || ""}
-              onChange={e => handleChange("plannedDepartureDateTime", e.target.value)}
+              onChange={(e) => handleChange("plannedDepartureDateTime", e.target.value)}
             />
           </div>
           <div>
@@ -117,7 +125,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               type="datetime-local"
               className="border rounded p-2 w-full"
               value={localTrip.actualDepartureDateTime?.slice(0, 16) || ""}
-              onChange={e => handleChange("actualDepartureDateTime", e.target.value)}
+              onChange={(e) => handleChange("actualDepartureDateTime", e.target.value)}
             />
           </div>
         </div>
@@ -128,7 +136,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               type="datetime-local"
               className="border rounded p-2 w-full"
               value={localTrip.plannedArrivalDateTime?.slice(0, 16) || ""}
-              onChange={e => handleChange("plannedArrivalDateTime", e.target.value)}
+              onChange={(e) => handleChange("plannedArrivalDateTime", e.target.value)}
             />
           </div>
           <div>
@@ -137,7 +145,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               type="datetime-local"
               className="border rounded p-2 w-full"
               value={localTrip.actualArrivalDateTime?.slice(0, 16) || ""}
-              onChange={e => handleChange("actualArrivalDateTime", e.target.value)}
+              onChange={(e) => handleChange("actualArrivalDateTime", e.target.value)}
             />
           </div>
         </div>
@@ -148,7 +156,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               type="datetime-local"
               className="border rounded p-2 w-full"
               value={localTrip.plannedOffloadDateTime?.slice(0, 16) || ""}
-              onChange={e => handleChange("plannedOffloadDateTime", e.target.value)}
+              onChange={(e) => handleChange("plannedOffloadDateTime", e.target.value)}
             />
           </div>
           <div>
@@ -157,7 +165,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               type="datetime-local"
               className="border rounded p-2 w-full"
               value={localTrip.actualOffloadDateTime?.slice(0, 16) || ""}
-              onChange={e => handleChange("actualOffloadDateTime", e.target.value)}
+              onChange={(e) => handleChange("actualOffloadDateTime", e.target.value)}
             />
           </div>
         </div>
@@ -166,7 +174,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
           <select
             className="border rounded p-2 w-full"
             value={localTrip.status}
-            onChange={e => handleChange("status", e.target.value)}
+            onChange={(e) => handleChange("status", e.target.value)}
           >
             <option value="active">Active</option>
             <option value="completed">Completed</option>
@@ -179,16 +187,12 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
           <textarea
             className="border rounded p-2 w-full"
             value={localTrip.description || ""}
-            onChange={e => handleChange("description", e.target.value)}
+            onChange={(e) => handleChange("description", e.target.value)}
             rows={2}
           />
         </div>
         <div className="flex gap-2">
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={onClick}
-          >
+          <button type="button" className="btn-secondary" onClick={() => setDelayModal(true)}>
             Add Delay Reason
           </button>
         </div>
@@ -204,9 +208,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
                 <div className="font-medium">{point.label}</div>
                 <div className="text-gray-700">{formatDate(point.date)}</div>
                 {point.actual && (
-                  <div className="text-green-700 text-xs">
-                    Actual: {formatDate(point.actual)}
-                  </div>
+                  <div className="text-green-700 text-xs">Actual: {formatDate(point.actual)}</div>
                 )}
               </div>
               {i < timeline.length - 1 && (
@@ -242,7 +244,8 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
           <ul>
             {auditLog.map((entry, i) => (
               <li key={i} className="text-xs">
-                [{formatDate(entry.editedAt)}] <b>{entry.editedBy}</b>: {entry.reason} (Field: {entry.fieldChanged}, {entry.oldValue} → {entry.newValue})
+                [{formatDate(entry.editedAt)}] <b>{entry.editedBy}</b>: {entry.reason} (Field:{" "}
+                {entry.fieldChanged}, {entry.oldValue} → {entry.newValue})
               </li>
             ))}
           </ul>
@@ -261,7 +264,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               <select
                 className="border rounded p-2 w-full mb-2"
                 value={delayType}
-                onChange={e => setDelayType(e.target.value as DelayReason["delayType"])}
+                onChange={(e) => setDelayType(e.target.value as DelayReason["delayType"])}
               >
                 <option value="">Select Type</option>
                 <option value="border_delays">Border Delays</option>
@@ -278,7 +281,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               <input
                 className="border rounded p-2 w-full mb-2"
                 value={delayDescription}
-                onChange={e => setDelayDescription(e.target.value)}
+                onChange={(e) => setDelayDescription(e.target.value)}
               />
             </div>
             <div>
@@ -287,7 +290,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
                 type="number"
                 className="border rounded p-2 w-full mb-2"
                 value={delayDuration}
-                onChange={e => setDelayDuration(Number(e.target.value))}
+                onChange={(e) => setDelayDuration(Number(e.target.value))}
                 min={0}
               />
             </div>
@@ -296,7 +299,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               <select
                 className="border rounded p-2 w-full mb-2"
                 value={delaySeverity}
-                onChange={e => setDelaySeverity(e.target.value as DelayReason["severity"])}
+                onChange={(e) => setDelaySeverity(e.target.value as DelayReason["severity"])}
               >
                 <option value="">Select Severity</option>
                 <option value="minor">Minor</option>
@@ -306,13 +309,10 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ trip, onUpdate, onA
               </select>
             </div>
             <div className="flex gap-2 mt-4">
-              <button className="btn-primary" onClick={onClick} onClick={() => {}}>
+              <button className="btn-primary" onClick={addDelay}>
                 Add
               </button>
-              <button
-                className="btn-secondary"
-                onClick={onClick}
-              >
+              <button className="btn-secondary" onClick={() => setDelayModal(false)}>
                 Cancel
               </button>
             </div>

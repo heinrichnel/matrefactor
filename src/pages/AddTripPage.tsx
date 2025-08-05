@@ -1,7 +1,7 @@
 import { Truck } from "lucide-react";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import TripForm from "../components/forms/trips/TripForm";
+import { TripForm } from "../../forms/trip/TripForm";
 import Card, { CardContent, CardHeader } from "../components/ui/Card";
 
 /**

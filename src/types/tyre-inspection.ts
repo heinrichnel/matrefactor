@@ -1,4 +1,4 @@
-import { TyreConditionStatus } from './workshop-tyre-inventory';
+import { TyreConditionStatus } from "./workshop-tyre-inventory";
 
 /**
  * Tyre Inspection Data: for form submission and basic frontend data
@@ -12,7 +12,7 @@ export interface TyreInspectionData {
   distanceTraveled: number;
   treadDepth: string;
   pressure: string;
-  condition: TyreConditionStatus | '';
+  condition: TyreConditionStatus | "";
   damage: string;
   notes: string;
   voiceNotes: string[];

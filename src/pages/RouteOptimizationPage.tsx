@@ -1,8 +1,10 @@
-import React from 'react';
-import Card, { CardContent, CardHeader } from '../components/ui/Card';
-import { TrendingUp, Clock, AlertTriangle, BarChart } from 'lucide-react';
-import Button from '../components/ui/Button';
-import { useAppContext } from '../context/AppContext';
+import { AlertTriangle, BarChart, Clock, TrendingUp } from "lucide-react";
+import React from "react";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import CardContent from "../components/ui/CardContent";
+import CardHeader from "../components/ui/CardHeader";
+import { useAppContext } from "../context/AppContext";
 
 const RouteOptimizationPage: React.FC = () => {
   const { isLoading } = useAppContext();
@@ -15,16 +17,10 @@ const RouteOptimizationPage: React.FC = () => {
           <p className="text-gray-600">Optimize routes to reduce costs and improve efficiency</p>
         </div>
         <div className="flex space-x-2">
-          <Button 
-            variant="outline"
-            icon={<BarChart className="w-4 h-4" />}
-          >
+          <Button variant="outline" icon={<BarChart className="w-4 h-4" />}>
             View Analytics
           </Button>
-          <Button 
-            icon={<TrendingUp className="w-4 h-4" />}
-            disabled={isLoading.trips}
-          >
+          <Button icon={<TrendingUp className="w-4 h-4" />} disabled={isLoading.trips}>
             Run Optimization
           </Button>
         </div>
@@ -78,35 +74,58 @@ const RouteOptimizationPage: React.FC = () => {
 
       {/* Routes to Optimize */}
       <Card>
-        <CardHeader title="Routes Recommended for Optimization" />
+        <CardHeader>
+          <h3 className="text-lg font-medium">Routes Recommended for Optimization</h3>
+        </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origin</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Distance</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Optimized Distance</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Est. Savings</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Route ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Origin
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Destination
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Current Distance
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Optimized Distance
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Est. Savings
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {[1, 2, 3, 4, 5].map((index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">RT-{1000 + index}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                      RT-{1000 + index}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Windhoek</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Walvis Bay</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{350 + index * 10} km</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{310 + index * 8} km</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${120 + index * 50}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                      >
+                      Walvis Bay
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {350 + index * 10} km
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {310 + index * 8} km
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      ${120 + index * 50}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <Button size="sm" variant="outline">
                         Apply
                       </Button>
                     </td>

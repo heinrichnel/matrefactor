@@ -1,280 +1,268 @@
-import React, { useState } from 'react';
-
-interface FormData {
-  tripNumber: string;
-  origin: string;
-  destination: string;
-  driver: string;
-  vehicle: string;
-  startDate: string;
-  startTime: string;
-  endDate: string;
-  endTime: string;
-  distance: string;
-  estimatedCost: string;
-  notes: string;
-  priority: string;
-}
+import React, { useState, useEffect } from "react";
+import { Input, Select, Textarea } from "../../ui/FormElements";
+import Button from "../../ui/Button";
+import { Trip, CLIENTS, DRIVERS } from "../../../types/index";
+import { useWialonUnits } from "../../../hooks/useWialonUnits";
 
 interface TripFormProps {
-  onSubmit: (data: FormData) => Promise<void>;
+  trip?: Trip;
+  onSubmit: (tripData: Omit<Trip, "id" | "costs" | "status" | "additionalCosts">) => void;
   onCancel: () => void;
-  initialData?: Partial<FormData>;
+  isSubmitting?: boolean;
 }
 
-const TripForm: React.FC<TripFormProps> = ({ onSubmit, onCancel, initialData = {} }) => {
-  const [formData, setFormData] = useState<FormData>({
-    tripNumber: initialData.tripNumber || `TR-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-    origin: initialData.origin || '',
-    destination: initialData.destination || '',
-    driver: initialData.driver || '',
-    vehicle: initialData.vehicle || '',
-    startDate: initialData.startDate || '',
-    startTime: initialData.startTime || '08:00',
-    endDate: initialData.endDate || '',
-    endTime: initialData.endTime || '17:00',
-    distance: initialData.distance || '',
-    estimatedCost: initialData.estimatedCost || '',
-    notes: initialData.notes || '',
-    priority: initialData.priority || 'normal'
+interface PlannedRoute {
+  origin: string;
+  destination: string;
+  waypoints: string[];
+  coordinates?: { lat: number; lng: number }[];
+  estimatedDistance?: number;
+  estimatedDuration?: number;
+}
+
+export const TripForm: React.FC<TripFormProps> = ({
+  trip,
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
+}) => {
+  const { units: wialonUnits, loading: unitsLoading, error: unitsError } = useWialonUnits(true);
+
+  const [fleetNumber, setFleetNumber] = useState("");
+  const [fleetUnitId, setFleetUnitId] = useState<number | "">("");
+  const [clientName, setClientName] = useState("");
+  const [driverName, setDriverName] = useState("");
+  const [route, setRoute] = useState("");
+  const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split("T")[0]);
+  const [description, setDescription] = useState("");
+  const [distanceKm, setDistanceKm] = useState(0);
+  const [baseRevenue, setBaseRevenue] = useState(0);
+  const [revenueCurrency, setRevenueCurrency] = useState<"USD" | "ZAR">("ZAR");
+  const [clientType, setClientType] = useState<"internal" | "external">("external");
+  const [plannedRoute, setPlannedRoute] = useState<PlannedRoute>({
+    origin: "",
+    destination: "",
+    waypoints: [],
   });
+  const [waypoint, setWaypoint] = useState("");
+  const [waypoints, setWaypoints] = useState<string[]>([]);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  useEffect(() => {
+    if (trip) {
+      setFleetNumber(trip.fleetNumber || "");
+      setFleetUnitId(
+        trip.fleetUnitId !== undefined
+          ? typeof trip.fleetUnitId === "string"
+            ? Number(trip.fleetUnitId) || ""
+            : trip.fleetUnitId
+          : ""
+      );
+      setClientName(trip.clientName || "");
+      setDriverName(trip.driverName || "");
+      setRoute(trip.route || "");
+      setStartDate(trip.startDate || new Date().toISOString().split("T")[0]);
+      setEndDate(trip.endDate || new Date().toISOString().split("T")[0]);
+      setDescription(trip.description || "");
+      setDistanceKm(trip.distanceKm || 0);
+      setBaseRevenue(trip.baseRevenue || 0);
+      setRevenueCurrency(trip.revenueCurrency || "ZAR");
+      setClientType(trip.clientType || "external");
+      setPlannedRoute(trip.plannedRoute ?? { origin: "", destination: "", waypoints: [] });
+      setWaypoints(trip.plannedRoute?.waypoints || []);
+    }
+  }, [trip]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    
-    try {
-      await onSubmit(formData);
-      // Success - let parent component handle redirection
-    } catch (err) {
-      setError('Failed to save trip data. Please try again.');
-      console.error('Error saving trip:', err);
-    } finally {
-      setLoading(false);
+  const handleAddWaypoint = () => {
+    if (waypoint.trim()) {
+      setWaypoints([...waypoints, waypoint.trim()]);
+      setWaypoint("");
     }
   };
 
+  const handleRemoveWaypoint = (index: number) => {
+    const updated = [...waypoints];
+    updated.splice(index, 1);
+    setWaypoints(updated);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      fleetNumber,
+      fleetUnitId: fleetUnitId === "" ? undefined : Number(fleetUnitId),
+      clientName,
+      driverName,
+      route,
+      startDate,
+      endDate,
+      description,
+      distanceKm,
+      baseRevenue,
+      revenueCurrency,
+      clientType,
+      plannedRoute: { ...plannedRoute, waypoints },
+      paymentStatus: trip?.paymentStatus ?? "unpaid",
+      followUpHistory: trip?.followUpHistory ?? [],
+    });
+  };
+
   return (
-    <div className="p-6 bg-white rounded-lg shadow">
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {unitsLoading && <p>Loading fleet units...</p>}
+      {unitsError && <p className="text-red-500">Error loading units.</p>}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Select
+          label="Fleet Number"
+          value={fleetNumber}
+          onChange={(e) => {
+            const selected = e.target.value;
+            setFleetNumber(selected);
+            const unit = wialonUnits.find((u: any) => u.name === selected);
+            setFleetUnitId(unit?.id ?? "");
+          }}
+          options={[
+            { value: "", label: "Select fleet number..." },
+            ...wialonUnits.map((unit: any) => ({
+              value: unit.name,
+              label: `${unit.name} (${unit.registration || "No reg"})`,
+            })),
+          ]}
+        />
+
+        <Select
+          label="Client"
+          value={clientName}
+          onChange={(e) => setClientName(e.target.value)}
+          options={CLIENTS.map((client: any) => ({ value: client.name, label: client.name }))}
+        />
+
+        <Select
+          label="Client Type"
+          value={clientType}
+          onChange={(e) => setClientType(e.target.value as "internal" | "external")}
+          options={[
+            { value: "external", label: "External" },
+            { value: "internal", label: "Internal" },
+          ]}
+        />
+
+        <Select
+          label="Driver"
+          value={driverName}
+          onChange={(e) => setDriverName(e.target.value)}
+          options={DRIVERS.map((driver: any) => ({ value: driver.name, label: driver.name }))}
+        />
+
+        <Input
+          label="Route Name"
+          value={route}
+          onChange={(e) => setRoute(e.target.value)}
+          placeholder="e.g., JHB to CPT"
+        />
+
+        <Input
+          label="Start Date"
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+
+        <Input
+          label="End Date"
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+
+        <Input
+          label="Distance (km)"
+          type="number"
+          value={distanceKm.toString()}
+          onChange={(e) => setDistanceKm(parseFloat(e.target.value) || 0)}
+        />
+
+        <Input
+          label="Base Revenue"
+          type="number"
+          value={baseRevenue.toString()}
+          onChange={(e) => setBaseRevenue(parseFloat(e.target.value) || 0)}
+        />
+
+        <Select
+          label="Currency"
+          value={revenueCurrency}
+          onChange={(e) => setRevenueCurrency(e.target.value as "USD" | "ZAR")}
+          options={[
+            { value: "ZAR", label: "ZAR" },
+            { value: "USD", label: "USD" },
+          ]}
+        />
+      </div>
+
+      <div>
+        <h3 className="text-md font-medium">Route Planning</h3>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Origin"
+            value={plannedRoute.origin}
+            onChange={(e) => setPlannedRoute({ ...plannedRoute, origin: e.target.value })}
+          />
+          <Input
+            label="Destination"
+            value={plannedRoute.destination}
+            onChange={(e) => setPlannedRoute({ ...plannedRoute, destination: e.target.value })}
+          />
         </div>
-      )}
-      
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="tripNumber" className="block text-sm font-medium mb-1">Trip Number</label>
-            <input
-              id="tripNumber"
-              name="tripNumber"
-              value={formData.tripNumber}
-              onChange={handleChange}
-              disabled
-              className="w-full px-3 py-2 border rounded-md bg-gray-100 focus:outline-none"
+
+        <div className="mt-4">
+          <label className="block font-medium mb-1">Waypoints</label>
+          <div className="flex space-x-2">
+            <Input
+              label="Waypoint"
+              value={waypoint}
+              onChange={(e) => setWaypoint(e.target.value)}
+              className="flex-1"
+              placeholder="Add waypoint"
             />
-            <p className="text-sm text-gray-500 mt-1">Auto-generated trip number</p>
+            <Button type="button" onClick={handleAddWaypoint} variant="outline">
+              Add
+            </Button>
           </div>
-          
-          <div>
-            <label htmlFor="priority" className="block text-sm font-medium mb-1">Priority</label>
-            <select
-              id="priority"
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="low">Low</option>
-              <option value="normal">Normal</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-          
-          <div>
-            <label htmlFor="origin" className="block text-sm font-medium mb-1">Origin</label>
-            <input
-              id="origin"
-              name="origin"
-              placeholder="Starting location"
-              value={formData.origin}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="destination" className="block text-sm font-medium mb-1">Destination</label>
-            <input
-              id="destination"
-              name="destination"
-              placeholder="End location"
-              value={formData.destination}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="driver" className="block text-sm font-medium mb-1">Driver</label>
-            <input
-              id="driver"
-              name="driver"
-              placeholder="Assigned driver"
-              value={formData.driver}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="vehicle" className="block text-sm font-medium mb-1">Vehicle</label>
-            <input
-              id="vehicle"
-              name="vehicle"
-              placeholder="Assigned vehicle"
-              value={formData.vehicle}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="startDate" className="block text-sm font-medium mb-1">Start Date</label>
-            <input
-              id="startDate"
-              name="startDate"
-              type="date"
-              value={formData.startDate}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="startTime" className="block text-sm font-medium mb-1">Start Time</label>
-            <input
-              id="startTime"
-              name="startTime"
-              type="time"
-              value={formData.startTime}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="endDate" className="block text-sm font-medium mb-1">End Date</label>
-            <input
-              id="endDate"
-              name="endDate"
-              type="date"
-              value={formData.endDate}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="endTime" className="block text-sm font-medium mb-1">End Time</label>
-            <input
-              id="endTime"
-              name="endTime"
-              type="time"
-              value={formData.endTime}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="distance" className="block text-sm font-medium mb-1">Distance (miles)</label>
-            <input
-              id="distance"
-              name="distance"
-              type="number"
-              min="0"
-              step="0.1"
-              placeholder="Total distance"
-              value={formData.distance}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="estimatedCost" className="block text-sm font-medium mb-1">Estimated Cost ($)</label>
-            <input
-              id="estimatedCost"
-              name="estimatedCost"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Estimated cost"
-              value={formData.estimatedCost}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div className="col-span-1 md:col-span-2">
-            <label htmlFor="notes" className="block text-sm font-medium mb-1">Notes</label>
-            <textarea
-              id="notes"
-              name="notes"
-              placeholder="Additional trip details or instructions"
-              value={formData.notes}
-              onChange={handleChange}
-              rows={4}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+
+          {waypoints.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {waypoints.map((wp, i) => (
+                <li key={i} className="flex justify-between items-center bg-gray-50 p-2 rounded">
+                  <span>{wp}</span>
+                  <Button type="button" onClick={() => handleRemoveWaypoint(i)} variant="outline">
+                    &times;
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        
-        <div className="flex justify-end space-x-4 mt-6">
-          <button 
-            type="button" 
-            onClick={onClick} 
-            disabled={loading}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {loading ? 'Saving...' : 'Save Trip'}
-          </button>
-        </div>
-      </form>
-    </div>
+      </div>
+
+      <Textarea
+        label="Description / Notes"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Additional details about this trip"
+        rows={3}
+      />
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" onClick={onCancel} variant="outline" disabled={isSubmitting}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
+          {trip ? "Update Trip" : "Create Trip"}
+        </Button>
+      </div>
+    </form>
   );
 };
-
-export default TripForm;

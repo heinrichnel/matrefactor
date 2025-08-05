@@ -770,6 +770,3 @@ const Sidebar: FC<SidebarProps> = ({ currentView, onNavigate }) => {
 };
 
 export default Sidebar;
-function openWialonDashboard(event: React.MouseEvent<HTMLButtonElement>): void {
-  throw new Error("Function not implemented.");
-}

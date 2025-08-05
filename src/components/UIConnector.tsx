@@ -258,16 +258,6 @@ const UIConnector: React.FC = () => {
     document.querySelectorAll(".ui-connector-tag").forEach((element) => element.remove());
   };
 
-  // Toggle the connector on/off
-  const toggleConnector = () => {
-    setIsActive(!isActive);
-  };
-
-  // Toggle the report display
-  const toggleReport = () => {
-    setShowReport(!showReport);
-  };
-
   // Calculate the connection percentage
   const connectionPercentage =
     status.totalElements > 0

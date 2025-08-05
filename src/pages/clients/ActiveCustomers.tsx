@@ -39,7 +39,7 @@ const ActiveCustomers: React.FC<ActiveCustomersProps> = ({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Filter and sort clients
-  const filteredClients = clients.filter((client) => {
+  const filteredClients = (clients || []).filter((client) => {
     const matchesSearch = searchTerm
       ? client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -280,7 +280,7 @@ const ActiveCustomers: React.FC<ActiveCustomersProps> = ({
                     <tr
                       key={client.id}
                       className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => onSelectClient(client.id)}
+                      onClick={() => onSelectClient && onSelectClient(client.id)}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">

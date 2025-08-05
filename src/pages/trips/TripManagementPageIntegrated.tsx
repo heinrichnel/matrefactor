@@ -1,18 +1,19 @@
 import { addDoc, collection } from "firebase/firestore";
 import { PlusCircle, Truck } from "lucide-react";
 import React, { useState } from "react";
-import TripForm, { TripFormData } from "../components/forms/trips/TripForm";
-import Button from "../components/ui/Button";
-import Modal from "../components/ui/Modal";
-import { db } from "../firebase/config";
+import { TripForm } from "../../components/forms/trips/TripForm";
+import Button from "../../components/ui/Button";
+import Modal from "../../components/ui/Modal";
+import { db } from "../../firebase/config";
+import type { Trip } from "../../types/index";
 
 const TripManagementPage: React.FC = () => {
   const [showTripForm, setShowTripForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setIsSubmitting] = useState(false); // Unused but needed for state updates
   const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleAddTrip = async (tripData: TripFormData) => {
+  const handleAddTrip = async (tripData: Omit<Trip, "id" | "costs" | "status" | "additionalCosts">) => {
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -83,9 +84,13 @@ const TripManagementPage: React.FC = () => {
         isOpen={showTripForm}
         onClose={() => setShowTripForm(false)}
         title="Add New Trip"
-        size="full"
+        maxWidth="2xl"
       >
-        <TripForm onSubmit={handleAddTrip} onCancel={() => setShowTripForm(false)} isModal={true} />
+        <TripForm 
+          onSubmit={handleAddTrip} 
+          onCancel={() => setShowTripForm(false)}
+          isSubmitting={false}
+        />
       </Modal>
 
       {/* Trip list would go here */}

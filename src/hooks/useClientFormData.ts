@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { useState } from "react";
+import { db } from "../firebase/config";
 
 export interface ClientContact {
   name: string;
@@ -38,7 +38,7 @@ export interface ClientData {
   industry?: string;
   paymentTerms: string; // e.g., "Net 30", "COD"
   creditLimit?: number;
-  status: 'active' | 'inactive' | 'pending' | 'blacklisted';
+  status: "active" | "inactive" | "pending" | "blacklisted";
   notes?: string;
   contacts?: ClientContact[];
   bankingDetails?: ClientBankingDetails;
@@ -48,129 +48,122 @@ export interface ClientData {
 
 export const usePaymentTermOptions = () => {
   return [
-    { id: 'net7', label: 'Net 7 days' },
-    { id: 'net14', label: 'Net 14 days' },
-    { id: 'net30', label: 'Net 30 days' },
-    { id: 'net60', label: 'Net 60 days' },
-    { id: 'cod', label: 'Cash on Delivery' },
-    { id: 'prepaid', label: 'Prepaid' },
-    { id: 'eom', label: 'End of Month' },
-    { id: 'custom', label: 'Custom' }
+    { id: "net7", label: "Net 7 days" },
+    { id: "net14", label: "Net 14 days" },
+    { id: "net30", label: "Net 30 days" },
+    { id: "net60", label: "Net 60 days" },
+    { id: "cod", label: "Cash on Delivery" },
+    { id: "prepaid", label: "Prepaid" },
+    { id: "eom", label: "End of Month" },
+    { id: "custom", label: "Custom" },
   ];
 };
 
 export const useIndustryOptions = () => {
   return [
-    'Agriculture',
-    'Construction',
-    'Education',
-    'Energy',
-    'Finance',
-    'Food & Beverage',
-    'Government',
-    'Healthcare',
-    'Hospitality',
-    'Information Technology',
-    'Logistics',
-    'Manufacturing',
-    'Mining',
-    'Real Estate',
-    'Retail',
-    'Services',
-    'Telecommunications',
-    'Transport',
-    'Other'
+    "Agriculture",
+    "Construction",
+    "Education",
+    "Energy",
+    "Finance",
+    "Food & Beverage",
+    "Government",
+    "Healthcare",
+    "Hospitality",
+    "Information Technology",
+    "Logistics",
+    "Manufacturing",
+    "Mining",
+    "Real Estate",
+    "Retail",
+    "Services",
+    "Telecommunications",
+    "Transport",
+    "Other",
   ];
 };
 
 export const useClientStatusOptions = () => {
   return [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
-    { value: 'pending', label: 'Pending Approval' },
-    { value: 'blacklisted', label: 'Blacklisted' }
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "pending", label: "Pending Approval" },
+    { value: "blacklisted", label: "Blacklisted" },
   ];
 };
 
 export const useBankOptions = () => {
   return [
-    'ABSA Bank',
-    'Capitec Bank',
-    'Discovery Bank',
-    'First National Bank',
-    'Investec Bank',
-    'Nedbank',
-    'Standard Bank',
-    'TymeBank',
-    'Other'
+    "ABSA Bank",
+    "Capitec Bank",
+    "Discovery Bank",
+    "First National Bank",
+    "Investec Bank",
+    "Nedbank",
+    "Standard Bank",
+    "TymeBank",
+    "Other",
   ];
 };
 
 export const useAccountTypeOptions = () => {
-  return [
-    'Current/Cheque',
-    'Savings',
-    'Business',
-    'Credit Card',
-    'Transmission',
-    'Other'
-  ];
+  return ["Current/Cheque", "Savings", "Business", "Credit Card", "Transmission", "Other"];
 };
 
 export const useCountries = () => {
   return [
-    'South Africa',
-    'Namibia',
-    'Botswana',
-    'Zimbabwe',
-    'Mozambique',
-    'Lesotho',
-    'Eswatini',
-    'Zambia',
-    'Angola',
-    'Malawi'
+    "South Africa",
+    "Namibia",
+    "Botswana",
+    "Zimbabwe",
+    "Mozambique",
+    "Lesotho",
+    "Eswatini",
+    "Zambia",
+    "Angola",
+    "Malawi",
   ];
 };
 
-export const useProvinces = (country: string = 'South Africa') => {
+export const useProvinces = (country: string = "South Africa") => {
   const provinces = {
-    'South Africa': [
-      'Eastern Cape',
-      'Free State',
-      'Gauteng',
-      'KwaZulu-Natal',
-      'Limpopo',
-      'Mpumalanga',
-      'North West',
-      'Northern Cape',
-      'Western Cape'
+    "South Africa": [
+      "Eastern Cape",
+      "Free State",
+      "Gauteng",
+      "KwaZulu-Natal",
+      "Limpopo",
+      "Mpumalanga",
+      "North West",
+      "Northern Cape",
+      "Western Cape",
     ],
-    'Namibia': [
-      'Erongo',
-      'Hardap',
-      'Karas',
-      'Kavango East',
-      'Kavango West',
-      'Khomas',
-      'Kunene',
-      'Ohangwena',
-      'Omaheke',
-      'Omusati',
-      'Oshana',
-      'Oshikoto',
-      'Otjozondjupa',
-      'Zambezi'
+    Namibia: [
+      "Erongo",
+      "Hardap",
+      "Karas",
+      "Kavango East",
+      "Kavango West",
+      "Khomas",
+      "Kunene",
+      "Ohangwena",
+      "Omaheke",
+      "Omusati",
+      "Oshana",
+      "Oshikoto",
+      "Otjozondjupa",
+      "Zambezi",
     ],
-    'Botswana': [
-      'Central',
-      'Ghanzi',
-      'Kgalagadi',
-      'Kgatleng',
-      'Kweneng',
-      'North-East',
-      'North-West',
-      'South-East',
-      'Southern'
+    Botswana: [
+      "Central",
+      "Ghanzi",
+      "Kgalagadi",
+      "Kgatleng",
+      "Kweneng",
+      "North-East",
+      "North-West",
+      "South-East",
+      "Southern",
     ],
     // Add more countries as needed
   };
@@ -182,16 +175,19 @@ export const useClientFormData = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const checkDuplicateRegistrationNumber = async (regNumber: string, excludeId?: string): Promise<boolean> => {
+  const checkDuplicateRegistrationNumber = async (
+    regNumber: string,
+    excludeId?: string
+  ): Promise<boolean> => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const clientsRef = collection(db, 'clients');
-      let q = query(clientsRef, where('registrationNumber', '==', regNumber));
-      
+      const clientsRef = collection(db, "clients");
+      const q = query(clientsRef, where("registrationNumber", "==", regNumber));
+
       const querySnapshot = await getDocs(q);
-      
+
       // Check if there are any documents with the same regNumber, excluding the current client
       let isDuplicate = false;
       querySnapshot.forEach((doc) => {
@@ -199,28 +195,33 @@ export const useClientFormData = () => {
           isDuplicate = true;
         }
       });
-      
+
       return isDuplicate;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('An error occurred checking duplicate registration'));
+      setError(
+        err instanceof Error ? err : new Error("An error occurred checking duplicate registration")
+      );
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const checkDuplicateVATNumber = async (vatNumber: string, excludeId?: string): Promise<boolean> => {
+  const checkDuplicateVATNumber = async (
+    vatNumber: string,
+    excludeId?: string
+  ): Promise<boolean> => {
     if (!vatNumber) return false;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
-      const clientsRef = collection(db, 'clients');
-      let q = query(clientsRef, where('vatNumber', '==', vatNumber));
-      
+      const clientsRef = collection(db, "clients");
+      const q = query(clientsRef, where("vatNumber", "==", vatNumber));
+
       const querySnapshot = await getDocs(q);
-      
+
       // Check if there are any documents with the same VAT number, excluding the current client
       let isDuplicate = false;
       querySnapshot.forEach((doc) => {
@@ -228,10 +229,12 @@ export const useClientFormData = () => {
           isDuplicate = true;
         }
       });
-      
+
       return isDuplicate;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('An error occurred checking duplicate VAT number'));
+      setError(
+        err instanceof Error ? err : new Error("An error occurred checking duplicate VAT number")
+      );
       return false;
     } finally {
       setLoading(false);
@@ -242,7 +245,7 @@ export const useClientFormData = () => {
     loading,
     error,
     checkDuplicateRegistrationNumber,
-    checkDuplicateVATNumber
+    checkDuplicateVATNumber,
   };
 };
 

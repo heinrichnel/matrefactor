@@ -1,5 +1,4 @@
-// Types for tyre store Firestore integration
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp } from "firebase/firestore";
 
 // Define the comprehensive Tyre interface that will be the main model for all tyre data
 export interface Tyre {
@@ -32,18 +31,18 @@ export interface Tyre {
     treadDepth: number;
     pressure: number;
     temperature: number;
-    status: 'good' | 'warning' | 'critical' | 'needs_replacement';
+    status: "good" | "warning" | "critical" | "needs_replacement";
     lastInspectionDate: string;
     nextInspectionDue: string;
   };
-  status: 'new' | 'in_service' | 'spare' | 'retreaded' | 'scrapped';
-  mountStatus: 'mounted' | 'unmounted' | 'in_storage';
+  status: "new" | "in_service" | "spare" | "retreaded" | "scrapped";
+  mountStatus: "mounted" | "unmounted" | "in_storage";
   maintenanceHistory: {
     rotations: TyreRotation[];
     repairs: TyreRepair[];
     inspections: TyreInspection[];
   };
-  kmRun: number;             // Use kilometers for all calculations
+  kmRun: number; // Use kilometers for all calculations
   kmRunLimit: number;
   notes: string;
   location: TyreStoreLocation;
@@ -94,7 +93,7 @@ export interface TyreInspection {
 
 // History event for a tyre movement
 export interface StockEntryHistory {
-  event: 'mounted' | 'removed' | 'moved' | 'retreaded' | 'scrapped';
+  event: "mounted" | "removed" | "moved" | "retreaded" | "scrapped";
   fromStore?: string;
   toStore: string;
   vehicleReg?: string;
@@ -106,36 +105,36 @@ export interface StockEntryHistory {
 
 // Core tyre stock entry
 export interface StockEntry {
-  tyreId: string;            // unique identifier
+  tyreId: string; // unique identifier
   brand: string;
   pattern: string;
   size: string;
-  type: string;              // e.g., Steer, Drive, Trailer
-  vehicleReg?: string;       // only in VehicleTyreStore
-  position?: TyrePosition;   // slot/axle position code
+  type: string; // e.g., Steer, Drive, Trailer
+  vehicleReg?: string; // only in VehicleTyreStore
+  position?: TyrePosition; // slot/axle position code
   currentTreadDepth: number; // mm
   lastMountOdometer: number; // odometer at mount
-  currentOdometer: number;   // latest odometer reading
-  kmCovered: number;         // cumulative km
-  status: 'active' | 'holding' | 'retread' | 'scrapped';
+  currentOdometer: number; // latest odometer reading
+  kmCovered: number; // cumulative km
+  status: "active" | "holding" | "retread" | "scrapped";
   history: StockEntryHistory[];
 }
 
 // Firestore Tyre Store document
 export interface TyreStore {
-  id: string;                // e.g., 'VehicleTyreStore'
-  name: string;              // human-friendly name
+  id: string; // e.g., 'VehicleTyreStore'
+  name: string; // human-friendly name
   entries: StockEntry[];
-  dateAdded?: Timestamp;     // server timestamp
+  dateAdded?: Timestamp; // server timestamp
 }
 
 // Standardized tyre position names (e.g. V1-V10, T1-T16, P1-P6, Q1-Q10, SP)
 export type TyrePosition =
-  | `V${1|2|3|4|5|6|7|8|9|10}`
-  | `T${1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16}`
-  | `P${1|2|3|4|5|6}`
-  | `Q${1|2|3|4|5|6|7|8|9|10}`
-  | 'SP';
+  | `V${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10}`
+  | `T${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16}`
+  | `P${1 | 2 | 3 | 4 | 5 | 6}`
+  | `Q${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10}`
+  | "SP";
 
 // Allocation entry for a single position on a vehicle
 export interface TyreAllocation {
@@ -159,14 +158,14 @@ export interface FleetTyreMapping {
 }
 
 // Define tyre type enum
-export type TyreType = 'steer' | 'drive' | 'trailer' | 'spare';
+export type TyreType = "steer" | "drive" | "trailer" | "spare";
 
 // Define tyre store location enum
 export enum TyreStoreLocation {
-  VICHELS_STORE = 'Vichels Store',
-  HOLDING_BAY = 'Holding Bay',
-  RFR = 'RFR',
-  SCRAPPED = 'Scrapped'
+  VICHELS_STORE = "Vichels Store",
+  HOLDING_BAY = "Holding Bay",
+  RFR = "RFR",
+  SCRAPPED = "Scrapped",
 }
 
 // --- Helper functions for tyre management ---
@@ -224,7 +223,7 @@ export function parseTyreSize(sizeStr: string): TyreSize {
       width: parseInt(match[1], 10),
       aspectRatio: parseInt(match[2], 10),
       rimDiameter: parseFloat(match[3]),
-      displayString: sizeStr
+      displayString: sizeStr,
     };
   }
 
@@ -232,6 +231,6 @@ export function parseTyreSize(sizeStr: string): TyreSize {
     width: 0,
     aspectRatio: 0,
     rimDiameter: 0,
-    displayString: sizeStr
+    displayString: sizeStr,
   };
 }

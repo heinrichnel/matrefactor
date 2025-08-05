@@ -3,16 +3,16 @@
  */
 
 // Vehicle status types
-export type VehicleStatus = 'active' | 'maintenance' | 'out_of_service';
+export type VehicleStatus = "active" | "maintenance" | "out_of_service";
 
 // Vehicle type classification
-export type VehicleType = 'heavy_truck' | 'light_vehicle' | 'trailer' | 'reefer' | 'generator';
+export type VehicleType = "heavy_truck" | "light_vehicle" | "trailer" | "reefer" | "generator";
 
 // Vehicle category
-export type VehicleCategory = 'truck' | 'trailer' | 'reefer' | 'generator';
+export type VehicleCategory = "truck" | "trailer" | "reefer" | "generator";
 
 // Vehicle series
-export type VehicleSeries = 'H' | 'L' | 'T' | 'F' | 'OTHER';
+export type VehicleSeries = "H" | "L" | "T" | "F" | "OTHER";
 
 /**
  * Main Vehicle interface
@@ -81,8 +81,8 @@ export interface Inspection {
   id: string;
   vehicleId: string;
   inspectorName: string;
-  inspectionType: 'daily' | 'weekly' | 'monthly' | 'annual' | 'pre_trip' | 'post_trip';
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'requires_action';
+  inspectionType: "daily" | "weekly" | "monthly" | "annual" | "pre_trip" | "post_trip";
+  status: "pending" | "in_progress" | "completed" | "failed" | "requires_action";
   scheduledDate: string;
   completedDate?: string;
   durationMinutes?: number;

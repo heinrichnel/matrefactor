@@ -48,6 +48,23 @@ const MissedLoadsTracker = lazy(() => import("./pages/MissedLoadsTracker"));
 const DieselDashboard = lazy(() => import("./pages/DieselDashboard"));
 const DieselAnalysis = lazy(() => import("./pages/DieselAnalysis"));
 const DieselDashboardComponent = lazy(() => import("./pages/diesel/DieselDashboardComponent"));
+const DieselManagementPage = lazy(() => import("./pages/diesel/DieselManagementPage"));
+const DieselIntegratedPage = lazy(() => import("./pages/diesel/DieselIntegratedPage"));
+
+/* -----------------------------
+ * Drivers
+ * ----------------------------- */
+const DriverManagementPage = lazy(() => import("./pages/drivers/DriverManagementPageIntegrated"));
+
+/* -----------------------------
+ * Clients
+ * ----------------------------- */
+const ClientManagementPage = lazy(() => import("./pages/clients/ClientManagementPageIntegrated"));
+
+/* -----------------------------
+ * Form Testing
+ * ----------------------------- */
+const FormsTestWrapper = lazy(() => import("./pages/dashboard/FormsTestWrapper"));
 const DieselIntegratedPage = lazy(() => import("./pages/diesel/DieselIntegratedPage"));
 const FuelLogs = lazy(() => import("./pages/diesel/FuelLogs"));
 const FuelTheftDetection = lazy(() => import("./pages/diesel/FuelTheftDetection"));
@@ -233,6 +250,8 @@ export const AppRoutes: React.FC = () => {
         <Route path="drivers">
           <Route index element={withSuspense(DriverManagementPage)} />
           <Route path="dashboard" element={withSuspense(DriverDashboard)} />
+          <Route path="integrated" element={withSuspense(DriverManagementPage)} />
+          <Route path="manage" element={withSuspense(DriverManagementPage)} />
           <Route path="details/:driverId" element={withSuspense(DriverDetailsPage)} />
           <Route path="behavior" element={withSuspense(DriverBehaviorPage)} />
           <Route path="safety" element={withSuspense(SafetyScores)} />
@@ -245,6 +264,19 @@ export const AppRoutes: React.FC = () => {
           <Route path="licenses" element={withSuspense(LicenseManagement)} />
           <Route path="new" element={withSuspense(AddNewDriver)} />
           <Route path="edit/:driverId" element={withSuspense(EditDriver)} />
+        </Route>
+
+        {/* Clients */}
+        <Route path="clients">
+          <Route index element={withSuspense(ActiveCustomers)} />
+          <Route path="integrated" element={withSuspense(ClientManagementPage)} />
+          <Route path="manage" element={withSuspense(ClientManagementPage)} />
+        </Route>
+
+        {/* Forms Testing */}
+        <Route path="forms-test" element={withSuspense(FormsTestWrapper)}>
+          <Route path="drivers" element={withSuspense(DriverManagementPage)} />
+          <Route path="clients" element={withSuspense(ClientManagementPage)} />
         </Route>
 
         {/* Invoices */}

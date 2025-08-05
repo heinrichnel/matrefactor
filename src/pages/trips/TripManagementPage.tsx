@@ -1,15 +1,16 @@
 import { PlusCircle, Truck } from "lucide-react";
 import React, { useState } from "react";
-import TripForm, { TripFormData } from "../../components/forms/trips/TripForm";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Modal from "../../components/ui/Modal";
+import { TripForm } from "../../components/forms/trips/TripForm";
+import type { Trip } from "../../types/index";
 
 const TripManagementPage: React.FC = () => {
   const [showTripForm, setShowTripForm] = useState(false);
-  const [tripData, setTripData] = useState<TripFormData[]>([]);
+  const [tripData, setTripData] = useState<Trip[]>([]);
 
-  const handleAddTrip = (data: TripFormData) => {
+  const handleAddTrip = (data: Omit<Trip, "id" | "costs" | "status" | "additionalCosts">) => {
     // In a real app, this would send data to Firestore
     setTripData((prev) => [...prev, data]);
     setShowTripForm(false);
@@ -33,7 +34,6 @@ const TripManagementPage: React.FC = () => {
         isOpen={showTripForm}
         onClose={() => setShowTripForm(false)}
         title="Add New Trip"
-        size="full"
       >
         <TripForm onSubmit={handleAddTrip} onCancel={() => setShowTripForm(false)} />
       </Modal>

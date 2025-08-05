@@ -1,25 +1,24 @@
 // ─── React & State ───────────────────────────────────────────────
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 // ─── Types ───────────────────────────────────────────────────────
-import { AdditionalCost, ADDITIONAL_COST_TYPES } from '../../types/index';
+import { AdditionalCost, ADDITIONAL_COST_TYPES } from "../../../types/index";
 
 // ─── UI Components ───────────────────────────────────────────────
-import Button from '../ui/Button';
-import Card, { CardContent, CardHeader } from '../ui/Card';
-import { Input, Select, TextArea, FileUpload } from '../ui/FormElements';
+import Button from "../../ui/Button";
+import Card, { CardContent, CardHeader } from "../../ui/Card";
+import { Input, Select, TextArea, FileUpload } from "../../ui/FormElements";
 
 // ─── Icons ───────────────────────────────────────────────────────
-import { DollarSign, Plus, Upload, X } from 'lucide-react';
+import { DollarSign, Plus, Upload, X } from "lucide-react";
 
 // ─── Utilities ───────────────────────────────────────────────────
-import { formatCurrency } from '../../utils/helpers';
-
+import { formatCurrency } from "../../../utils/helpers";
 
 interface AdditionalCostsFormProps {
   tripId: string;
   additionalCosts: AdditionalCost[];
-  onAddCost: (cost: Omit<AdditionalCost, 'id'>, files?: FileList) => void;
+  onAddCost: (cost: Omit<AdditionalCost, "id">, files?: FileList) => void;
   onRemoveCost: (costId: string) => void;
   readOnly?: boolean;
 }
@@ -29,34 +28,34 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
   additionalCosts,
   onAddCost,
   onRemoveCost,
-  readOnly = false
+  readOnly = false,
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    costType: '',
-    amount: '',
-    currency: 'ZAR' as 'USD' | 'ZAR',
-    notes: ''
+    costType: "",
+    amount: "",
+    currency: "ZAR" as "USD" | "ZAR",
+    notes: "",
   });
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.costType) newErrors.costType = 'Cost type is required';
-    if (!formData.amount) newErrors.amount = 'Amount is required';
+    if (!formData.costType) newErrors.costType = "Cost type is required";
+    if (!formData.amount) newErrors.amount = "Amount is required";
     if (formData.amount && isNaN(Number(formData.amount))) {
-      newErrors.amount = 'Amount must be a valid number';
+      newErrors.amount = "Amount must be a valid number";
     }
     if (Number(formData.amount) <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = "Amount must be greater than 0";
     }
 
     setErrors(newErrors);
@@ -66,54 +65,54 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
   const handleSubmit = () => {
     if (!validateForm()) return;
 
-    const costData: Omit<AdditionalCost, 'id'> = {
+    const costData: Omit<AdditionalCost, "id"> = {
       tripId,
       costType: formData.costType as any,
       amount: Number(formData.amount),
       currency: formData.currency,
       supportingDocuments: [], // Will be populated by the parent component
       notes: formData.notes,
-      description: formData.notes || '',
+      description: formData.notes || "",
       date: new Date().toISOString(),
       addedAt: new Date().toISOString(),
-      addedBy: 'Current User'
+      addedBy: "Current User",
     };
 
     onAddCost(costData, selectedFiles || undefined);
 
     // Reset form
     setFormData({
-      costType: '',
-      amount: '',
-      currency: 'ZAR',
-      notes: ''
+      costType: "",
+      amount: "",
+      currency: "ZAR",
+      notes: "",
     });
     setSelectedFiles(null);
     setShowForm(false);
   };
 
-  const getTotalAdditionalCosts = (currency: 'USD' | 'ZAR') => {
+  const getTotalAdditionalCosts = (currency: "USD" | "ZAR") => {
     return additionalCosts
-      .filter(cost => cost.currency === currency)
+      .filter((cost) => cost.currency === currency)
       .reduce((sum, cost) => sum + cost.amount, 0);
   };
 
-  const getCurrencySymbol = (currency: 'USD' | 'ZAR') => {
-    return currency === 'USD' ? '$' : 'R';
+  const getCurrencySymbol = (currency: "USD" | "ZAR") => {
+    return currency === "USD" ? "$" : "R";
   };
 
   return (
     <div className="space-y-6">
       {/* Summary */}
       <Card>
-        <CardHeader 
-          title="Additional Costs Summary" 
+        <CardHeader
+          title="Additional Costs Summary"
           icon={<DollarSign className="w-5 h-5 text-green-600" />}
           action={
             !readOnly && (
               <Button
                 size="sm"
-                onClick={onClick}
+                onClick={() => setShowForm(true)}
                 icon={<Plus className="w-4 h-4" />}
               >
                 Add Additional Cost
@@ -126,26 +125,24 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <p className="text-sm text-gray-500">ZAR Additional Costs</p>
               <p className="text-xl font-bold text-green-600">
-                {formatCurrency(getTotalAdditionalCosts('ZAR'), 'ZAR')}
+                {formatCurrency(getTotalAdditionalCosts("ZAR"), "ZAR")}
               </p>
               <p className="text-xs text-gray-400">
-                {additionalCosts.filter(c => c.currency === 'ZAR').length} entries
+                {additionalCosts.filter((c) => c.currency === "ZAR").length} entries
               </p>
             </div>
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-gray-500">USD Additional Costs</p>
               <p className="text-xl font-bold text-blue-600">
-                {formatCurrency(getTotalAdditionalCosts('USD'), 'USD')}
+                {formatCurrency(getTotalAdditionalCosts("USD"), "USD")}
               </p>
               <p className="text-xs text-gray-400">
-                {additionalCosts.filter(c => c.currency === 'USD').length} entries
+                {additionalCosts.filter((c) => c.currency === "USD").length} entries
               </p>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <p className="text-sm text-gray-500">Total Entries</p>
-              <p className="text-xl font-bold text-purple-600">
-                {additionalCosts.length}
-              </p>
+              <p className="text-xl font-bold text-purple-600">{additionalCosts.length}</p>
               <p className="text-xs text-gray-400">additional costs</p>
             </div>
           </div>
@@ -155,13 +152,13 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
       {/* Add Cost Form */}
       {showForm && !readOnly && (
         <Card>
-          <CardHeader 
-            title="Add Additional Cost" 
+          <CardHeader
+            title="Add Additional Cost"
             action={
               <Button
                 size="sm"
                 variant="outline"
-                onClick={onClick}
+                onClick={() => setShowForm(false)}
                 icon={<X className="w-4 h-4" />}
               >
                 Cancel
@@ -174,20 +171,17 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
                 <Select
                   label="Cost Type *"
                   value={formData.costType}
-                  onChange={e => handleChange('costType', e.target.value)}
-                  options={[
-                    { label: 'Select cost type...', value: '' },
-                    ...ADDITIONAL_COST_TYPES
-                  ]}
+                  onChange={(e) => handleChange("costType", e.target.value)}
+                  options={[{ label: "Select cost type...", value: "" }, ...ADDITIONAL_COST_TYPES]}
                   error={errors.costType}
                 />
                 <Select
                   label="Currency *"
                   value={formData.currency}
-                  onChange={e => handleChange('currency', e.target.value)}
+                  onChange={(e) => handleChange("currency", e.target.value)}
                   options={[
-                    { label: 'ZAR (R)', value: 'ZAR' },
-                    { label: 'USD ($)', value: 'USD' }
+                    { label: "ZAR (R)", value: "ZAR" },
+                    { label: "USD ($)", value: "USD" },
                   ]}
                 />
                 <Input
@@ -196,7 +190,7 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
                   step="0.01"
                   min="0.01"
                   value={formData.amount}
-                  onChange={e => handleChange('amount', e.target.value)}
+                  onChange={(e) => handleChange("amount", e.target.value)}
                   placeholder="0.00"
                   error={errors.amount}
                 />
@@ -204,8 +198,8 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
 
               <TextArea
                 label="Notes (Optional)"
-                value={formData.notes || ''}
-                onChange={e => handleChange('notes', e.target.value)}
+                value={formData.notes || ""}
+                onChange={(e) => handleChange("notes", e.target.value)}
                 placeholder="Additional notes about this cost..."
                 rows={3}
               />
@@ -234,15 +228,10 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
               )}
 
               <div className="flex justify-end space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={onClick}
-                >
+                <Button variant="outline" onClick={() => setShowForm(false)}>
                   Cancel
                 </Button>
-                <Button onClick={onClick}>
-                  Add Additional Cost
-                </Button>
+                <Button onClick={handleSubmit}>Add Additional Cost</Button>
               </div>
             </div>
           </CardContent>
@@ -261,16 +250,15 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h4 className="font-medium text-gray-900">
-                          {ADDITIONAL_COST_TYPES.find(t => t.value === cost.costType)?.label || cost.costType}
+                          {ADDITIONAL_COST_TYPES.find((t) => t.value === cost.costType)?.label ||
+                            cost.costType}
                         </h4>
                         <span className="text-lg font-bold text-green-600">
                           {formatCurrency(cost.amount, cost.currency)}
                         </span>
                       </div>
-                      
-                      {cost.notes && (
-                        <p className="text-sm text-gray-600 mb-2">{cost.notes}</p>
-                      )}
+
+                      {cost.notes && <p className="text-sm text-gray-600 mb-2">{cost.notes}</p>}
 
                       <div className="text-xs text-gray-500">
                         Added by {cost.addedBy} on {new Date(cost.addedAt).toLocaleDateString()}
@@ -283,7 +271,10 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
                           </p>
                           <div className="flex flex-wrap gap-1">
                             {cost.supportingDocuments.map((doc) => (
-                              <span key={doc.id} className="inline-flex items-center px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
+                              <span
+                                key={doc.id}
+                                className="inline-flex items-center px-2 py-1 rounded text-xs bg-blue-100 text-blue-800"
+                              >
                                 <Upload className="w-3 h-3 mr-1" />
                                 {doc.filename}
                               </span>
@@ -297,7 +288,7 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
                       <Button
                         size="sm"
                         variant="danger"
-                        onClick={onClick}
+                        onClick={() => onRemoveCost(cost.id)}
                         icon={<X className="w-3 h-3" />}
                       >
                         Remove

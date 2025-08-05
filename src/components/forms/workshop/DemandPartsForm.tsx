@@ -357,7 +357,7 @@ const DemandPartsForm: React.FC<DemandPartsFormProps> = ({
 
           <div className="flex justify-end space-x-3">
             {onCancel && (
-              <Button type="button" variant="outline" onClick={onClick}>
+              <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
             )}

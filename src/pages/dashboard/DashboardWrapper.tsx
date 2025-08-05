@@ -1,6 +1,6 @@
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import ConsolidatedDashboard from './ConsolidatedDashboard';
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import ConsolidatedDashboard from "./ConsolidatedDashboard";
 
 const DashboardWrapper: React.FC = () => {
   return (
