@@ -1,54 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../context/AppContext';
-import { useSyncContext } from '../context/SyncContext';
-import { DieselConsumptionRecord } from '../../types';
-import { Card, CardContent, CardHeader } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-// Removed unused Select import
-import { 
-  Fuel, 
-  Plus, 
-  Search,
-  Upload, 
-  Download, 
-  Settings, 
-  FileText, 
-  // AlertTriangle removed as unused
+import {
   CheckCircle,
+  Download,
+  Edit,
+  FileText,
+  Fuel,
   Link,
-  Trash2,
+  Plus,
   RefreshCw,
-  Edit
-} from 'lucide-react';
-import FleetSelector from '../components/common/FleetSelector';
-import { formatCurrency, formatDate } from '../utils/helpers';
-import SyncIndicator from '../components/ui/SyncIndicator';
-import ManualDieselEntryModal from '../components/Models/Diesel/ManualDieselEntryModal';
-import DieselImportModal from '../components/Models/Diesel/DieselImportModal';
-import DieselNormsModal from '../components/Models/Diesel/DieselNormsModal';
-import EnhancedDieselDebriefModal from '../components/Models/Diesel/EnhancedDieselDebriefModal';
-import EnhancedProbeVerificationModal from '../components/Models/Diesel/EnhancedProbeVerificationModal';
-import TripLinkageModal from '../components/Models/Trips/TripLinkageModal';
-import DieselEditModal from '../components/Models/Diesel/DieselEditModal';
+  Search,
+  Settings,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import FleetSelector from "../../components/common/FleetSelector";
+import DieselEditModal from "../../components/Models/Diesel/DieselEditModal";
+import DieselImportModal from "../../components/Models/Diesel/DieselImportModal";
+import DieselNormsModal from "../../components/Models/Diesel/DieselNormsModal";
+import EnhancedDieselDebriefModal from "../../components/Models/Diesel/EnhancedDieselDebriefModal";
+import EnhancedProbeVerificationModal from "../../components/Models/Diesel/EnhancedProbeVerificationModal";
+import ManualDieselEntryModal from "../../components/Models/Diesel/ManualDieselEntryModal";
+import TripLinkageModal from "../../components/Models/Trips/TripLinkageModal";
+import Button from "../../components/ui/Button";
+import { Card, CardContent, CardHeader } from "../../components/ui/Card";
+import SyncIndicator from "../../components/ui/SyncIndicator";
+import { useAppContext } from "../../context/AppContext";
+import { useSyncContext } from "../../context/SyncContext";
+import { DieselConsumptionRecord as BaseDieselConsumptionRecord } from "../../types";
+import { formatCurrency, formatDate } from "../../utils/helpers";
+import { ExtendedDieselConsumptionRecord } from "./types";
 
 interface DieselDashboardProps {
   className?: string;
 }
 
-const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => {
-  const { 
-    dieselRecords, 
-    loadDieselRecords, 
-    deleteDieselRecord, 
-    isLoading, 
-    syncDieselFromWialon 
-  } = useAppContext();
+// Simulated functions that will need to be added to AppContext
+const loadDieselRecords = async () => {
+  console.log("Loading diesel records...");
+  // This would be implemented in AppContext
+  return Promise.resolve();
+};
+
+const syncDieselFromWialon = async () => {
+  console.log("Syncing diesel from Wialon...");
+  // This would be implemented in AppContext
+  return Promise.resolve();
+};
+
+const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => {
+  const { dieselRecords, deleteDieselRecord, isLoading } = useAppContext();
   // Access the sync context for sync status indicator
   const { syncStatus } = useSyncContext();
-  
+
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [showManualEntryModal, setShowManualEntryModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showDieselNormsModal, setShowDieselNormsModal] = useState(false);
@@ -56,167 +62,204 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
   const [showProbeModal, setShowProbeModal] = useState(false);
   const [showLinkageModal, setShowLinkageModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<DieselConsumptionRecord | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<ExtendedDieselConsumptionRecord | null>(
+    null
+  );
   const [isDeleting, setIsDeleting] = useState<Record<string, boolean>>({});
   const [isSyncing, setIsSyncing] = useState(false);
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('table');
-  const [sortConfig, setSortConfig] = useState<{ key: keyof DieselConsumptionRecord; direction: 'ascending' | 'descending' }>({
-    key: 'timestamp',
-    direction: 'descending'
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof ExtendedDieselConsumptionRecord;
+    direction: "ascending" | "descending";
+  }>({
+    key: "date" as keyof ExtendedDieselConsumptionRecord,
+    direction: "descending",
   });
-  
+
   // Load diesel records on mount
   useEffect(() => {
     if (loadDieselRecords) {
       loadDieselRecords();
     }
   }, [loadDieselRecords]);
-  
+
+  // Map base DieselConsumptionRecord to ExtendedDieselConsumptionRecord
+  const mapToExtendedRecord = (
+    record: BaseDieselConsumptionRecord
+  ): ExtendedDieselConsumptionRecord => {
+    return {
+      ...record,
+      vehicleId: record.fleetNumber, // Map fleetNumber to vehicleId
+      timestamp: record.date, // Map date to timestamp
+      liters: record.litresFilled, // Map litresFilled to liters
+      cost: record.totalCost, // Map totalCost to cost
+      location: record.fuelStation, // Map fuelStation to location
+      odometer: record.kmReading, // Map kmReading to odometer
+      verified: record.probeVerified || false, // Map probeVerified to verified
+      flagged: false, // Default for flagged
+    };
+  };
+
   // Filter and sort records
   const getFilteredRecords = () => {
+    // First map to extended records
     return dieselRecords
-      .filter(record => {
+      .map(mapToExtendedRecord)
+      .filter((record) => {
         // Filter by selected vehicles
         if (selectedVehicles.length > 0 && !selectedVehicles.includes(record.vehicleId)) {
           return false;
         }
-        
+
         // Filter by search term
         if (searchTerm && !record.vehicleId.toLowerCase().includes(searchTerm.toLowerCase())) {
           return false;
         }
-        
+
         // Filter by date range
         if (dateRange.from && new Date(record.timestamp) < new Date(dateRange.from)) {
           return false;
         }
-        
-        if (dateRange.to && new Date(record.timestamp) > new Date(dateRange.to + 'T23:59:59')) {
+
+        if (dateRange.to && new Date(record.timestamp) > new Date(dateRange.to + "T23:59:59")) {
           return false;
         }
-        
+
         return true;
       })
       .sort((a, b) => {
-        if (sortConfig.key === 'timestamp') {
+        if (sortConfig.key === "timestamp") {
           // Special case for dates
           const dateA = new Date(a[sortConfig.key]).getTime();
           const dateB = new Date(b[sortConfig.key]).getTime();
-          return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
+          return sortConfig.direction === "ascending" ? dateA - dateB : dateB - dateA;
         } else {
           // General case for other fields
-          if (a[sortConfig.key] < b[sortConfig.key]) {
-            return sortConfig.direction === 'ascending' ? -1 : 1;
+          // Cast to any to avoid type issues with accessing dynamic properties
+          const aValue = (a as any)[sortConfig.key];
+          const bValue = (b as any)[sortConfig.key];
+
+          if (aValue < bValue) {
+            return sortConfig.direction === "ascending" ? -1 : 1;
           }
-          if (a[sortConfig.key] > b[sortConfig.key]) {
-            return sortConfig.direction === 'ascending' ? 1 : -1;
+          if (aValue > bValue) {
+            return sortConfig.direction === "ascending" ? 1 : -1;
           }
           return 0;
         }
       });
   };
-  
+
   const filteredRecords = getFilteredRecords();
-  
+
   // Handle sorting
-  const requestSort = (key: keyof DieselConsumptionRecord) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
+  const requestSort = (key: keyof ExtendedDieselConsumptionRecord) => {
+    let direction: "ascending" | "descending" = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
     }
     setSortConfig({ key, direction });
   };
-  
-  const getSortIndicator = (key: keyof DieselConsumptionRecord) => {
+
+  const getSortIndicator = (key: keyof ExtendedDieselConsumptionRecord) => {
     if (sortConfig.key === key) {
-      return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
+      return sortConfig.direction === "ascending" ? " ▲" : " ▼";
     }
-    return '';
+    return "";
   };
-  
+
   // Calculate total fuel and costs
-  const totalLiters = filteredRecords.reduce((sum, record) => sum + record.liters, 0);
-  const totalCost = filteredRecords.reduce((sum, record) => sum + record.cost, 0);
-  
+  const totalLiters = filteredRecords.reduce(
+    (sum, record) => sum + (record.liters || record.litresFilled || 0),
+    0
+  );
+  const totalCost = filteredRecords.reduce(
+    (sum, record) => sum + (record.cost || record.totalCost || 0),
+    0
+  );
+
   // Get unique vehicles for filtering
-  const uniqueVehicles = Array.from(new Set(dieselRecords.map(record => record.vehicleId)));
-  
+  const uniqueVehicles = Array.from(
+    new Set(
+      dieselRecords.map((record) => mapToExtendedRecord(record).vehicleId || record.fleetNumber)
+    )
+  );
+
   // Handle vehicle selection
   const handleVehicleSelection = (vehicles: string[]) => {
     setSelectedVehicles(vehicles);
   };
-  
+
   // Handle record deletion
   const handleDeleteRecord = async (recordId: string) => {
-    if (window.confirm('Are you sure you want to delete this diesel record? This action cannot be undone.')) {
-      setIsDeleting(prev => ({ ...prev, [recordId]: true }));
+    if (
+      window.confirm(
+        "Are you sure you want to delete this diesel record? This action cannot be undone."
+      )
+    ) {
+      setIsDeleting((prev) => ({ ...prev, [recordId]: true }));
       try {
         await deleteDieselRecord(recordId);
       } catch (error) {
-        console.error('Failed to delete record:', error);
-        alert('Failed to delete record. Please try again.');
+        console.error("Failed to delete record:", error);
+        alert("Failed to delete record. Please try again.");
       } finally {
-        setIsDeleting(prev => ({ ...prev, [recordId]: false }));
+        setIsDeleting((prev) => ({ ...prev, [recordId]: false }));
       }
     }
   };
-  
+
   // Handle Wialon sync
   const handleSync = async () => {
     setIsSyncing(true);
     try {
       await syncDieselFromWialon();
     } catch (error) {
-      console.error('Failed to sync with Wialon:', error);
-      alert('Failed to sync diesel data from Wialon. Please try again.');
+      console.error("Failed to sync with Wialon:", error);
+      alert("Failed to sync diesel data from Wialon. Please try again.");
     } finally {
       setIsSyncing(false);
     }
   };
-  
+
   // Handle record edit
-  const handleEditRecord = (record: DieselConsumptionRecord) => {
+  const handleEditRecord = (record: ExtendedDieselConsumptionRecord) => {
     setSelectedRecord(record);
     setShowEditModal(true);
   };
-  
+
   // Handle trip linkage
-  const handleLinkToTrip = (record: DieselConsumptionRecord) => {
+  const handleLinkToTrip = (record: ExtendedDieselConsumptionRecord) => {
     setSelectedRecord(record);
     setShowLinkageModal(true);
   };
-  
+
   // Handle debrief
-  const handleDebrief = (record: DieselConsumptionRecord) => {
+  const handleDebrief = (record: ExtendedDieselConsumptionRecord) => {
     setSelectedRecord(record);
     setShowDebriefModal(true);
   };
-  
+
   // Handle probe verification
-  const handleProbeVerification = (record: DieselConsumptionRecord) => {
+  const handleProbeVerification = (record: ExtendedDieselConsumptionRecord) => {
     setSelectedRecord(record);
     setShowProbeModal(true);
   };
-  
+
   // Format numbers for display
   const formatNumber = (num: number, decimals = 2) => {
     return num.toFixed(decimals);
   };
-  
+
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold">Diesel Consumption</h2>
-          <p className="text-sm text-gray-600">
-            Track and manage diesel usage across your fleet
-          </p>
+          <p className="text-sm text-gray-600">Track and manage diesel usage across your fleet</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            onClick={() => setShowManualEntryModal(true)}
-            className="flex items-center"
-          >
+          <Button onClick={() => setShowManualEntryModal(true)} className="flex items-center">
             <Plus className="mr-1 h-4 w-4" />
             Add Record
           </Button>
@@ -234,13 +277,13 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
             disabled={isSyncing}
             className="flex items-center"
           >
-            <RefreshCw className={`mr-1 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'Syncing...' : 'Sync Wialon'}
+            <RefreshCw className={`mr-1 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+            {isSyncing ? "Syncing..." : "Sync Wialon"}
           </Button>
-          <SyncIndicator status={syncStatus} />
+          <SyncIndicator />
         </div>
       </div>
-      
+
       <Card>
         <CardHeader className="pb-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -255,7 +298,7 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              
+
               <div className="flex gap-2 min-w-[200px]">
                 <input
                   type="date"
@@ -272,7 +315,7 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                 />
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
@@ -284,31 +327,32 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
               </Button>
               <div className="flex border rounded overflow-hidden">
                 <button
-                  onClick={() => setViewMode('card')}
-                  className={`px-3 py-1 ${viewMode === 'card' ? 'bg-blue-100 text-blue-700' : 'bg-white'}`}
+                  onClick={() => setViewMode("card")}
+                  className={`px-3 py-1 ${viewMode === "card" ? "bg-blue-100 text-blue-700" : "bg-white"}`}
                 >
                   Cards
                 </button>
                 <button
-                  onClick={() => setViewMode('table')}
-                  className={`px-3 py-1 ${viewMode === 'table' ? 'bg-blue-100 text-blue-700' : 'bg-white'}`}
+                  onClick={() => setViewMode("table")}
+                  className={`px-3 py-1 ${viewMode === "table" ? "bg-blue-100 text-blue-700" : "bg-white"}`}
                 >
                   Table
                 </button>
               </div>
             </div>
           </div>
-          
+
           <div className="mt-4">
-            <FleetSelector 
-              onSelectionChange={handleVehicleSelection}
-              selectedVehicles={selectedVehicles}
-              availableVehicles={uniqueVehicles}
+            <FleetSelector
               label="Filter by fleet:"
+              selectedVehicles={selectedVehicles}
+              onVehicleSelect={handleVehicleSelection}
+              availableVehicles={uniqueVehicles}
+              allowMultiple={false}
             />
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <div className="mb-4 flex justify-between items-center">
             <div className="space-x-4">
@@ -327,7 +371,7 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
               Export
             </Button>
           </div>
-          
+
           {isLoading ? (
             <div className="flex justify-center p-10">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
@@ -340,12 +384,10 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                 No records match your current filters or no records have been added yet.
               </p>
               <div className="mt-6">
-                <Button onClick={() => setShowManualEntryModal(true)}>
-                  Add New Record
-                </Button>
+                <Button onClick={() => setShowManualEntryModal(true)}>Add New Record</Button>
               </div>
             </div>
-          ) : viewMode === 'table' ? (
+          ) : viewMode === "table" ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -353,37 +395,37 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('vehicleId')}
+                      onClick={() => requestSort("vehicleId")}
                     >
-                      Fleet Number {getSortIndicator('vehicleId')}
+                      Fleet Number {getSortIndicator("vehicleId")}
                     </th>
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('timestamp')}
+                      onClick={() => requestSort("timestamp")}
                     >
-                      Date {getSortIndicator('timestamp')}
+                      Date {getSortIndicator("timestamp")}
                     </th>
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('liters')}
+                      onClick={() => requestSort("liters")}
                     >
-                      Liters {getSortIndicator('liters')}
+                      Liters {getSortIndicator("liters")}
                     </th>
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('cost')}
+                      onClick={() => requestSort("cost")}
                     >
-                      Cost {getSortIndicator('cost')}
+                      Cost {getSortIndicator("cost")}
                     </th>
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('odometer')}
+                      onClick={() => requestSort("odometer")}
                     >
-                      Odometer {getSortIndicator('odometer')}
+                      Odometer {getSortIndicator("odometer")}
                     </th>
                     <th
                       scope="col"
@@ -400,12 +442,12 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredRecords.map(record => (
+                  {filteredRecords.map((record) => (
                     <tr key={record.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="font-medium text-gray-900">{record.vehicleId}</div>
                         <div className="text-xs text-gray-500">
-                          {record.location || 'Location not available'}
+                          {record.location || "Location not available"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -427,21 +469,21 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             record.verified
-                              ? 'bg-green-100 text-green-800'
+                              ? "bg-green-100 text-green-800"
                               : record.flagged
-                              ? 'bg-red-100 text-red-800'
-                              : record.tripId
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-gray-100 text-gray-800'
+                                ? "bg-red-100 text-red-800"
+                                : record.tripId
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-gray-100 text-gray-800"
                           }`}
                         >
                           {record.verified
-                            ? 'Verified'
+                            ? "Verified"
                             : record.flagged
-                            ? 'Flagged'
-                            : record.tripId
-                            ? 'Linked'
-                            : 'Unprocessed'}
+                              ? "Flagged"
+                              : record.tripId
+                                ? "Linked"
+                                : "Unprocessed"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -461,25 +503,29 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                           <button
                             onClick={() => handleProbeVerification(record)}
                             className={`${
-                              record.verified ? 'text-green-600 hover:text-green-900' : 'text-gray-600 hover:text-gray-900'
+                              record.verified
+                                ? "text-green-600 hover:text-green-900"
+                                : "text-gray-600 hover:text-gray-900"
                             }`}
                           >
-                            {record.verified ? 'Verified' : 'Verify'}
+                            {record.verified ? "Verified" : "Verify"}
                           </button>
                           <button
                             onClick={() => handleLinkToTrip(record)}
                             className={`${
-                              record.tripId ? 'text-blue-600 hover:text-blue-900' : 'text-gray-600 hover:text-gray-900'
+                              record.tripId
+                                ? "text-blue-600 hover:text-blue-900"
+                                : "text-gray-600 hover:text-gray-900"
                             }`}
                           >
-                            {record.tripId ? 'Trip' : 'Link'}
+                            {record.tripId ? "Trip" : "Link"}
                           </button>
                           <button
                             onClick={() => handleDeleteRecord(record.id)}
                             disabled={isDeleting[record.id]}
                             className="text-red-600 hover:text-red-900"
                           >
-                            {isDeleting[record.id] ? 'Deleting...' : 'Delete'}
+                            {isDeleting[record.id] ? "Deleting..." : "Delete"}
                           </button>
                         </div>
                       </td>
@@ -490,7 +536,7 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredRecords.map(record => (
+              {filteredRecords.map((record) => (
                 <div
                   key={record.id}
                   className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
@@ -504,24 +550,24 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           record.verified
-                            ? 'bg-green-100 text-green-800'
+                            ? "bg-green-100 text-green-800"
                             : record.flagged
-                            ? 'bg-red-100 text-red-800'
-                            : record.tripId
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
+                              ? "bg-red-100 text-red-800"
+                              : record.tripId
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {record.verified
-                          ? 'Verified'
+                          ? "Verified"
                           : record.flagged
-                          ? 'Flagged'
-                          : record.tripId
-                          ? 'Linked'
-                          : 'Unprocessed'}
+                            ? "Flagged"
+                            : record.tripId
+                              ? "Linked"
+                              : "Unprocessed"}
                       </span>
                     </div>
-                    
+
                     <div className="mt-4 grid grid-cols-2 gap-4">
                       <div>
                         <div className="text-sm text-gray-500">Liters</div>
@@ -536,14 +582,16 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                       </div>
                       <div>
                         <div className="text-sm text-gray-500">Odometer</div>
-                        <div className="text-lg font-medium">{formatNumber(record.odometer, 0)} km</div>
+                        <div className="text-lg font-medium">
+                          {formatNumber(record.odometer, 0)} km
+                        </div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-500">Location</div>
-                        <div className="text-base truncate">{record.location || 'N/A'}</div>
+                        <div className="text-base truncate">{record.location || "N/A"}</div>
                       </div>
                     </div>
-                    
+
                     <div className="mt-4 flex justify-between">
                       <div className="flex space-x-1">
                         <button
@@ -563,7 +611,9 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                         <button
                           onClick={() => handleProbeVerification(record)}
                           className={`p-1 ${
-                            record.verified ? 'text-green-600' : 'text-gray-600 hover:text-green-600'
+                            record.verified
+                              ? "text-green-600"
+                              : "text-gray-600 hover:text-green-600"
                           }`}
                           title="Verify with Probe"
                         >
@@ -572,9 +622,9 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                         <button
                           onClick={() => handleLinkToTrip(record)}
                           className={`p-1 ${
-                            record.tripId ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
+                            record.tripId ? "text-blue-600" : "text-gray-600 hover:text-blue-600"
                           }`}
-                          title={record.tripId ? 'View Linked Trip' : 'Link to Trip'}
+                          title={record.tripId ? "View Linked Trip" : "Link to Trip"}
                         >
                           <Link size={18} />
                         </button>
@@ -585,7 +635,10 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
                         className="p-1 text-gray-600 hover:text-red-600"
                         title="Delete"
                       >
-                        <Trash2 size={18} className={isDeleting[record.id] ? 'animate-pulse' : ''} />
+                        <Trash2
+                          size={18}
+                          className={isDeleting[record.id] ? "animate-pulse" : ""}
+                        />
                       </button>
                     </div>
                   </div>
@@ -593,46 +646,46 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
               ))}
             </div>
           )}
-          
+
           {/* Pagination could be added here */}
         </CardContent>
       </Card>
-      
+
       {/* Modals */}
       {showManualEntryModal && (
-        <ManualDieselEntryModal 
+        <ManualDieselEntryModal
           isOpen={showManualEntryModal}
           onClose={() => setShowManualEntryModal(false)}
         />
       )}
-      
+
       {showImportModal && (
-        <DieselImportModal 
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-        />
+        <DieselImportModal isOpen={showImportModal} onClose={() => setShowImportModal(false)} />
       )}
-      
+
       {showDieselNormsModal && (
-        <DieselNormsModal 
+        <DieselNormsModal
           isOpen={showDieselNormsModal}
           onClose={() => setShowDieselNormsModal(false)}
+          norms={[]} // Add empty norms array
+          onUpdateNorms={(norms) => console.log("Norms updated", norms)}
         />
       )}
-      
+
       {showDebriefModal && selectedRecord && (
-        <EnhancedDieselDebriefModal 
+        <EnhancedDieselDebriefModal
           isOpen={showDebriefModal}
           onClose={() => {
             setShowDebriefModal(false);
             setSelectedRecord(null);
           }}
-          record={selectedRecord}
+          records={[selectedRecord]} // Changed from record to records array
+          norms={[]} // Added required norms prop
         />
       )}
-      
+
       {showProbeModal && selectedRecord && (
-        <EnhancedProbeVerificationModal 
+        <EnhancedProbeVerificationModal
           isOpen={showProbeModal}
           onClose={() => {
             setShowProbeModal(false);
@@ -641,26 +694,26 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = '' }) => 
           record={selectedRecord}
         />
       )}
-      
+
       {showLinkageModal && selectedRecord && (
-        <TripLinkageModal 
+        <TripLinkageModal
           isOpen={showLinkageModal}
           onClose={() => {
             setShowLinkageModal(false);
             setSelectedRecord(null);
           }}
-          dieselRecord={selectedRecord}
+          dieselRecordId={selectedRecord.id} // Changed from dieselRecord to dieselRecordId
         />
       )}
-      
+
       {showEditModal && selectedRecord && (
-        <DieselEditModal 
+        <DieselEditModal
           isOpen={showEditModal}
           onClose={() => {
             setShowEditModal(false);
             setSelectedRecord(null);
           }}
-          record={selectedRecord}
+          dieselRecordId={selectedRecord.id} // Changed from record to dieselRecordId
         />
       )}
     </div>

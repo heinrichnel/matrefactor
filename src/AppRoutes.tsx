@@ -21,13 +21,12 @@ const ComplianceDashboard = lazy(() => import("./pages/ComplianceDashboard"));
  * Trips
  * ----------------------------- */
 const TripDashboardPage = lazy(() => import("./pages/TripDashboardPage"));
-const TripManagementPage = lazy(() => import("./pages/TripManagementPage"));
+const TripManagementPage = lazy(() => import("./pages/trips/TripManagementPage"));
 const TripCalendarPage = lazy(() => import("./pages/TripCalendarPage"));
 const TripTimelinePage = lazy(() => import("./pages/TripTimelinePage"));
 const TripReportPage = lazy(() => import("./pages/TripReportPage"));
 const ActiveTripsPage = lazy(() => import("./pages/trips/ActiveTripsPageEnhanced"));
-const CompletedTrips = lazy(() => import("./pages/CompletedTrips"));
-const AddTripPage = lazy(() => import("./pages/AddTripPage"));
+const CompletedTrips = lazy(() => import("./pages/trips/CompletedTrips"));
 const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage"));
 const TripInvoicingPanel = lazy(() => import("./pages/trips/TripInvoicingPanel"));
 const TripCompletionPanel = lazy(() => import("./pages/trips/TripCompletionPanel"));
@@ -45,26 +44,8 @@ const MissedLoadsTracker = lazy(() => import("./pages/MissedLoadsTracker"));
 /* -----------------------------
  * Diesel
  * ----------------------------- */
-const DieselDashboard = lazy(() => import("./pages/DieselDashboard"));
+const DieselDashboard = lazy(() => import("./pages/diesel/DieselDashboard"));
 const DieselAnalysis = lazy(() => import("./pages/DieselAnalysis"));
-const DieselDashboardComponent = lazy(() => import("./pages/diesel/DieselDashboardComponent"));
-const DieselManagementPage = lazy(() => import("./pages/diesel/DieselManagementPage"));
-const DieselIntegratedPage = lazy(() => import("./pages/diesel/DieselIntegratedPage"));
-
-/* -----------------------------
- * Drivers
- * ----------------------------- */
-const DriverManagementPage = lazy(() => import("./pages/drivers/DriverManagementPageIntegrated"));
-
-/* -----------------------------
- * Clients
- * ----------------------------- */
-const ClientManagementPage = lazy(() => import("./pages/clients/ClientManagementPageIntegrated"));
-
-/* -----------------------------
- * Form Testing
- * ----------------------------- */
-const FormsTestWrapper = lazy(() => import("./pages/dashboard/FormsTestWrapper"));
 const DieselIntegratedPage = lazy(() => import("./pages/diesel/DieselIntegratedPage"));
 const FuelLogs = lazy(() => import("./pages/diesel/FuelLogs"));
 const FuelTheftDetection = lazy(() => import("./pages/diesel/FuelTheftDetection"));
@@ -80,7 +61,18 @@ const FuelStations = lazy(() => import("./pages/diesel/FuelStations"));
 /* -----------------------------
  * Drivers
  * ----------------------------- */
+const DriverManagementPageIntegrated = lazy(() => import("./pages/drivers/DriverManagementPageIntegrated"));
 const DriverManagementPage = lazy(() => import("./pages/drivers/DriverManagementPage"));
+
+/* -----------------------------
+ * Clients
+ * ----------------------------- */
+const ClientManagementPage = lazy(() => import("./pages/clients/ClientManagementPageIntegrated"));
+
+/* -----------------------------
+ * Form Testing
+ * ----------------------------- */
+const FormsTestWrapper = lazy(() => import("./pages/dashboard/FormsTestWrapper"));
 const DriverDashboard = lazy(() => import("./pages/drivers/DriverDashboard"));
 const DriverDetailsPage = lazy(() => import("./pages/drivers/DriverDetailsPage"));
 const DriverBehaviorPage = lazy(() => import("./pages/drivers/DriverBehaviorPage"));
@@ -120,15 +112,15 @@ const QRScannerPage = lazy(() => import("./pages/workshop/QRScannerPage"));
 const StockInventoryPage = lazy(() => import("./pages/workshop/StockInventoryPage"));
 const VendorPage = lazy(() => import("./pages/workshop/VendorPage"));
 const WorkshopPage = lazy(() => import("./pages/workshop/WorkshopPage"));
-const InventoryDashboard = lazy(() => import("./pages/InventoryDashboard"));
-const InventoryPage = lazy(() => import("./pages/InventoryPage"));
-const InventoryReportsPage = lazy(() => import("./pages/InventoryReportsPage"));
+const InventoryDashboard = lazy(() => import("./pages/Inventory/InventoryDashboard"));
+const InventoryPage = lazy(() => import("./pages/Inventory/InventoryPage"));
+const InventoryReportsPage = lazy(() => import("./pages/Inventory/InventoryReportsPage"));
 const PartsInventoryPage = lazy(() => import("./pages/PartsInventoryPage"));
 const PartsOrderingPage = lazy(() => import("./pages/PartsOrderingPage"));
 const ReceivePartsPage = lazy(() => import("./pages/ReceivePartsPage"));
 const JobCardManagement = lazy(() => import("./pages/JobCardManagement"));
-const JobCardKanbanBoard = lazy(() => import("./pages/JobCardKanbanBoard"));
-const InspectionManagement = lazy(() => import("./pages/InspectionManagement"));
+const JobCardKanbanBoard = lazy(() => import("./pages/workshop/JobCardKanbanBoard"));
+const InspectionManagement = lazy(() => import("./pages/workshop/InspectionManagement"));
 
 /* -----------------------------
  * Tyres
@@ -147,7 +139,7 @@ const TyreMobilePage = lazy(() => import("./pages/mobile/TyreMobilePage"));
 /* -----------------------------
  * Customers / Analytics
  * ----------------------------- */
-const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
+const CustomerDashboard = lazy(() => import("./pages/clients/CustomerDashboard"));
 const CustomerReports = lazy(() => import("./pages/CustomerReports"));
 const ActiveCustomers = lazy(() => import("./pages/clients/ActiveCustomers"));
 const ClientDetail = lazy(() => import("./pages/ClientDetail"));
@@ -172,7 +164,7 @@ const FlagsInvestigationsPage = lazy(() => import("./pages/FlagsInvestigationsPa
 /* -----------------------------
  * Cost / Indirect costs
  * ----------------------------- */
-const IndirectCostBreakdown = lazy(() => import("./pages/IndirectCostBreakdown"));
+const IndirectCostBreakdown = lazy(() => import("./pages/trips/IndirectCostBreakdown"));
 
 const QAReviewPanel = lazy(() => import("./pages/QAReviewPanel"));
 const POApprovalSummary = lazy(() => import("./pages/POApprovalSummary"));
@@ -213,14 +205,13 @@ export const AppRoutes: React.FC = () => {
           <Route path="manage" element={withSuspense(TripManagementPage)} />
           <Route path="active" element={withSuspense(ActiveTripsPage)} />
           <Route path="completed" element={withSuspense(CompletedTrips)} />
-          <Route path="add" element={withSuspense(AddTripPage)} />
-          <Route path="calendar" element={withSuspense(TripCalendarPage)} />
-          <Route path="timeline" element={withSuspense(TripTimelinePage)} />
-          <Route path="report" element={withSuspense(TripReportPage)} />
-          <Route path="details/:tripId" element={withSuspense(TripDetailsPage)} />
-          <Route path="invoicing/:tripId" element={withSuspense(TripInvoicingPanel)} />
-          <Route path="completion/:tripId" element={withSuspense(TripCompletionPanel)} />
-          <Route path="flags/:tripId" element={withSuspense(FlagInvestigationPanel)} />
+        {/* Trips */}
+        <Route path="trips">
+          <Route index element={withSuspense(TripDashboardPage)} />
+          <Route path="dashboard" element={withSuspense(TripDashboardPage)} />
+          <Route path="manage" element={withSuspense(TripManagementPage)} />
+          <Route path="active" element={withSuspense(ActiveTripsPage)} />
+          <Route path="completed" element={withSuspense(CompletedTrips)} />
           <Route path="system-costs/:tripId" element={withSuspense(SystemCostGenerator)} />
           <Route path="payments/:tripId" element={withSuspense(PaymentTrackingPanel)} />
           <Route path="reports/:tripId" element={withSuspense(ReportingPanel)} />
@@ -254,12 +245,12 @@ export const AppRoutes: React.FC = () => {
           <Route path="manage" element={withSuspense(DriverManagementPage)} />
           <Route path="details/:driverId" element={withSuspense(DriverDetailsPage)} />
           <Route path="behavior" element={withSuspense(DriverBehaviorPage)} />
-          <Route path="safety" element={withSuspense(SafetyScores)} />
-          <Route path="performance" element={withSuspense(PerformanceAnalytics)} />
-          <Route path="rewards" element={withSuspense(DriverRewards)} />
-          <Route path="scheduling" element={withSuspense(DriverScheduling)} />
-          <Route path="violations" element={withSuspense(DriverViolations)} />
-          <Route path="hos" element={withSuspense(HoursOfService)} />
+        {/* Drivers */}
+        <Route path="drivers">
+          <Route index element={withSuspense(DriverManagementPage)} />
+          <Route path="dashboard" element={withSuspense(DriverDashboard)} />
+          <Route path="integrated" element={withSuspense(DriverManagementPageIntegrated)} />
+          <Route path="manage" element={withSuspense(DriverManagementPage)} />
           <Route path="training" element={withSuspense(TrainingRecords)} />
           <Route path="licenses" element={withSuspense(LicenseManagement)} />
           <Route path="new" element={withSuspense(AddNewDriver)} />

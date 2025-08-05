@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { SupportedCurrency, formatCurrency } from '../lib/currency';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { SupportedCurrency, formatCurrency } from "../../lib/currency";
 
 interface Trip {
   id: string;
@@ -9,7 +9,7 @@ interface Trip {
   destination: string;
   startDate: string;
   endDate: string;
-  status: 'active' | 'completed' | 'scheduled';
+  status: "active" | "completed" | "scheduled";
   driver: string;
   vehicle: string;
   distance: number;
@@ -23,117 +23,116 @@ interface CompletedTripsProps {
 
 const mockCompletedTrips: Trip[] = [
   {
-    id: '101',
-    tripNumber: 'TR-2023-097',
-    origin: 'New York, NY',
-    destination: 'Boston, MA',
-    startDate: '2025-07-01T08:00:00',
-    endDate: '2025-07-02T14:00:00',
-    status: 'completed',
-    driver: 'Alex Johnson',
-    vehicle: 'Truck 234',
+    id: "101",
+    tripNumber: "TR-2023-097",
+    origin: "New York, NY",
+    destination: "Boston, MA",
+    startDate: "2025-07-01T08:00:00",
+    endDate: "2025-07-02T14:00:00",
+    status: "completed",
+    driver: "Alex Johnson",
+    vehicle: "Truck 234",
     distance: 215,
     cost: 950.25,
-    revenue: 1450.50
+    revenue: 1450.5,
   },
   {
-    id: '102',
-    tripNumber: 'TR-2023-098',
-    origin: 'Philadelphia, PA',
-    destination: 'Pittsburgh, PA',
-    startDate: '2025-07-03T09:30:00',
-    endDate: '2025-07-05T11:00:00',
-    status: 'completed',
-    driver: 'Chris Wilson',
-    vehicle: 'Truck 567',
+    id: "102",
+    tripNumber: "TR-2023-098",
+    origin: "Philadelphia, PA",
+    destination: "Pittsburgh, PA",
+    startDate: "2025-07-03T09:30:00",
+    endDate: "2025-07-05T11:00:00",
+    status: "completed",
+    driver: "Chris Wilson",
+    vehicle: "Truck 567",
     distance: 305,
     cost: 1320.75,
-    revenue: 2100.00
+    revenue: 2100.0,
   },
   {
-    id: '103',
-    tripNumber: 'TR-2023-099',
-    origin: 'Chicago, IL',
-    destination: 'Milwaukee, WI',
-    startDate: '2025-07-05T07:00:00',
-    endDate: '2025-07-05T14:30:00',
-    status: 'completed',
-    driver: 'Emily Roberts',
-    vehicle: 'Truck 789',
+    id: "103",
+    tripNumber: "TR-2023-099",
+    origin: "Chicago, IL",
+    destination: "Milwaukee, WI",
+    startDate: "2025-07-05T07:00:00",
+    endDate: "2025-07-05T14:30:00",
+    status: "completed",
+    driver: "Emily Roberts",
+    vehicle: "Truck 789",
     distance: 92,
-    cost: 425.50,
-    revenue: 750.25
+    cost: 425.5,
+    revenue: 750.25,
   },
   {
-    id: '104',
-    tripNumber: 'TR-2023-100',
-    origin: 'Dallas, TX',
-    destination: 'Houston, TX',
-    startDate: '2025-07-07T08:00:00',
-    endDate: '2025-07-07T16:00:00',
-    status: 'completed',
-    driver: 'Mark Thompson',
-    vehicle: 'Truck 345',
+    id: "104",
+    tripNumber: "TR-2023-100",
+    origin: "Dallas, TX",
+    destination: "Houston, TX",
+    startDate: "2025-07-07T08:00:00",
+    endDate: "2025-07-07T16:00:00",
+    status: "completed",
+    driver: "Mark Thompson",
+    vehicle: "Truck 345",
     distance: 239,
     cost: 875.25,
-    revenue: 1325.50
+    revenue: 1325.5,
   },
   {
-    id: '105',
-    tripNumber: 'TR-2023-101',
-    origin: 'Seattle, WA',
-    destination: 'Portland, OR',
-    startDate: '2025-07-10T09:00:00',
-    endDate: '2025-07-10T15:00:00',
-    status: 'completed',
-    driver: 'Lisa Brown',
-    vehicle: 'Truck 678',
+    id: "105",
+    tripNumber: "TR-2023-101",
+    origin: "Seattle, WA",
+    destination: "Portland, OR",
+    startDate: "2025-07-10T09:00:00",
+    endDate: "2025-07-10T15:00:00",
+    status: "completed",
+    driver: "Lisa Brown",
+    vehicle: "Truck 678",
     distance: 174,
-    cost: 795.00,
-    revenue: 1250.75
-  }
+    cost: 795.0,
+    revenue: 1250.75,
+  },
 ];
 
 const CompletedTrips: React.FC<CompletedTripsProps> = ({ displayCurrency }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState<keyof Trip>('endDate');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<keyof Trip>("endDate");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   // Filter trips based on search term
-  const filteredTrips = mockCompletedTrips.filter(trip => 
-    trip.tripNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    trip.origin.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    trip.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    trip.driver.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTrips = mockCompletedTrips.filter(
+    (trip) =>
+      trip.tripNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trip.origin.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trip.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trip.driver.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Sort trips
   const sortedTrips = [...filteredTrips].sort((a, b) => {
-    if (sortField === 'endDate' || sortField === 'startDate') {
+    if (sortField === "endDate" || sortField === "startDate") {
       const dateA = new Date(a[sortField]).getTime();
       const dateB = new Date(b[sortField]).getTime();
-      return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
     }
-    
-    if (typeof a[sortField] === 'number' && typeof b[sortField] === 'number') {
-      return sortDirection === 'asc' 
-        ? (a[sortField] as number) - (b[sortField] as number) 
+
+    if (typeof a[sortField] === "number" && typeof b[sortField] === "number") {
+      return sortDirection === "asc"
+        ? (a[sortField] as number) - (b[sortField] as number)
         : (b[sortField] as number) - (a[sortField] as number);
     }
-    
+
     const valueA = String(a[sortField]).toLowerCase();
     const valueB = String(b[sortField]).toLowerCase();
-    return sortDirection === 'asc' 
-      ? valueA.localeCompare(valueB) 
-      : valueB.localeCompare(valueA);
+    return sortDirection === "asc" ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
   });
 
   const handleSort = (field: keyof Trip) => {
     if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -165,17 +164,17 @@ const CompletedTrips: React.FC<CompletedTripsProps> = ({ displayCurrency }) => {
           <div className="text-sm text-gray-500 mb-1">Total Revenue</div>
           <div className="text-xl font-bold">{formatCurrency(totalRevenue, displayCurrency)}</div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
           <div className="text-sm text-gray-500 mb-1">Total Costs</div>
           <div className="text-xl font-bold">{formatCurrency(totalCost, displayCurrency)}</div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
           <div className="text-sm text-gray-500 mb-1">Total Profit</div>
           <div className="text-xl font-bold">{formatCurrency(totalProfit, displayCurrency)}</div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg shadow border-l-4 border-purple-500">
           <div className="text-sm text-gray-500 mb-1">Average Margin</div>
           <div className="text-xl font-bold">{averageMargin.toFixed(2)}%</div>
@@ -197,28 +196,56 @@ const CompletedTrips: React.FC<CompletedTripsProps> = ({ displayCurrency }) => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('tripNumber')}>
-                  Trip Number {sortField === 'tripNumber' && (sortDirection === 'asc' ? '↑' : '↓')}
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("tripNumber")}
+                >
+                  Trip Number {sortField === "tripNumber" && (sortDirection === "asc" ? "↑" : "↓")}
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Route
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Driver / Vehicle
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('endDate')}>
-                  Completion Date {sortField === 'endDate' && (sortDirection === 'asc' ? '↑' : '↓')}
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("endDate")}
+                >
+                  Completion Date {sortField === "endDate" && (sortDirection === "asc" ? "↑" : "↓")}
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('cost')}>
-                  Cost {sortField === 'cost' && (sortDirection === 'asc' ? '↑' : '↓')}
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("cost")}
+                >
+                  Cost {sortField === "cost" && (sortDirection === "asc" ? "↑" : "↓")}
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('revenue')}>
-                  Revenue {sortField === 'revenue' && (sortDirection === 'asc' ? '↑' : '↓')}
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("revenue")}
+                >
+                  Revenue {sortField === "revenue" && (sortDirection === "asc" ? "↑" : "↓")}
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Profit
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Actions
                 </th>
               </tr>
@@ -252,14 +279,20 @@ const CompletedTrips: React.FC<CompletedTripsProps> = ({ displayCurrency }) => {
                     {formatCurrency(trip.revenue, displayCurrency)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span className={trip.revenue - trip.cost > 0 ? 'text-green-600' : 'text-red-600'}>
+                    <span
+                      className={trip.revenue - trip.cost > 0 ? "text-green-600" : "text-red-600"}
+                    >
                       {formatCurrency(trip.revenue - trip.cost, displayCurrency)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      <button className="text-indigo-600 hover:text-indigo-900" onClick={() => {}}>Details</button>
-                      <button className="text-blue-600 hover:text-blue-900" onClick={() => {}}>Report</button>
+                      <button className="text-indigo-600 hover:text-indigo-900" onClick={() => {}}>
+                        Details
+                      </button>
+                      <button className="text-blue-600 hover:text-blue-900" onClick={() => {}}>
+                        Report
+                      </button>
                     </div>
                   </td>
                 </tr>

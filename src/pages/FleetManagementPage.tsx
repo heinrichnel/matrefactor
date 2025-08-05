@@ -1,30 +1,25 @@
-import React, { useState } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs'; 
-import { Truck, User, ClipboardList, Map } from 'lucide-react';
-import DriverBehaviorPage from './drivers/DriverBehaviorPage';
-import MissedLoadsTracker from '../components/TripManagement/MissedLoadsTracker';
-import DieselDashboard from '../pages/DieselDashboard';
-import MapsView from '../components/Map/MapsView';
-import { useSearchParams } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
+import { ClipboardList, Map, Truck, User } from "lucide-react";
+import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import MapsView from "../components/Map/MapsView";
+import MissedLoadsTracker from "../components/TripManagement/MissedLoadsTracker";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
+import { useAppContext } from "../context/AppContext";
+import DieselDashboard from "./diesel/DieselDashboard";
+import DriverBehaviorPage from "./drivers/DriverBehaviorPage";
 
 const FleetManagementPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const defaultTab = searchParams.get('tab') || 'overview';
+  const defaultTab = searchParams.get("tab") || "overview";
   const [activeTab, setActiveTab] = useState(defaultTab);
-  
+
   // Get missed loads data and functions from context
-  const { 
-    missedLoads, 
-    addMissedLoad, 
-    updateMissedLoad, 
-    deleteMissedLoad 
-  } = useAppContext();
+  const { missedLoads, addMissedLoad, updateMissedLoad, deleteMissedLoad } = useAppContext();
 
   // Update URL when tab changes
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    setSearchParams(value === 'overview' ? {} : { tab: value });
+    setSearchParams(value === "overview" ? {} : { tab: value });
   };
 
   return (
@@ -36,11 +31,7 @@ const FleetManagementPage: React.FC = () => {
         </div>
       </div>
 
-      <Tabs 
-        value={activeTab} 
-        onValueChange={handleTabChange}
-        className="w-full"
-      >
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Truck className="w-4 h-4" />
@@ -98,14 +89,14 @@ const FleetManagementPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="missed-loads" className="mt-6">
-          <MissedLoadsTracker 
+          <MissedLoadsTracker
             missedLoads={missedLoads}
             onAddMissedLoad={addMissedLoad}
             onUpdateMissedLoad={updateMissedLoad}
             onDeleteMissedLoad={deleteMissedLoad}
           />
         </TabsContent>
-        
+
         <TabsContent value="maps" className="mt-6">
           <MapsView />
         </TabsContent>

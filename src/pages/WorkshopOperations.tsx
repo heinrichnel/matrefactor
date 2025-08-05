@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  CircleDot,
+  ClipboardList,
+  FileText,
+  Package,
+  ShoppingCart,
+} from "lucide-react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
-import { 
-  ClipboardList, 
-  Package, 
-  ShoppingCart,
-  CircleDot,
-  FileText,
-  AlertTriangle,
-  CheckCircle
-} from "lucide-react";
 
 // Import all workshop components
-import JobCardManagement from './JobCardManagement';
+import InventoryDashboard from "./Inventory/InventoryDashboard";
+import JobCardManagement from "./JobCardManagement";
+import PurchaseOrderTracker from "./PurchaseOrderTracker";
+import TyreManagement from "./tyres/TyreManagementPage";
+import InspectionManagement from "./workshop/InspectionManagement";
 
 const WorkOrderManagement = () => <div>Work Order Management Component</div>;
-import TyreManagement from './tyres/TyreManagementPage';
-import PurchaseOrderTracker from './PurchaseOrderTracker';
-import InspectionManagement from './InspectionManagement';
-import InventoryDashboard from './InventoryDashboard';
 // TODO: Create this component
 // import FaultTracking from './FaultTracking';
 
 const WorkshopOperations: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
 
   return (
     <div className="space-y-6">

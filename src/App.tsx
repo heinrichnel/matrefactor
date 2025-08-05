@@ -46,7 +46,6 @@ import DriverPerformancePage from "./components/DriverManagement/DriverPerforman
 import MapsView from "./components/Map/MapsView";
 import LoadConfirmation from "./components/TripManagement/LoadConfirmation";
 import TripTemplateManager from "./components/TripManagement/TripTemplateManager";
-import AddTripPage from "./pages/AddTripPage";
 import FlagsInvestigations from "./pages/FlagsInvestigationsPage";
 import FleetManagementPage from "./pages/FleetManagementPage";
 import LoadPlanningPage from "./pages/LoadPlanningPage";
@@ -54,11 +53,11 @@ import RouteOptimizationPage from "./pages/RouteOptimizationPage";
 import RoutePlanningPage from "./pages/RoutePlanningPage";
 import TripCalendarPage from "./pages/TripCalendarPage";
 import TripDashboard from "./pages/TripDashboard";
-import TripManagementPage from "./pages/TripManagementPage";
 import TripReportPage from "./pages/TripReportPage";
 import ActiveTripsPage from "./pages/trips/ActiveTripsPageEnhanced";
 import MainTripWorkflow from "./pages/trips/MainTripWorkflow";
 import TripDetailsPage from "./pages/trips/TripDetailsPage";
+import TripManagementPage from "./pages/trips/TripManagementPage";
 import TripTimelinePage from "./pages/trips/TripTimelinePage";
 
 // === INVOICES ===
@@ -113,20 +112,20 @@ import TrainingRecords from "./pages/drivers/TrainingRecords";
 
 // === COMPLIANCE ===
 import ComplianceDashboard from "./pages/ComplianceDashboard";
-import InspectionManagement from "./pages/InspectionManagement";
 import QAReviewPanel from "./pages/QAReviewPanel";
+import InspectionManagement from "./pages/workshop/InspectionManagement";
 
 // === ANALYTICS ===
 import PredictiveModels from "./components/Models/Driver/PredictiveModels";
-import IndirectCostBreakdown from "./pages/IndirectCostBreakdown";
 import YearToDateKPIs from "./pages/analytics/YearToDateKPIs";
+import IndirectCostBreakdown from "./pages/trips/IndirectCostBreakdown";
 
 // === WORKSHOP ===
 import FaultTracking from "./components/WorkshopManagement/FaultTracking";
 import InspectionHistoryPage from "./components/WorkshopManagement/inspections";
 import VehicleInspectionPage from "./components/WorkshopManagement/vehicle-inspection";
 import WorkshopIntegration from "./components/workshop/WorkshopIntegration";
-import InventoryDashboard from "./pages/InventoryDashboard";
+import InventoryDashboard from "./pages/Inventory/InventoryDashboard";
 import JobCardManagement from "./pages/JobCardManagement";
 import PartsOrderingPage from "./pages/PartsOrderingPage";
 import TyreManagementPage from "./pages/tyres/TyreManagementPage";
@@ -147,8 +146,8 @@ import TyreMobilePage from "./pages/mobile/TyreMobilePage";
 import TyreReferenceManagerPage from "./pages/tyres/TyreReferenceManagerPage";
 
 // === INVENTORY ===
-import InventoryPage from "./pages/InventoryPage";
-import InventoryReportsPage from "./pages/InventoryReportsPage";
+import InventoryPage from "./pages/Inventory/InventoryPage";
+import InventoryReportsPage from "./pages/Inventory/InventoryReportsPage";
 import PartsInventoryPage from "./pages/PartsInventoryPage";
 import ReceivePartsPage from "./pages/ReceivePartsPage";
 

@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import PageWrapper from '../components/ui/PageWrapper';
-import Card, { CardContent, CardHeader } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import { Badge } from '../components/ui/badge';
 import {
-  Package,
-  Search,
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
   BarChart3,
-  PieChart,
-  Plus,
+  DollarSign,
   Download,
   Filter,
-  DollarSign
-} from 'lucide-react';
+  Package,
+  PieChart,
+  Plus,
+  Search,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import React, { useState } from "react";
+import Button from "../../components/ui/Button";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import PageWrapper from "../../components/ui/PageWrapper";
+import { Badge } from "../../components/ui/badge";
 
 interface InventoryItem {
   id: string;
@@ -28,7 +28,7 @@ interface InventoryItem {
   totalValue: number;
   supplier: string;
   lastUpdated: string;
-  status: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'REORDER';
+  status: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "REORDER";
 }
 
 interface InventoryStats {
@@ -40,121 +40,131 @@ interface InventoryStats {
 }
 
 const InventoryPage: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [selectedStatus, setSelectedStatus] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [selectedStatus, setSelectedStatus] = useState("ALL");
 
   // Mock data - in real app this would come from API/Firebase
   const inventoryItems: InventoryItem[] = [
     {
-      id: '1',
-      sku: 'SKU367308',
-      name: 'Battery Plugs',
-      category: 'Electrical',
+      id: "1",
+      sku: "SKU367308",
+      name: "Battery Plugs",
+      category: "Electrical",
       quantity: 15,
       reorderLevel: 5,
-      unitCost: 12.50,
-      totalValue: 187.50,
-      supplier: 'MAT',
-      lastUpdated: '2024-01-15',
-      status: 'IN_STOCK'
+      unitCost: 12.5,
+      totalValue: 187.5,
+      supplier: "MAT",
+      lastUpdated: "2024-01-15",
+      status: "IN_STOCK",
     },
     {
-      id: '2',
-      sku: 'SKU340314',
-      name: 'Female Air Coupling',
-      category: 'Pneumatic',
+      id: "2",
+      sku: "SKU340314",
+      name: "Female Air Coupling",
+      category: "Pneumatic",
       quantity: 3,
       reorderLevel: 5,
-      unitCost: 25.00,
-      totalValue: 75.00,
-      supplier: 'MAT',
-      lastUpdated: '2024-01-14',
-      status: 'LOW_STOCK'
+      unitCost: 25.0,
+      totalValue: 75.0,
+      supplier: "MAT",
+      lastUpdated: "2024-01-14",
+      status: "LOW_STOCK",
     },
     {
-      id: '3',
-      sku: 'SKU312825',
-      name: 'Air Cleaner (Sinotruck) K2436B4',
-      category: 'Filters',
+      id: "3",
+      sku: "SKU312825",
+      name: "Air Cleaner (Sinotruck) K2436B4",
+      category: "Filters",
       quantity: 1,
       reorderLevel: 2,
-      unitCost: 45.00,
-      totalValue: 45.00,
-      supplier: 'MAT',
-      lastUpdated: '2024-01-13',
-      status: 'LOW_STOCK'
+      unitCost: 45.0,
+      totalValue: 45.0,
+      supplier: "MAT",
+      lastUpdated: "2024-01-13",
+      status: "LOW_STOCK",
     },
     {
-      id: '4',
-      sku: 'SKU393395',
-      name: 'Air Bag (BPW Eco Plus)',
-      category: 'Suspension',
+      id: "4",
+      sku: "SKU393395",
+      name: "Air Bag (BPW Eco Plus)",
+      category: "Suspension",
       quantity: 0,
       reorderLevel: 2,
-      unitCost: 150.00,
-      totalValue: 0.00,
-      supplier: 'BPW',
-      lastUpdated: '2024-01-12',
-      status: 'OUT_OF_STOCK'
+      unitCost: 150.0,
+      totalValue: 0.0,
+      supplier: "BPW",
+      lastUpdated: "2024-01-12",
+      status: "OUT_OF_STOCK",
     },
     {
-      id: '5',
-      sku: 'SKU159281',
-      name: 'Turbo Charger - Shacman X3000 / 420HP (Weichai engine)',
-      category: 'Engine',
+      id: "5",
+      sku: "SKU159281",
+      name: "Turbo Charger - Shacman X3000 / 420HP (Weichai engine)",
+      category: "Engine",
       quantity: 1,
       reorderLevel: 1,
-      unitCost: 10955.00,
-      totalValue: 10955.00,
-      supplier: 'Amcotts',
-      lastUpdated: '2024-01-10',
-      status: 'IN_STOCK'
-    }
+      unitCost: 10955.0,
+      totalValue: 10955.0,
+      supplier: "Amcotts",
+      lastUpdated: "2024-01-10",
+      status: "IN_STOCK",
+    },
   ];
 
   // Calculate stats
   const stats: InventoryStats = {
     totalItems: inventoryItems.reduce((sum, item) => sum + item.quantity, 0),
     totalValue: inventoryItems.reduce((sum, item) => sum + item.totalValue, 0),
-    lowStockItems: inventoryItems.filter(item => item.status === 'LOW_STOCK').length,
-    outOfStockItems: inventoryItems.filter(item => item.status === 'OUT_OF_STOCK').length,
-    categoriesCount: new Set(inventoryItems.map(item => item.category)).size
+    lowStockItems: inventoryItems.filter((item) => item.status === "LOW_STOCK").length,
+    outOfStockItems: inventoryItems.filter((item) => item.status === "OUT_OF_STOCK").length,
+    categoriesCount: new Set(inventoryItems.map((item) => item.category)).size,
   };
 
   // Get unique categories
-  const categories = ['ALL', ...new Set(inventoryItems.map(item => item.category))];
+  const categories = ["ALL", ...new Set(inventoryItems.map((item) => item.category))];
 
   // Filter items
-  const filteredItems = inventoryItems.filter(item => {
+  const filteredItems = inventoryItems.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.supplier.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory;
-    const matchesStatus = selectedStatus === 'ALL' || item.status === selectedStatus;
+    const matchesCategory = selectedCategory === "ALL" || item.category === selectedCategory;
+    const matchesStatus = selectedStatus === "ALL" || item.status === selectedStatus;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'IN_STOCK': return 'bg-green-100 text-green-800';
-      case 'LOW_STOCK': return 'bg-yellow-100 text-yellow-800';
-      case 'OUT_OF_STOCK': return 'bg-red-100 text-red-800';
-      case 'REORDER': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "IN_STOCK":
+        return "bg-green-100 text-green-800";
+      case "LOW_STOCK":
+        return "bg-yellow-100 text-yellow-800";
+      case "OUT_OF_STOCK":
+        return "bg-red-100 text-red-800";
+      case "REORDER":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'IN_STOCK': return <TrendingUp className="w-4 h-4" />;
-      case 'LOW_STOCK': return <TrendingDown className="w-4 h-4" />;
-      case 'OUT_OF_STOCK': return <AlertTriangle className="w-4 h-4" />;
-      case 'REORDER': return <Package className="w-4 h-4" />;
-      default: return <Package className="w-4 h-4" />;
+      case "IN_STOCK":
+        return <TrendingUp className="w-4 h-4" />;
+      case "LOW_STOCK":
+        return <TrendingDown className="w-4 h-4" />;
+      case "OUT_OF_STOCK":
+        return <AlertTriangle className="w-4 h-4" />;
+      case "REORDER":
+        return <Package className="w-4 h-4" />;
+      default:
+        return <Package className="w-4 h-4" />;
     }
   };
 
@@ -165,33 +175,35 @@ const InventoryPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Inventory Management</h1>
-            <p className="text-gray-600">Track stock levels, manage reorders, and monitor inventory value</p>
+            <p className="text-gray-600">
+              Track stock levels, manage reorders, and monitor inventory value
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-3 mt-4 lg:mt-0">
             <Button
-              onClick={() => console.log('Navigate to add item')}
+              onClick={() => console.log("Navigate to add item")}
               icon={<Plus className="w-4 h-4" />}
             >
               Add Item
             </Button>
             <Button
               variant="outline"
-              onClick={() => console.log('Navigate to receive parts')}
+              onClick={() => console.log("Navigate to receive parts")}
               icon={<Package className="w-4 h-4" />}
             >
               Receive Parts
             </Button>
             <Button
               variant="outline"
-              onClick={() => console.log('Navigate to parts ordering')}
+              onClick={() => console.log("Navigate to parts ordering")}
               icon={<BarChart3 className="w-4 h-4" />}
             >
               Order Parts
             </Button>
             <Button
               variant="outline"
-              onClick={() => console.log('Export inventory')}
+              onClick={() => console.log("Export inventory")}
               icon={<Download className="w-4 h-4" />}
             >
               Export
@@ -223,7 +235,9 @@ const InventoryPage: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Value</p>
-                  <p className="text-2xl font-bold text-gray-900">${stats.totalValue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ${stats.totalValue.toLocaleString()}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -294,7 +308,7 @@ const InventoryPage: React.FC = () => {
               >
                 {categories.map((category) => (
                   <option key={category} value={category}>
-                    {category === 'ALL' ? 'All Categories' : category}
+                    {category === "ALL" ? "All Categories" : category}
                   </option>
                 ))}
               </select>
@@ -316,9 +330,9 @@ const InventoryPage: React.FC = () => {
                   variant="outline"
                   icon={<Filter className="w-4 h-4" />}
                   onClick={() => {
-                    setSearchQuery('');
-                    setSelectedCategory('ALL');
-                    setSelectedStatus('ALL');
+                    setSearchQuery("");
+                    setSelectedCategory("ALL");
+                    setSelectedStatus("ALL");
                   }}
                 >
                   Clear
@@ -367,32 +381,28 @@ const InventoryPage: React.FC = () => {
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {item.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {item.sku}
-                          </div>
+                          <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                          <div className="text-sm text-gray-500">{item.sku}</div>
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {item.category}
-                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{item.category}</td>
 
                       <td className="px-6 py-4">
-                        <Badge className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+                        <Badge
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}
+                        >
                           {getStatusIcon(item.status)}
-                          <span className="ml-1">{item.status.replace('_', ' ')}</span>
+                          <span className="ml-1">{item.status.replace("_", " ")}</span>
                         </Badge>
                       </td>
 
                       <td className="px-6 py-4 text-center">
-                        <span className={`text-sm font-medium ${
-                          item.quantity <= item.reorderLevel
-                            ? 'text-red-600'
-                            : 'text-gray-900'
-                        }`}>
+                        <span
+                          className={`text-sm font-medium ${
+                            item.quantity <= item.reorderLevel ? "text-red-600" : "text-gray-900"
+                          }`}
+                        >
                           {item.quantity}
                         </span>
                       </td>
@@ -409,9 +419,7 @@ const InventoryPage: React.FC = () => {
                         ${item.totalValue.toFixed(2)}
                       </td>
 
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {item.supplier}
-                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{item.supplier}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -422,9 +430,9 @@ const InventoryPage: React.FC = () => {
                   <Package className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No items found</h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    {searchQuery || selectedCategory !== 'ALL' || selectedStatus !== 'ALL'
-                      ? 'Try adjusting your search or filters.'
-                      : 'Get started by adding your first inventory item.'}
+                    {searchQuery || selectedCategory !== "ALL" || selectedStatus !== "ALL"
+                      ? "Try adjusting your search or filters."
+                      : "Get started by adding your first inventory item."}
                   </p>
                 </div>
               )}
@@ -443,11 +451,7 @@ const InventoryPage: React.FC = () => {
                     {stats.lowStockItems} item(s) are running low on stock
                   </span>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setSelectedStatus('LOW_STOCK')}
-                >
+                <Button size="sm" variant="outline" onClick={() => setSelectedStatus("LOW_STOCK")}>
                   View Low Stock Items
                 </Button>
               </div>

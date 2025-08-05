@@ -3,9 +3,10 @@ import { PlusCircle, Truck } from "lucide-react";
 import React, { useState } from "react";
 import { TripForm } from "../../components/forms/trips/TripForm";
 import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
 import Modal from "../../components/ui/Modal";
 import { db } from "../../firebase/config";
-import type { Trip } from "../../types/index";
+import type { TripFormData } from "../../types/TripTypes";
 
 const TripManagementPage: React.FC = () => {
   const [showTripForm, setShowTripForm] = useState(false);
@@ -13,25 +14,26 @@ const TripManagementPage: React.FC = () => {
   const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleAddTrip = async (tripData: Omit<Trip, "id" | "costs" | "status" | "additionalCosts">) => {
+  const handleAddTrip = async (tripData: TripFormData) => {
     setIsSubmitting(true);
     setErrorMessage(null);
 
     try {
-      // Add the trip to Firestore
+      // Add trip to Firestore
       await addDoc(collection(db, "trips"), {
         ...tripData,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        status: "active",
+        costs: [],
+        createdAt: new Date().toISOString(),
       });
 
       setSubmitSuccess(true);
       setShowTripForm(false);
 
-      // Reset success message after delay
+      // Reset success message after 3 seconds
       setTimeout(() => {
         setSubmitSuccess(null);
-      }, 5000);
+      }, 3000);
     } catch (error) {
       console.error("Error adding trip:", error);
       setErrorMessage("Failed to add trip. Please try again.");
@@ -42,23 +44,20 @@ const TripManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Truck className="h-6 w-6" /> Trip Management
+        <h1 className="text-2xl font-bold flex items-center">
+          <Truck className="mr-2" />
+          Trip Management
         </h1>
-
-        <Button
-          onClick={() => setShowTripForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-1"
-        >
-          <PlusCircle size={16} />
+        <Button onClick={() => setShowTripForm(true)} variant="primary">
+          <PlusCircle className="mr-2 h-4 w-4" />
           Add New Trip
         </Button>
       </div>
 
       {/* Success message */}
-      {submitSuccess && (
+      {submitSuccess === true && (
         <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
           <div className="flex">
             <div>
@@ -86,18 +85,36 @@ const TripManagementPage: React.FC = () => {
         title="Add New Trip"
         maxWidth="2xl"
       >
-        <TripForm 
-          onSubmit={handleAddTrip} 
+        <TripForm
+          onSubmit={handleAddTrip}
           onCancel={() => setShowTripForm(false)}
           isSubmitting={false}
         />
       </Modal>
 
-      {/* Trip list would go here */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">Active Trips</h2>
-        {/* Trip list component would go here */}
-        <p className="text-gray-500 italic">Trip list component to be implemented</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <Card>
+          <Card.Header title="Trip Analytics" />
+          <Card.Content>
+            <p className="text-gray-600">
+              Analyze your trips and identify optimization opportunities.
+            </p>
+          </Card.Content>
+        </Card>
+        <Card>
+          <Card.Header title="Trip History" />
+          <Card.Content>
+            <p className="text-gray-600">View completed trips and their performance data.</p>
+          </Card.Content>
+        </Card>
+        <Card>
+          <Card.Header title="Plan Routes" />
+          <Card.Content>
+            <p className="text-gray-600">
+              Plan optimal routes for future trips to save time and fuel.
+            </p>
+          </Card.Content>
+        </Card>
       </div>
     </div>
   );

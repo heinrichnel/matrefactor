@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import Card, { CardContent, CardHeader } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
-import { Clipboard, ClipboardCheck, FileText, Plus, RefreshCw } from 'lucide-react';
-import InspectionList from '../components/lists/InspectionList';
+import { Clipboard, ClipboardCheck, FileText, Plus, RefreshCw } from "lucide-react";
+import React, { useState } from "react";
+import InspectionList from "../../components/lists/InspectionList";
+import Button from "../../components/ui/Button";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 
 interface InspectionManagementProps {
-  status?: 'active' | 'completed' | 'templates';
+  status?: "active" | "completed" | "templates";
 }
 
-const InspectionManagement: React.FC<InspectionManagementProps> = ({ status = 'active' }) => {
+const InspectionManagement: React.FC<InspectionManagementProps> = ({ status = "active" }) => {
   const [activeTab, setActiveTab] = useState(status);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +26,10 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ status = 'a
   return (
     <div className="space-y-6">
       {errorMessage && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
           <span className="block sm:inline">{errorMessage}</span>
         </div>
       )}
@@ -49,9 +52,11 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ status = 'a
             onClick={() => {
               try {
                 // Refresh logic here
-                console.log('Refreshing inspections');
+                console.log("Refreshing inspections");
               } catch (err) {
-                handleError(`Failed to refresh inspections: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                handleError(
+                  `Failed to refresh inspections: ${err instanceof Error ? err.message : "Unknown error"}`
+                );
               }
             }}
           >
@@ -62,9 +67,11 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ status = 'a
             onClick={() => {
               try {
                 // New inspection logic here
-                console.log('Creating new inspection');
+                console.log("Creating new inspection");
               } catch (err) {
-                handleError(`Failed to create new inspection: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                handleError(
+                  `Failed to create new inspection: ${err instanceof Error ? err.message : "Unknown error"}`
+                );
               }
             }}
           >
@@ -73,7 +80,10 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ status = 'a
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'active' | 'completed' | 'templates')}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as "active" | "completed" | "templates")}
+      >
         <TabsList>
           <TabsTrigger value="active" className="flex items-center gap-2">
             <Clipboard className="w-4 h-4" />
@@ -103,13 +113,12 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ status = 'a
             <CardContent>
               <div className="text-center py-8">
                 <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No templates available yet</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No templates available yet
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">Templates will be displayed here</p>
                 <div className="mt-6">
-                  <Button
-                    icon={<Plus className="w-4 h-4" />}
-                    onClick={onClick}
-                  >
+                  <Button icon={<Plus className="w-4 h-4" />} onClick={onClick}>
                     Create Template
                   </Button>
                 </div>

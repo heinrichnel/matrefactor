@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { Input, Select, Textarea } from "../../ui/FormElements";
-import Button from "../../ui/Button";
-import { Trip, CLIENTS, DRIVERS } from "../../../types/index";
+import React, { useEffect, useState } from "react";
 import { useWialonUnits } from "../../../hooks/useWialonUnits";
+import { CLIENTS, DRIVERS, Trip } from "../../../types/index";
+import Button from "../../ui/Button";
+import { Input, Select, Textarea } from "../../ui/FormElements";
+
+// Define TripFormData type for form data handling
+export type TripFormData = Omit<Trip, "id" | "costs" | "status" | "additionalCosts">;
+
+import { TripFormData } from "../../../types/TripTypes";
 
 interface TripFormProps {
   trip?: Trip;
-  onSubmit: (tripData: Omit<Trip, "id" | "costs" | "status" | "additionalCosts">) => void;
+  onSubmit: (tripData: TripFormData) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
