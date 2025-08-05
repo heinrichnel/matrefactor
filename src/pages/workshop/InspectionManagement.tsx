@@ -118,7 +118,19 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ status = "a
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">Templates will be displayed here</p>
                 <div className="mt-6">
-                  <Button icon={<Plus className="w-4 h-4" />} onClick={onClick}>
+                  <Button
+                    icon={<Plus className="w-4 h-4" />}
+                    onClick={() => {
+                      try {
+                        // Create template logic here
+                        console.log("Creating new template");
+                      } catch (err) {
+                        handleError(
+                          `Failed to create template: ${err instanceof Error ? err.message : "Unknown error"}`
+                        );
+                      }
+                    }}
+                  >
                     Create Template
                   </Button>
                 </div>

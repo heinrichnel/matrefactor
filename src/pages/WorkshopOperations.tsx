@@ -13,14 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs"
 
 // Import all workshop components
 import InventoryDashboard from "./Inventory/InventoryDashboard";
-import JobCardManagement from "./JobCardManagement";
+import JobCardManagement from "./workshop/JobCardManagement";
 import PurchaseOrderTracker from "./PurchaseOrderTracker";
 import TyreManagement from "./tyres/TyreManagementPage";
 import InspectionManagement from "./workshop/InspectionManagement";
+import FaultTracking from "../components/WorkshopManagement/FaultTracking";
 
 const WorkOrderManagement = () => <div>Work Order Management Component</div>;
-// TODO: Create this component
-// import FaultTracking from './FaultTracking';
 
 const WorkshopOperations: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview");

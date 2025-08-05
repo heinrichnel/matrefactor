@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import Card, { CardContent, CardHeader } from '../ui/Card';
-import Button from '../ui/Button';
-import { Eye, Edit, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
-import Input from '../ui/Input';
-import { Select } from '../ui/FormElements';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase';
+import React, { useEffect, useState } from "react";
+import Card, { CardContent, CardHeader } from "../ui/Card";
+import Button from "../ui/Button";
+import { Eye, Edit, CheckCircle, AlertTriangle, Clock } from "lucide-react";
+import Input from "../ui/Input";
+import { Select } from "../ui/FormElements";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
 
 interface Inspection {
   id: string;
   vehicleId: string;
   inspectorName: string;
-  inspectionType: 'daily' | 'weekly' | 'monthly' | 'annual' | 'pre_trip' | 'post_trip';
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'requires_action';
+  inspectionType: "daily" | "weekly" | "monthly" | "annual" | "pre_trip" | "post_trip";
+  status: "pending" | "in_progress" | "completed" | "failed" | "requires_action";
   scheduledDate: string;
   completedDate?: string;
   durationMinutes?: number;
@@ -23,22 +23,22 @@ interface Inspection {
 
 const InspectionList: React.FC = () => {
   const [inspections, setInspections] = useState<Inspection[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchInspections = async () => {
       setLoading(true);
       try {
-        const snapshot = await getDocs(collection(db, 'inspections'));
-        const data = snapshot.docs.map(doc => ({
+        const snapshot = await getDocs(collection(db, "inspections"));
+        const data = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         })) as Inspection[];
         setInspections(data);
       } catch (error) {
-        console.error('Error fetching inspections:', error);
+        console.error("Error fetching inspections:", error);
       } finally {
         setLoading(false);
       }
@@ -47,29 +47,49 @@ const InspectionList: React.FC = () => {
     fetchInspections();
   }, []);
 
-  const filteredInspections = inspections.filter(inspection => {
+  const filteredInspections = inspections.filter((inspection) => {
     const matchesSearch =
       inspection.vehicleId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inspection.inspectorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inspection.inspectionType.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = filterStatus === 'all' || inspection.status === filterStatus;
+    const matchesStatus = filterStatus === "all" || inspection.status === filterStatus;
 
     return matchesSearch && matchesStatus;
   });
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <><CheckCircle className="w-4 h-4 text-green-500 mr-1" /> Completed</>;
-      case 'failed':
-        return <><AlertTriangle className="w-4 h-4 text-red-500 mr-1" /> Failed</>;
-      case 'in_progress':
-        return <><Clock className="w-4 h-4 text-yellow-500 mr-1" /> In Progress</>;
-      case 'pending':
-        return <><Clock className="w-4 h-4 text-gray-500 mr-1" /> Pending</>;
-      case 'requires_action':
-        return <><AlertTriangle className="w-4 h-4 text-orange-500 mr-1" /> Requires Action</>;
+      case "completed":
+        return (
+          <>
+            <CheckCircle className="w-4 h-4 text-green-500 mr-1" /> Completed
+          </>
+        );
+      case "failed":
+        return (
+          <>
+            <AlertTriangle className="w-4 h-4 text-red-500 mr-1" /> Failed
+          </>
+        );
+      case "in_progress":
+        return (
+          <>
+            <Clock className="w-4 h-4 text-yellow-500 mr-1" /> In Progress
+          </>
+        );
+      case "pending":
+        return (
+          <>
+            <Clock className="w-4 h-4 text-gray-500 mr-1" /> Pending
+          </>
+        );
+      case "requires_action":
+        return (
+          <>
+            <AlertTriangle className="w-4 h-4 text-orange-500 mr-1" /> Requires Action
+          </>
+        );
       default:
         return status;
     }
@@ -92,12 +112,12 @@ const InspectionList: React.FC = () => {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               options={[
-                { label: 'All Status', value: 'all' },
-                { label: 'Pending', value: 'pending' },
-                { label: 'In Progress', value: 'in_progress' },
-                { label: 'Completed', value: 'completed' },
-                { label: 'Failed', value: 'failed' },
-                { label: 'Requires Action', value: 'requires_action' }
+                { label: "All Status", value: "all" },
+                { label: "Pending", value: "pending" },
+                { label: "In Progress", value: "in_progress" },
+                { label: "Completed", value: "completed" },
+                { label: "Failed", value: "failed" },
+                { label: "Requires Action", value: "requires_action" },
               ]}
             />
           </div>
@@ -112,20 +132,23 @@ const InspectionList: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredInspections.map(inspection => (
+            {filteredInspections.map((inspection) => (
               <div
                 key={inspection.id}
                 className={`p-4 rounded-lg border ${
-                  inspection.status === 'completed' ? 'bg-green-50 border-green-200' :
-                  inspection.status === 'failed' ? 'bg-red-50 border-red-200' :
-                  inspection.status === 'requires_action' ? 'bg-orange-50 border-orange-200' :
-                  'bg-yellow-50 border-yellow-200'
+                  inspection.status === "completed"
+                    ? "bg-green-50 border-green-200"
+                    : inspection.status === "failed"
+                      ? "bg-red-50 border-red-200"
+                      : inspection.status === "requires_action"
+                        ? "bg-orange-50 border-orange-200"
+                        : "bg-yellow-50 border-yellow-200"
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-lg font-medium text-gray-900">
-                      {inspection.inspectionType.replace('_', ' ')} - Fleet {inspection.vehicleId}
+                      {inspection.inspectionType.replace("_", " ")} - Fleet {inspection.vehicleId}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
                       <div className="flex items-center space-x-2">
@@ -143,7 +166,9 @@ const InspectionList: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <div>
                           <p className="text-sm text-gray-500">Status</p>
-                          <p className="font-medium flex items-center">{getStatusDisplay(inspection.status)}</p>
+                          <p className="font-medium flex items-center">
+                            {getStatusDisplay(inspection.status)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -165,9 +190,13 @@ const InspectionList: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col md:flex-row gap-2 md:mt-0 mt-4">
-                    <Button size="sm" variant="outline" icon={<Eye className="w-4 h-4" />}>View</Button>
-                    {inspection.status !== 'completed' && (
-                      <Button size="sm" variant="outline" icon={<Edit className="w-4 h-4" />}>Edit</Button>
+                    <Button size="sm" variant="outline" icon={<Eye className="w-4 h-4" />}>
+                      View
+                    </Button>
+                    {inspection.status !== "completed" && (
+                      <Button size="sm" variant="outline" icon={<Edit className="w-4 h-4" />}>
+                        Edit
+                      </Button>
                     )}
                   </div>
                 </div>

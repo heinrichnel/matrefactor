@@ -26,7 +26,7 @@ export interface FuelEntryData {
 }
 
 const FuelEntryForm: React.FC<FuelEntryFormProps> = ({ onSubmit, onCancel, initialData = {} }) => {
-  const { isLoading: appLoading } = useAppContext();
+  const { isLoading } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [calculatedCost, setCalculatedCost] = useState<number | null>(null);
 

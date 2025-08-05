@@ -52,7 +52,7 @@ const RouteSelectionForm: React.FC<RouteSelectionFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get route options from Firestore
-  const { options: routeOptions, loading: loadingRoutes } = useRouteOptions();
+  const { options: routeOptions } = useRouteOptions();
 
   // Form submission handler
   const { submitForm, loading, error, success } = useFormSubmit("tripRoutes");

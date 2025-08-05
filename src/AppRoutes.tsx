@@ -24,7 +24,7 @@ const TripDashboardPage = lazy(() => import("./pages/TripDashboardPage"));
 const TripManagementPage = lazy(() => import("./pages/trips/TripManagementPage"));
 const ActiveTripsPage = lazy(() => import("./pages/trips/ActiveTripsPageEnhanced"));
 const CompletedTrips = lazy(() => import("./pages/trips/CompletedTrips"));
-const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage"));
+const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage.jsx"));
 const SystemCostGenerator = lazy(() => import("./pages/trips/SystemCostGenerator"));
 const PaymentTrackingPanel = lazy(() => import("./pages/trips/PaymentTrackingPanel"));
 const ReportingPanel = lazy(() => import("./pages/trips/ReportingPanel"));

@@ -4,6 +4,7 @@ import { getEnvVar } from "../utils/envUtils";
 export interface WialonUnitData {
   id: number;
   name: string;
+  registration?: string; // Add registration property
   pos?: { x: number; y: number; s: number; t: number };
 }
 
@@ -24,8 +25,7 @@ export function useWialonUnits(sdkReady: boolean = true) {
     setLoading(true);
     setError(null);
 
-    // @ts-ignore
-    const sess = window.wialon?.core?.Session.getInstance();
+    const sess = (window as any).wialon?.core?.Session.getInstance();
     if (!sess) {
       setError("Wialon SDK not loaded");
       setLoading(false);

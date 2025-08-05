@@ -4,7 +4,6 @@ import ClientForm from "../../components/forms/client/ClientForm";
 import Button from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 import Modal from "../../components/ui/Modal";
-import { ClientData } from "../../hooks/useClientFormData";
 
 // Mock data for clients
 const mockClients = [
@@ -27,7 +26,7 @@ const mockClients = [
     industry: "Logistics",
     paymentTerms: "net30",
     creditLimit: 50000,
-    status: "active" as const,
+    status: "active",
     contacts: [
       {
         name: "John Smith",
@@ -78,7 +77,7 @@ const mockClients = [
     industry: "Agriculture",
     paymentTerms: "cod",
     creditLimit: 25000,
-    status: "inactive" as const,
+    status: "inactive",
   },
 ];
 
@@ -88,10 +87,7 @@ const ClientManagementPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [industryFilter, setIndustryFilter] = useState("all");
   const [clients] = useState(mockClients);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
+  const [selectedClient, setSelectedClient] = useState<any | null>(null);
 
   // Filter clients based on search query, status filter, and industry filter
   const filteredClients = clients.filter((client) => {
@@ -107,30 +103,32 @@ const ClientManagementPage: React.FC = () => {
     return matchesSearch && matchesStatus && matchesIndustry;
   });
 
-  const handleAddClient = async (clientData: any): Promise<void> => {
-    setIsSubmitting(true);
-    setErrorMessage(null);
+  // Client addition handler - Reserved for future use when ClientForm supports onSubmit callback
+  // const handleAddClient = async (clientData: any): Promise<void> => {
+  //   setIsSubmitting(true);
+  //   setErrorMessage(null);
 
-    try {
-      // In a real app, this would be handled by the form's submit handler
-      // For the mock version, just simulate a delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  //   try {
+  //     // In a real app, this would be handled by the form's submit handler
+  //     // For the mock version, just simulate a delay
+  //     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      setSubmitSuccess(true);
-      setShowClientForm(false);
+  //     console.log('Adding client:', clientData); // Use clientData to avoid unused warning
+  //     setSubmitSuccess(true);
+  //     setShowClientForm(false);
 
-      // Reset success message after delay
-      setTimeout(() => {
-        setSubmitSuccess(null);
-      }, 5000);
-    } catch (error) {
-      console.error("Error adding client:", error);
-      setErrorMessage("Failed to add client. Please try again.");
-      setSubmitSuccess(false);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  //     // Reset success message after delay
+  //     setTimeout(() => {
+  //       setSubmitSuccess(null);
+  //     }, 5000);
+  //   } catch (error) {
+  //     console.error("Error adding client:", error);
+  //     setErrorMessage("Failed to add client. Please try again.");
+  //     setSubmitSuccess(false);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const handleEditClient = (client: any) => {
     setSelectedClient(client);
@@ -174,30 +172,6 @@ const ClientManagementPage: React.FC = () => {
           Add New Client
         </Button>
       </div>
-
-      {/* Success message */}
-      {submitSuccess && (
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
-          <div className="flex">
-            <div>
-              <p className="text-sm text-green-700">
-                Client was {selectedClient ? "updated" : "added"} successfully!
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Error message */}
-      {errorMessage && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-          <div className="flex">
-            <div>
-              <p className="text-sm text-red-700">{errorMessage}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Search and filter section */}
       <Card className="mb-6">
@@ -342,7 +316,13 @@ const ClientManagementPage: React.FC = () => {
         <ClientForm
           isOpen={showClientForm}
           onClose={() => setShowClientForm(false)}
-          initialValues={selectedClient || {}}
+          initialValues={
+            (selectedClient && {
+              ...selectedClient,
+              status: selectedClient.status === "blacklisted" ? "inactive" : selectedClient.status,
+            }) ||
+            {}
+          }
           isEditing={!!selectedClient}
         />
       </Modal>

@@ -12,7 +12,7 @@ import {
 import { AlertCircle, Save, User, X } from "lucide-react";
 
 // Components
-import { useOfflineForm } from "../../../hooks/useOfflineForm";
+import useOfflineForm from "../../../hooks/useOfflineForm";
 import Button from "../../ui/Button";
 import Card, { CardContent, CardHeader } from "../../ui/Card";
 
@@ -134,13 +134,17 @@ const DriverForm: React.FC<DriverFormProps> = ({
     // Handle nested fields
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
-      setFormData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof DriverData],
-          [child]: value,
-        },
-      }));
+      setFormData((prev) => {
+        const parentObj = (prev[parent as keyof DriverData] as Record<string, any>) || {};
+
+        return {
+          ...prev,
+          [parent]: {
+            ...parentObj,
+            [child]: value,
+          },
+        };
+      });
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }

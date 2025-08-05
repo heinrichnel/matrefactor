@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import FleetSelectionForm from "../components/forms/FleetSelectionForm";
 import RouteSelectionForm from "../components/forms/trips/RouteSelectionForm";
-import TyreSelectionForm from "../components/forms/TyreSelectionForm";
+import TyreSelectionForm from "../components/forms/tyre/TyreSelectionForm";
 import InventorySelectionForm from "../components/forms/workshop/InventorySelectionForm";
 import { useSyncContext } from "../context/SyncContext";
 

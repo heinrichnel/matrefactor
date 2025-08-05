@@ -7,7 +7,7 @@
  * to create a fully connected form with cascading selects.
  */
 import React, { useEffect, useState } from "react";
-import { useSyncContext } from "../../../context/SyncContext";
+import { useAppContext } from "../../../context/AppContext";
 import {
   useFormSubmit,
   useTyreBrandOptions,
@@ -40,7 +40,7 @@ const TyreSelectionForm: React.FC<TyreSelectionFormProps> = ({
   vehicleId,
   positionId,
 }) => {
-  const syncContext = useSyncContext();
+  const { isOnline } = useAppContext();
 
   // Form state
   const [formData, setFormData] = useState<Partial<TyreSelectionData>>({
@@ -160,7 +160,7 @@ const TyreSelectionForm: React.FC<TyreSelectionFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-bold">Tyre Selection</h2>
 
-      {!syncContext.isOnline && (
+      {!isOnline && (
         <div className="alert alert-warning">
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,6 +1,6 @@
 import { CalendarClock, MapPin, PlusCircle } from "lucide-react";
 import React from "react";
-import TripForm, { TripFormData } from "../../components/forms/trips/TripForm";
+import { TripForm } from "../../components/forms/trips/TripForm";
 import Button from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 import Modal from "../../components/ui/Modal";
@@ -44,12 +44,11 @@ const TripDashboardPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [trips] = React.useState<Trip[]>(mockTrips);
 
-  const handleTripSubmit = (data: TripFormData) => {
-    console.log("Trip submitted:", data);
+  const handleTripSubmit = (tripData: any) => {
+    console.log("Trip submitted:", tripData);
     // Here we would add the trip to Firestore
     setIsModalOpen(false);
   };
-
   // Get status badge color
   const getStatusColor = (status: Trip["status"]) => {
     switch (status) {

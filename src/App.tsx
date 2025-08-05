@@ -56,7 +56,7 @@ import TripDashboard from "./pages/TripDashboard";
 import TripReportPage from "./pages/TripReportPage";
 import ActiveTripsPage from "./pages/trips/ActiveTripsPageEnhanced";
 import MainTripWorkflow from "./pages/trips/MainTripWorkflow";
-import TripDetailsPage from "./pages/trips/TripDetailsPage";
+import TripDetailsPage from "./pages/trips/TripDetailsPage.jsx";
 import TripManagementPage from "./pages/trips/TripManagementPage";
 import TripTimelinePage from "./pages/trips/TripTimelinePage";
 
@@ -126,9 +126,9 @@ import InspectionHistoryPage from "./components/WorkshopManagement/inspections";
 import VehicleInspectionPage from "./components/WorkshopManagement/vehicle-inspection";
 import WorkshopIntegration from "./components/workshop/WorkshopIntegration";
 import InventoryDashboard from "./pages/Inventory/InventoryDashboard";
-import JobCardManagement from "./pages/JobCardManagement";
 import PartsOrderingPage from "./pages/PartsOrderingPage";
 import TyreManagementPage from "./pages/tyres/TyreManagementPage";
+import JobCardManagement from "./pages/workshop/JobCardManagement";
 import PurchaseOrderPage from "./pages/workshop/PurchaseOrderPage";
 import QRGenerator from "./pages/workshop/QRGenerator";
 import QRScannerPage from "./pages/workshop/QRScannerPage";
@@ -252,13 +252,20 @@ const App: React.FC = () => {
                           {/* Trips */}
                           <Route path="trips" element={<TripManagementPage />} />
                           <Route path="trips/active" element={<ActiveTripsPage />} />
-                          <Route path="trips/:id" element={<TripDetailsPage />} />
+                          <Route
+                            path="trips/:id"
+                            element={
+                              <TripDetailsPage
+                                trip={{} as any} // This should be replaced with actual trip data
+                                onBack={() => window.history.back()}
+                              />
+                            }
+                          />
                           <Route path="trips/timeline" element={<TripTimelinePage />} />
                           <Route path="trips/planning" element={<RoutePlanningPage />} />
                           <Route path="trips/optimization" element={<RouteOptimizationPage />} />
                           <Route path="trips/load-planning" element={<LoadPlanningPage />} />
                           <Route path="trips/calendar" element={<TripCalendarPage />} />
-                          <Route path="trips/add" element={<AddTripPage />} />
                           <Route path="trips/workflow" element={<MainTripWorkflow />} />
                           <Route path="trips/map" element={<MapsView />} />
                           <Route path="trips/dashboard" element={<TripDashboard />} />

@@ -8,11 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Ta
 import JobCardKanbanBoard from "./JobCardKanbanBoard";
 
 interface JobCardManagementProps {
-  activeTab?: "open" | "completed" | "kanban";
+  activeTab?: "open" | "completed" | "kanban" | "templates";
 }
 
 const JobCardManagement: React.FC<JobCardManagementProps> = ({ activeTab = "open" }) => {
-  const [currentTab, setCurrentTab] = useState(activeTab);
+  const [currentTab, setCurrentTab] = useState<"open" | "completed" | "kanban" | "templates">(
+    activeTab
+  );
   const [showJobCardModal, setShowJobCardModal] = useState(false);
 
   // Handler to open the Job Card modal

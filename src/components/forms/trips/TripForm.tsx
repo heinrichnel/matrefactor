@@ -4,9 +4,7 @@ import { CLIENTS, DRIVERS, Trip } from "../../../types/index";
 import Button from "../../ui/Button";
 import { Input, Select, Textarea } from "../../ui/FormElements";
 
-// Define TripFormData type for form data handling
-export type TripFormData = Omit<Trip, "id" | "costs" | "status" | "additionalCosts">;
-
+// Using the TripFormData type from types directory
 import { TripFormData } from "../../../types/TripTypes";
 
 interface TripFormProps {
