@@ -108,7 +108,11 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
       .map(mapToExtendedRecord)
       .filter((record) => {
         // Filter by selected vehicles
-        if (selectedVehicles.length > 0 && !selectedVehicles.includes(record.vehicleId)) {
+        if (
+          selectedVehicles.length > 0 &&
+          record.vehicleId &&
+          !selectedVehicles.includes(record.vehicleId)
+        ) {
           return false;
         }
 
@@ -143,8 +147,10 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
       .sort((a, b) => {
         if (sortConfig.key === "timestamp") {
           // Special case for dates
-          const dateA = new Date(a[sortConfig.key]).getTime();
-          const dateB = new Date(b[sortConfig.key]).getTime();
+          const timestampA = a[sortConfig.key];
+          const timestampB = b[sortConfig.key];
+          const dateA = timestampA ? new Date(timestampA).getTime() : 0;
+          const dateB = timestampB ? new Date(timestampB).getTime() : 0;
           return sortConfig.direction === "ascending" ? dateA - dateB : dateB - dateA;
         } else {
           // General case for other fields
