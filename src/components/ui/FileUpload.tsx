@@ -1,60 +1,122 @@
-import React, { useState, DragEvent, ChangeEvent } from "react";
+import React, { ChangeEvent, DragEvent, useRef, useState } from "react";
 
-const FileUpload: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
+interface FileUploadProps {
+  label?: string;
+  accept?: string;
+  multiple?: boolean;
+  onFileSelect: (files: FileList | null) => void;
+  error?: string;
+  disabled?: boolean;
+}
+
+const FileUpload: React.FC<FileUploadProps> = ({
+  label,
+  accept,
+  multiple = false,
+  onFileSelect,
+  error,
+  disabled = false,
+}) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragging(true);
+    if (!disabled) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = () => {
     setIsDragging(false);
   };
 
-  const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files.length > 0) {
-      setFile(e.dataTransfer.files[0]);
+
+    if (disabled) return;
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      setSelectedFiles(files);
+      onFileSelect(files);
     }
   };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) {
-      setFile(e.target.files[0]);
+    if (disabled) return;
+
+    const files = e.target.files;
+    setSelectedFiles(files);
+    onFileSelect(files);
+  };
+
+  const handleClick = () => {
+    if (!disabled && fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
+  const getFileNames = () => {
+    if (!selectedFiles) return null;
+    const names = Array.from(selectedFiles).map((file) => file.name);
+    return names.join(", ");
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center p-6">
-      <label
-        htmlFor="file-upload"
-        className={`w-full max-w-md p-6 border-2 border-dashed rounded-xl cursor-pointer text-center transition ${
-          isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+    <div className="w-full">
+      {label && <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>}
+
+      <div
+        className={`relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+          disabled
+            ? "border-gray-200 bg-gray-50 cursor-not-allowed"
+            : isDragging
+              ? "border-blue-500 bg-blue-50"
+              : error
+                ? "border-red-300 bg-red-50"
+                : "border-gray-300 hover:border-gray-400"
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        onClick={handleClick}
       >
-        <input id="file-upload" type="file" className="hidden" onChange={handleFileSelect} />
-        <p className="text-gray-500">
-          {file ? (
-            <span className="text-green-600 font-semibold">{file.name}</span>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={accept}
+          multiple={multiple}
+          disabled={disabled}
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+
+        <div className={`text-sm ${disabled ? "text-gray-400" : "text-gray-600"}`}>
+          {selectedFiles && selectedFiles.length > 0 ? (
+            <div>
+              <p className="font-medium text-green-600 mb-1">
+                {selectedFiles.length} file{selectedFiles.length > 1 ? "s" : ""} selected
+              </p>
+              <p className="text-xs text-gray-500 truncate" title={getFileNames() || ""}>
+                {getFileNames()}
+              </p>
+            </div>
           ) : (
-            "Drag & drop a file here, or click to select"
+            <div>
+              <p className="mb-1">
+                {disabled ? "File upload disabled" : "Drag and drop files here, or click to select"}
+              </p>
+              {accept && <p className="text-xs text-gray-400">Accepted formats: {accept}</p>}
+              {multiple && <p className="text-xs text-gray-400">You can select multiple files</p>}
+            </div>
           )}
-        </p>
-      </label>
-      {file && (
-        <button
-          onClick={() => alert(`Uploading: ${file.name}`)}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Upload
-        </button>
-      )}
+        </div>
+      </div>
+
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 };

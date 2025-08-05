@@ -86,3 +86,4 @@ validateConfig();
 
 // Initialize Firebase with the appropriate configuration
 export const firebaseApp = initializeApp(firebaseConfig);
+export default firebaseApp;

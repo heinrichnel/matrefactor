@@ -32,7 +32,7 @@ const TripReport: React.FC<TripReportProps> = ({ trip, onAddDelay, onDrillDownDe
         delayDuration: delayDuration,
         severity: delaySeverity as DelayReason["severity"],
         reportedAt: new Date().toISOString(),
-        reportedBy: "CurrentUser"
+        reportedBy: "CurrentUser",
       });
       setDelayDescription("");
       setDelayDuration(0);
@@ -42,19 +42,15 @@ const TripReport: React.FC<TripReportProps> = ({ trip, onAddDelay, onDrillDownDe
     }
   };
 
-  const formatDate = (dt?: string) =>
-    dt ? new Date(dt).toLocaleString() : "N/A";
+  const formatDate = (dt?: string) => (dt ? new Date(dt).toLocaleString() : "N/A");
 
   return (
     <div>
       <div className="flex gap-2 mb-3">
-        <button onClick={onClick} className="btn-primary" onClick={() => {}}>
+        <button className="btn-primary" onClick={handlePrint}>
           Print / Export PDF
         </button>
-        <button
-          className="btn-secondary"
-          onClick={onClick}
-        >
+        <button className="btn-secondary" onClick={() => setShowDelayModal(true)}>
           Add Delay Reason
         </button>
       </div>
@@ -63,9 +59,15 @@ const TripReport: React.FC<TripReportProps> = ({ trip, onAddDelay, onDrillDownDe
         <h2 className="text-xl font-bold mb-2">Trip Report: {trip.id}</h2>
         <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <div><b>Route:</b> {trip.route}</div>
-            <div><b>Driver:</b> {trip.driverName}</div>
-            <div><b>Fleet Number:</b> {trip.fleetNumber}</div>
+            <div>
+              <b>Route:</b> {trip.route}
+            </div>
+            <div>
+              <b>Driver:</b> {trip.driverName}
+            </div>
+            <div>
+              <b>Fleet Number:</b> {trip.fleetNumber}
+            </div>
           </div>
           <div>
             <div>
@@ -75,8 +77,8 @@ const TripReport: React.FC<TripReportProps> = ({ trip, onAddDelay, onDrillDownDe
                   trip.status === "completed"
                     ? "text-green-600"
                     : trip.status === "active"
-                    ? "text-yellow-600"
-                    : "text-gray-500"
+                      ? "text-yellow-600"
+                      : "text-gray-500"
                 }
               >
                 {trip.status}
@@ -115,7 +117,8 @@ const TripReport: React.FC<TripReportProps> = ({ trip, onAddDelay, onDrillDownDe
                   }}
                   title="Click for audit log"
                 >
-                  <b>{d.delayType.replace(/_/g, ' ')}</b>: {d.description} ({d.severity}, {d.delayDuration}h)
+                  <b>{d.delayType.replace(/_/g, " ")}</b>: {d.description} ({d.severity},{" "}
+                  {d.delayDuration}h)
                   <span className="text-gray-500"> ({formatDate(d.reportedAt)})</span>
                   <span className="text-xs text-gray-400 ml-2">by {d.reportedBy}</span>
                 </li>
@@ -169,16 +172,10 @@ const TripReport: React.FC<TripReportProps> = ({ trip, onAddDelay, onDrillDownDe
               />
             </div>
             <div className="flex gap-2 mt-4">
-              <button
-                className="btn-primary"
-                onClick={onClick}
-              >
+              <button className="btn-primary" onClick={addDelay}>
                 Add
               </button>
-              <button
-                className="btn-secondary"
-                onClick={onClick}
-              >
+              <button className="btn-secondary" onClick={() => setShowDelayModal(false)}>
                 Cancel
               </button>
             </div>
@@ -188,10 +185,7 @@ const TripReport: React.FC<TripReportProps> = ({ trip, onAddDelay, onDrillDownDe
 
       {/* Drilldown Delay Modal */}
       {selectedDelay && (
-        <DelayAuditModal
-          delay={selectedDelay}
-          onClose={() => setSelectedDelay(null)}
-        />
+        <DelayAuditModal delay={selectedDelay} onClose={() => setSelectedDelay(null)} />
       )}
     </div>
   );
@@ -225,7 +219,9 @@ const Timeline: React.FC<{ trip: Trip }> = ({ trip }) => {
           <div key={i} className="flex flex-col items-center md:flex-row md:gap-2">
             <div className="text-center">
               <div className="font-medium">{pt.label}</div>
-              <div className="text-gray-700">{pt.date ? new Date(pt.date).toLocaleString() : "N/A"}</div>
+              <div className="text-gray-700">
+                {pt.date ? new Date(pt.date).toLocaleString() : "N/A"}
+              </div>
               {pt.actual && (
                 <div className="text-green-700 text-xs">
                   Actual: {pt.actual ? new Date(pt.actual).toLocaleString() : "N/A"}
@@ -253,7 +249,7 @@ const DelayAuditModal: React.FC<{ delay: DelayReason; onClose: () => void }> = (
       <div className="bg-white p-6 rounded shadow w-full max-w-lg">
         <h3 className="font-bold mb-2">Delay Details</h3>
         <div>
-          <b>Type:</b> {delay.delayType.replace(/_/g, ' ')}
+          <b>Type:</b> {delay.delayType.replace(/_/g, " ")}
         </div>
         <div>
           <b>Description:</b> {delay.description}
@@ -265,7 +261,8 @@ const DelayAuditModal: React.FC<{ delay: DelayReason; onClose: () => void }> = (
           <b>Severity:</b> {delay.severity}
         </div>
         <div>
-          <b>Reported At:</b> {delay.reportedAt ? new Date(delay.reportedAt).toLocaleString() : 'N/A'}
+          <b>Reported At:</b>{" "}
+          {delay.reportedAt ? new Date(delay.reportedAt).toLocaleString() : "N/A"}
         </div>
         <div>
           <b>Reported By:</b> {delay.reportedBy}
@@ -276,7 +273,7 @@ const DelayAuditModal: React.FC<{ delay: DelayReason; onClose: () => void }> = (
           </div>
         )}
         <div className="mt-4 flex gap-2">
-          <button className="btn-secondary" onClick={onClick} onClick={() => {}}>
+          <button className="btn-secondary" onClick={onClose}>
             Close
           </button>
         </div>

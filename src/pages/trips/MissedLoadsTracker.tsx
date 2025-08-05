@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-import { Button } from "../../components/ui/button";
+import Button from "../../components/ui/Button";
 import Modal from "../../components/ui/Modal";
 import { Input, Select, TextArea } from "../../components/ui/FormElements";
 import {
@@ -298,8 +298,8 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
           <h2 className="text-2xl font-bold text-gray-900">Missed Loads Tracker</h2>
           <p className="text-gray-600">Track and analyze missed business opportunities</p>
         </div>
-        <Button onClick={handleNewMissedLoad} icon={<Plus className="w-4 h-4" />}>
-          Record Missed Load
+        <Button onClick={handleNewMissedLoad}>
+          <Plus className="w-4 h-4 mr-2" /> Record Missed Load
         </Button>
       </div>
 
@@ -382,8 +382,8 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                 Start tracking missed business opportunities to identify improvement areas.
               </p>
               <div className="mt-6">
-                <Button onClick={handleNewMissedLoad} icon={<Plus className="w-4 h-4" />}>
-                  Record First Missed Load
+                <Button onClick={handleNewMissedLoad}>
+                  <Plus className="w-4 h-4 mr-2" /> Record First Missed Load
                 </Button>
               </div>
             </div>
@@ -500,7 +500,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                         <Button
                           size="sm"
                           onClick={() => handleResolve(load)}
-                          icon={<FileText className="w-3 h-3" />}
+                          icon={<FileText className="w-3 h-3 mr-1" />}
                         >
                           Resolve
                         </Button>
@@ -509,15 +509,15 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                         size="sm"
                         variant="outline"
                         onClick={() => handleEdit(load)}
-                        icon={<Edit className="w-3 h-3" />}
+                        icon={<Edit className="w-3 h-3 mr-1" />}
                       >
                         Edit
                       </Button>
                       <Button
                         size="sm"
-                        variant="danger"
+                        variant="destructive"
                         onClick={() => handleDelete(load.id)}
-                        icon={<Trash2 className="w-3 h-3" />}
+                        icon={<Trash2 className="w-3 h-3 mr-1" />}
                       >
                         Delete
                       </Button>
@@ -688,10 +688,11 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button variant="outline" onClick={handleClose} icon={<X className="w-4 h-4" />}>
-              Cancel
+            <Button variant="outline" onClick={handleClose}>
+              <X className="w-4 h-4 mr-2" /> Cancel
             </Button>
-            <Button onClick={handleSubmit} icon={<Save className="w-4 h-4" />}>
+            <Button onClick={handleSubmit}>
+              <Save className="w-4 h-4 mr-2" />{" "}
               {editingLoad ? "Update Missed Load" : "Record Missed Load"}
             </Button>
           </div>
@@ -807,12 +808,11 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                   });
                   setErrors({});
                 }}
-                icon={<X className="w-4 h-4" />}
               >
-                Cancel
+                <X className="w-4 h-4 mr-2" /> Cancel
               </Button>
-              <Button onClick={handleResolutionSubmit} icon={<CheckCircle className="w-4 h-4" />}>
-                Mark as Resolved
+              <Button onClick={handleResolutionSubmit}>
+                <CheckCircle className="w-4 h-4 mr-2" /> Mark as Resolved
               </Button>
             </div>
           </div>

@@ -1,15 +1,9 @@
-// ─── React ───────────────────────────────────────────────────────
-import React, { useState, useEffect } from "react";
-
-// ─── Types ───────────────────────────────────────────────────────
-import { CostEntry, COST_CATEGORIES } from "../../../types/index";
-
-// ─── Components ───────────────────────────────────────────────────────
-import Button from "../../ui/Button";
-import { Input, Select, TextArea } from "../../ui/FormElements";
-import FileUpload from "../../ui/FileUpload";
-// ─── Icons ───────────────────────────────────────────────────────
 import { AlertTriangle, Flag, Save, Upload, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { COST_CATEGORIES, CostEntry } from "../../../types/index";
+import Button from "../../ui/Button";
+import FileUpload from "../../ui/FileUpload";
+import { Input, Select, TextArea } from "../../ui/FormElements";
 
 interface CostFormProps {
   tripId: string;
@@ -47,9 +41,9 @@ const CostForm: React.FC<CostFormProps> = ({ tripId, cost, onSubmit, onCancel })
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [availableSubCategories, setAvailableSubCategories] = useState<string[]>([]);
 
-  // Move these to top-level so they are available everywhere
+  // Correctly define and use variables
   const hasFiles = selectedFiles && selectedFiles.length > 0;
-  const hasExistingAttachments = cost && cost.attachments && cost.attachments.length > 0;
+  const hasExistingAttachments = !!(cost && cost.attachments && cost.attachments.length > 0);
   const hasDocumentation = hasFiles || hasExistingAttachments;
   const isHighRiskCategory = ["Non-Value-Added Costs", "Border Costs"].includes(formData.category);
 
@@ -127,7 +121,6 @@ const CostForm: React.FC<CostFormProps> = ({ tripId, cost, onSubmit, onCancel })
       newErrors.category = "System costs are automatically generated and cannot be manually added";
     }
     const hasFiles = selectedFiles && selectedFiles.length > 0;
-    const hasExistingAttachments = cost && cost.attachments && cost.attachments.length > 0;
     const hasNoDocumentReason = String(formData.noDocumentReason ?? "").trim().length > 0;
     if (!cost && !hasFiles && !hasNoDocumentReason) {
       newErrors.documents =
@@ -143,11 +136,10 @@ const CostForm: React.FC<CostFormProps> = ({ tripId, cost, onSubmit, onCancel })
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
-    // Use already declared variables
     const highRiskCategories = ["Non-Value-Added Costs", "Border Costs"];
     const isHighRisk = highRiskCategories.includes(formData.category);
     const missingDocumentation = !hasDocumentation && formData.noDocumentReason.trim();
-    const shouldFlag = formData.isFlagged || isHighRisk || missingDocumentation;
+    const shouldFlag = formData.isFlagged || isHighRisk || !!missingDocumentation;
     let flagReason = "";
     if (formData.isFlagged && String(formData.flagReason ?? "").trim()) {
       flagReason = String(formData.flagReason ?? "").trim();
@@ -172,7 +164,6 @@ const CostForm: React.FC<CostFormProps> = ({ tripId, cost, onSubmit, onCancel })
       flaggedAt: shouldFlag ? new Date().toISOString() : undefined,
       flaggedBy: shouldFlag ? "Current User" : undefined,
       isSystemGenerated: false,
-      // createdAt and updatedAt are not part of Omit<CostEntry, 'id' | 'attachments'>
     };
     onSubmit(costData, selectedFiles || undefined);
   };
@@ -183,7 +174,6 @@ const CostForm: React.FC<CostFormProps> = ({ tripId, cost, onSubmit, onCancel })
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* High-Risk Category Warning */}
       {isHighRiskCategory && (
         <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
           <div className="flex items-start space-x-3">
@@ -199,7 +189,6 @@ const CostForm: React.FC<CostFormProps> = ({ tripId, cost, onSubmit, onCancel })
         </div>
       )}
 
-      {/* Structured Cost Category Selection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Cost Category *</label>
@@ -316,6 +305,7 @@ const CostForm: React.FC<CostFormProps> = ({ tripId, cost, onSubmit, onCancel })
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">Attach Receipt/Document</label>
           <FileUpload
+            label=""
             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
             multiple
             onFileSelect={setSelectedFiles}
@@ -419,11 +409,11 @@ const CostForm: React.FC<CostFormProps> = ({ tripId, cost, onSubmit, onCancel })
 
       {/* Form Actions */}
       <div className="flex justify-end space-x-3 pt-6 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} icon={<X className="w-4 h-4" />}>
-          Cancel
+        <Button type="button" variant="outline" onClick={onCancel}>
+          <X className="w-4 h-4 mr-2" /> Cancel
         </Button>
-        <Button type="submit" icon={<Save className="w-4 h-4" />}>
-          {cost ? "Update Cost Entry" : "Add Cost Entry"}
+        <Button type="submit">
+          <Save className="w-4 h-4 mr-2" /> {cost ? "Update Cost Entry" : "Add Cost Entry"}
         </Button>
       </div>
     </form>
