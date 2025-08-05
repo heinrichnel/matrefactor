@@ -1,25 +1,5 @@
-import { Droplet, Save, Truck, X } from "lucid  // Sample data for the demo
-  const vehicles = [
-    { id: "V001", name: "Truck 101 - Kenworth T680" },
-    { id: "V002", name: "Truck 102 - Freightliner Cascadia" },
-    { id: "V003", name: "Truck 103 - Peterbilt 579" },
-    { id: "V004", name: "Truck 104 - Volvo VNL" }
-  ];
-
-  const drivers = [
-    { id: "D001", name: "John Doe" },
-    { id: "D002", name: "Jane Smith" },
-    { id: "D003", name: "Mike Johnson" },
-    { id: "D004", name: "Sarah Williams" }
-  ];
-
-  const fuelCards = [
-    { id: "FC001", number: "**** **** **** 1234" },
-    { id: "FC002", number: "**** **** **** 5678" },
-    { id: "FC003", number: "**** **** **** 9012" }
-  ];ct, { useState } from "react";
-import { useAppContext } from "../../../context/AppContext";
-import { useFleetVehicles, useDrivers, useDepots } from "../../../hooks/useFirestoreCollection";
+import { Droplet, Save, Truck, X } from "lucide-react";
+import React, { useState } from "react";
 import Button from "../../ui/Button";
 import Card, { CardContent, CardHeader } from "../../ui/Card";
 
@@ -44,7 +24,6 @@ export interface FuelEntryData {
 }
 
 const FuelEntryForm: React.FC<FuelEntryFormProps> = ({ onSubmit, onCancel, initialData = {} }) => {
-  const { isLoading } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [calculatedCost, setCalculatedCost] = useState<number | null>(null);
 
@@ -99,7 +78,7 @@ const FuelEntryForm: React.FC<FuelEntryFormProps> = ({ onSubmit, onCancel, initi
       }
     }
 
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev: FuelEntryData) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
