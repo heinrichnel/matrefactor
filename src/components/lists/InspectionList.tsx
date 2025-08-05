@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import Card, { CardContent, CardHeader } from "../ui/Card";
-import Button from "../ui/Button";
-import { Eye, Edit, CheckCircle, AlertTriangle, Clock } from "lucide-react";
-import Input from "../ui/Input";
-import { Select } from "../ui/FormElements";
 import { collection, getDocs } from "firebase/firestore";
+import { AlertTriangle, CheckCircle, Clock, Edit, Eye } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { db } from "../../firebase";
+import Button from "../ui/Button";
+import Card, { CardContent, CardHeader } from "../ui/Card";
+import { Select } from "../ui/FormElements";
+import Input from "../ui/Input";
 
 interface Inspection {
   id: string;
@@ -21,7 +21,11 @@ interface Inspection {
   notes: string;
 }
 
-const InspectionList: React.FC = () => {
+interface InspectionListProps {
+  status?: string;
+}
+
+const InspectionList: React.FC<InspectionListProps> = ({ status }) => {
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -53,7 +57,14 @@ const InspectionList: React.FC = () => {
       inspection.inspectorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inspection.inspectionType.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = filterStatus === "all" || inspection.status === filterStatus;
+    // Use status prop if provided, otherwise use filterStatus from local state
+    const statusToFilter = status || filterStatus;
+    const matchesStatus =
+      statusToFilter === "all" || statusToFilter === "active"
+        ? inspection.status === "pending" || inspection.status === "in_progress"
+        : statusToFilter === "completed"
+          ? inspection.status === "completed"
+          : inspection.status === statusToFilter;
 
     return matchesSearch && matchesStatus;
   });
