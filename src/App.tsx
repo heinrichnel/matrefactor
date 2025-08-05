@@ -119,7 +119,7 @@ import QAReviewPanel from "./pages/QAReviewPanel";
 // === ANALYTICS ===
 import PredictiveModels from "./components/Models/Driver/PredictiveModels";
 import IndirectCostBreakdown from "./pages/IndirectCostBreakdown";
-import YearToDateKPIs from "./pages/YearToDateKPIs";
+import YearToDateKPIs from "./pages/analytics/YearToDateKPIs";
 
 // === WORKSHOP ===
 import FaultTracking from "./components/WorkshopManagement/FaultTracking";
@@ -143,7 +143,7 @@ import TyreFleetMap from "./pages/TyreFleetMap";
 import TyreHistoryPage from "./pages/TyreHistoryPage";
 import TyrePerformanceDashboard from "./pages/TyrePerformanceDashboard";
 import TyreMobilePage from "./pages/mobile/TyreMobilePage";
-import AddNewTyrePage from "./pages/tyres/AddNewTyrePage";
+
 import TyreReferenceManagerPage from "./pages/tyres/TyreReferenceManagerPage";
 
 // === INVENTORY ===
@@ -199,7 +199,9 @@ const App: React.FC = () => {
           context: { component: "App", operation: "syncOfflineOperations" },
           maxRetries: 3,
         });
-      } catch {}
+      } catch (error) {
+        console.error("Failed to sync offline operations:", error);
+      }
     };
     window.addEventListener("online", handleOnline);
 
@@ -433,6 +435,7 @@ const App: React.FC = () => {
                           {/* Analytics */}
                           <Route path="analytics" element={<YearToDateKPIs />} />
                           <Route path="analytics/kpi" element={<YearToDateKPIs />} />
+                          <Route path="analytics/year-to-date-kpis" element={<YearToDateKPIs />} />
                           <Route path="analytics/predictive" element={<PredictiveModels />} />
                           <Route path="analytics/costs" element={<IndirectCostBreakdown />} />
                           <Route path="analytics/roi" element={<YearToDateKPIs />} />
@@ -463,7 +466,6 @@ const App: React.FC = () => {
                           {/* Tyres */}
                           <Route path="tyres" element={<TyreManagementPage />} />
                           <Route path="tyres/mobile" element={<TyreMobilePage />} />
-                          <Route path="tyres/add" element={<AddNewTyrePage />} />
                           <Route
                             path="tyres/reference-data"
                             element={<TyreReferenceManagerPage />}

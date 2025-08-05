@@ -493,6 +493,12 @@ export const sidebarConfig: SidebarItem[] = [
         component: "pages/analytics/AnalyticsInsights",
       },
       {
+        id: "year-to-date-kpis",
+        label: "Year to Date KPIs",
+        path: "/analytics/year-to-date-kpis",
+        component: "pages/analytics/YearToDateKPIs",
+      },
+      {
         id: "predictive-analysis",
         label: "Predictive Analysis",
         path: "/analytics/predictive",

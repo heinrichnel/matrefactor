@@ -59,6 +59,8 @@ storage.rules
 *.xlsx
 *.json
 !src/**/*.json  # keep config files used in code
+!package.json   # explicitly include package.json for builds
+!package-lock.json  # include package-lock.json for dependency resolution
 
 # ───────── Build Output for Functions ───────
 functions/node_modules/
