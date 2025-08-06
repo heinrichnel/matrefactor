@@ -22,7 +22,7 @@ export interface Tyre {
   };
   installation?: {
     vehicleId: string;
-    position: TyrePosition;
+    position: TyrePosition; // Ensure this is TyrePosition
     mileageAtInstallation: number;
     installationDate: string;
     installedBy: string;
@@ -40,7 +40,7 @@ export interface Tyre {
   maintenanceHistory: {
     rotations: TyreRotation[];
     repairs: TyreRepair[];
-    inspections: TyreInspection[];
+    inspections: TyreInspection[]; // This will now be the simpler TyreInspection
   };
   kmRun: number; // Use kilometers for all calculations
   kmRunLimit: number;
@@ -60,17 +60,17 @@ export interface TyreSize {
 
 // Types for tyre history events
 export interface TyreRotation {
-  id: string;
+  id: string; // Ensure ID is always present
   date: string;
-  fromPosition: TyrePosition;
-  toPosition: TyrePosition;
+  fromPosition: TyrePosition; // Explicitly TyrePosition
+  toPosition: TyrePosition; // Explicitly TyrePosition
   mileage: number;
   technician: string;
   notes?: string;
 }
 
 export interface TyreRepair {
-  id: string;
+  id: string; // Ensure ID is always present
   date: string;
   type: string;
   description: string;
@@ -79,8 +79,9 @@ export interface TyreRepair {
   notes?: string;
 }
 
+// This is the simpler inspection record used within Tyre's maintenanceHistory
 export interface TyreInspection {
-  id: string;
+  id: string; // Ensure ID is always present
   date: string;
   inspector: string;
   treadDepth: number;
@@ -90,6 +91,27 @@ export interface TyreInspection {
   notes: string;
   images?: string[];
 }
+
+// This new interface represents a full inspection record as it might be stored in a separate collection
+// or when adding a new inspection, containing all necessary context.
+export interface TyreInspectionRecord {
+  id: string; // Unique ID for the inspection record
+  tyreId: string;
+  vehicleId: string;
+  vehicleName: string;
+  position: TyrePosition;
+  date: string;
+  inspectorName: string;
+  mileage: number;
+  treadDepth: number;
+  pressure: number;
+  temperature: number;
+  condition: string; // e.g., "good", "warning", "critical"
+  notes: string;
+  images?: string[];
+  createdAt?: Timestamp;
+}
+
 
 // History event for a tyre movement
 export interface StockEntryHistory {

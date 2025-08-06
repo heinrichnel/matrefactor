@@ -2,24 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRealtimeTrips } from '../hooks/useRealtimeTrips';
+import { Trip as RealtimeTrip } from '../hooks/useRealtimeTrips';
 import { startOfWeek, addHours, isSameWeek } from 'date-fns';
-
-interface Trip {
-  id: string;
-  tripNumber: string;
-  origin: string;
-  destination: string;
-  startDate: string;
-  endDate: string;
-  status: string;
-  driver: string;
-  vehicle: string;
-  distance: number;
-  cost: number;
-  source?: 'internal' | 'webhook';
-  externalId?: string;
-  lastUpdated?: string;
-}
 
 interface TimelineTrip {
   id: string;
@@ -52,7 +36,7 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 // Type guard to ensure data matches Trip interface
-function isValidTrip(trip: any): trip is Trip {
+function isValidTrip(trip: any): trip is RealtimeTrip {
   return (
     trip &&
     typeof trip.id === 'string' &&
@@ -71,9 +55,9 @@ export function useTimelineTrips(webhookTrips: unknown[] = []) {
   const [groups, setGroups] = useState<VehicleGroup[]>([]);
 
   useEffect(() => {
-    const safeFetched: Trip[] = (fetchedTrips ?? []).filter(isValidTrip);
-    const safeWebhooks: Trip[] = (webhookTrips ?? []).filter(isValidTrip);
-    const allTrips: Trip[] = [...safeFetched, ...safeWebhooks];
+    const safeFetched: RealtimeTrip[] = (fetchedTrips ?? []).filter(isValidTrip);
+    const safeWebhooks: RealtimeTrip[] = (webhookTrips ?? []).filter(isValidTrip);
+    const allTrips: RealtimeTrip[] = [...safeFetched, ...safeWebhooks];
 
     const vehicleSet: Set<string> = new Set();
     const fleetMap: Record<string, boolean> = {};

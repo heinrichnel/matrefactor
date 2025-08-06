@@ -87,7 +87,7 @@ const WialonIntegration: React.FC<WialonIntegrationProps> = ({
           <h3 className="font-medium">Iframe Embedding Not Supported</h3>
           <p className="mt-1">Wialon has X-Frame-Options that prevent embedding in an iframe. Please use the button mode instead.</p>
           <button
-            onClick={onClick}
+            onClick={handleOpenWialon} // Changed onClick to handleOpenWialon
             className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
             {buttonLabel}
@@ -114,7 +114,7 @@ const WialonIntegration: React.FC<WialonIntegrationProps> = ({
   return (
     <div className="wialon-button-container">
       <button
-        onClick={onClick}
+        onClick={handleOpenWialon} // Changed onClick to handleOpenWialon
         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
       >
         {buttonLabel}

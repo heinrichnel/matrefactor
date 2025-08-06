@@ -10,15 +10,18 @@ import {
   getTyres,
   getTyreById,
   deleteTyre,
-  addTyreInspection,
-  getTyreInspections,
+  addTyreInspection as addTyreInspectionToFirebase, // Renamed to avoid conflict
+  getTyreInspections as getTyreInspectionsFromFirebase, // Renamed to avoid conflict
   getTyresByVehicle,
   listenToTyres,
 } from '../firebase';
 import type {
   Tyre,
-  TyreInspection,
+  TyreInspection, // This is the simpler type used within Tyre.maintenanceHistory
   TyreRotation,
+  TyreRepair, // Ensure TyreRepair is imported
+  TyrePosition, // Import TyrePosition
+  TyreInspectionRecord, // Import the new TyreInspectionRecord
 } from '../types/tyre';
 
 interface TyreContextType {
@@ -28,7 +31,9 @@ interface TyreContextType {
   saveTyre: (tyre: Tyre) => Promise<string>;
   getTyreById: (id: string) => Promise<Tyre | null>;
   deleteTyre: (id: string) => Promise<void>;
-  addInspection: (tyreId: string, inspection: TyreInspection) => Promise<string>;
+  // addInspection now expects a TyreInspectionRecord to provide full context to Firebase
+  addInspection: (inspection: TyreInspectionRecord) => Promise<string>;
+  // getInspections now returns the simpler TyreInspection type
   getInspections: (tyreId: string) => Promise<TyreInspection[]>;
   getTyresByVehicle: (vehicleId: string) => Promise<Tyre[]>;
   filterTyres: (filters: {
@@ -37,7 +42,7 @@ interface TyreContextType {
     brand?: string;
     location?: Tyre['location'];
     vehicleId?: string;
-    condition?: TyreInspection['condition'];
+    condition?: TyreInspection['condition']; // This refers to the condition string from TyreInspection
     minTreadDepth?: number;
     maxTreadDepth?: number;
   }) => Promise<Tyre[]>;
@@ -52,18 +57,38 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     setLoading(true);
+    // Listen to real-time updates from Firebase
     const unsubscribe = listenToTyres((updatedTyres: Tyre[]) => {
-      const mapped = updatedTyres.map((tyre, index) => ({
+      // Map and normalize the incoming tyre data to ensure type consistency
+      const mappedTyres = updatedTyres.map((tyre) => ({
         ...tyre,
+        // Ensure installation position is correctly typed as TyrePosition
+        installation: tyre.installation ? {
+          ...tyre.installation,
+          position: tyre.installation.position as TyrePosition,
+        } : undefined,
         maintenanceHistory: {
           ...tyre.maintenanceHistory,
+          // Map rotations to ensure 'id' is present and positions are TyrePosition
           rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
             ...r,
-            id: r.id ?? `rotation-${index}-${i}`,
+            id: r.id || `rotation-${tyre.id}-${i}`, // Provide a fallback ID
+            fromPosition: r.fromPosition as TyrePosition,
+            toPosition: r.toPosition as TyrePosition,
+          })) || [],
+          // Map repairs to ensure 'id' is present
+          repairs: tyre.maintenanceHistory?.repairs?.map((r, i) => ({
+            ...r,
+            id: r.id || `repair-${tyre.id}-${i}`, // Provide a fallback ID
+          })) || [],
+          // Map inspections to ensure 'id' is present
+          inspections: tyre.maintenanceHistory?.inspections?.map((i, idx) => ({
+            ...i,
+            id: i.id || `inspection-${tyre.id}-${idx}`, // Provide a fallback ID
           })) || [],
         },
       }));
-      setTyres(mapped);
+      setTyres(mappedTyres);
       setLoading(false);
     });
     return () => unsubscribe();
@@ -71,6 +96,7 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const handleSaveTyre = async (tyre: Tyre): Promise<string> => {
     try {
+      // Ensure the tyre object passed to Firebase matches the expected structure
       return await saveTyre(tyre);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error saving tyre'));
@@ -82,13 +108,28 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const result = await getTyreById(id);
       if (!result) return null;
+      // Normalize the retrieved tyre data
       return {
         ...result,
+        installation: result.installation ? {
+          ...result.installation,
+          position: result.installation.position as TyrePosition,
+        } : undefined,
         maintenanceHistory: {
           ...result.maintenanceHistory,
           rotations: result.maintenanceHistory?.rotations?.map((r, i) => ({
             ...r,
-            id: r.id ?? `rotation-${i}`,
+            id: r.id || `rotation-${result.id}-${i}`,
+            fromPosition: r.fromPosition as TyrePosition,
+            toPosition: r.toPosition as TyrePosition,
+          })) || [],
+          repairs: result.maintenanceHistory?.repairs?.map((r, i) => ({
+            ...r,
+            id: r.id || `repair-${result.id}-${i}`,
+          })) || [],
+          inspections: result.maintenanceHistory?.inspections?.map((i, idx) => ({
+            ...i,
+            id: i.id || `inspection-${result.id}-${idx}`,
           })) || [],
         },
       };
@@ -107,12 +148,15 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // handleAddInspection now takes a TyreInspectionRecord
   const handleAddInspection = async (
-    tyreId: string,
-    inspection: TyreInspection
+    inspectionRecord: TyreInspectionRecord // Expect TyreInspectionRecord here
   ): Promise<string> => {
     try {
-      return await addTyreInspection(tyreId, inspection);
+      // Pass the full TyreInspectionRecord to the Firebase function.
+      // The Firebase function 'addTyreInspection' expects two arguments: tyreId and inspectionRecord.
+      // We extract tyreId from the inspectionRecord itself.
+      return await addTyreInspectionToFirebase(inspectionRecord.tyreId, inspectionRecord);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error adding inspection'));
       throw err;
@@ -121,17 +165,18 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const handleGetInspections = async (tyreId: string): Promise<TyreInspection[]> => {
     try {
-      const records = await getTyreInspections(tyreId);
+      // Firebase function returns TyreInspectionRecord[], map it to TyreInspection[]
+      const records = await getTyreInspectionsFromFirebase(tyreId);
       return records.map((r, i) => ({
-        ...r,
-        id: r.id ?? `inspection-${i}`,
-        condition: r.condition,
+        id: r.id || `inspection-${tyreId}-${i}`, // Ensure ID is present
         date: r.date,
-        inspector: r.inspector,
-        pressure: r.pressure,
+        inspector: r.inspectorName, // Map inspectorName from record to inspector in TyreInspection
         treadDepth: r.treadDepth,
+        pressure: r.pressure,
         temperature: r.temperature,
+        condition: r.condition,
         notes: r.notes,
+        images: r.images,
       }));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error getting inspections'));
@@ -142,13 +187,28 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const handleGetTyresByVehicle = async (vehicleId: string): Promise<Tyre[]> => {
     try {
       const result = await getTyresByVehicle(vehicleId);
-      return result.map((tyre, index) => ({
+      // Normalize the retrieved tyre data
+      return result.map((tyre) => ({
         ...tyre,
+        installation: tyre.installation ? {
+          ...tyre.installation,
+          position: tyre.installation.position as TyrePosition,
+        } : undefined,
         maintenanceHistory: {
           ...tyre.maintenanceHistory,
           rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
             ...r,
-            id: r.id ?? `rotation-${index}-${i}`,
+            id: r.id || `rotation-${tyre.id}-${i}`,
+            fromPosition: r.fromPosition as TyrePosition,
+            toPosition: r.toPosition as TyrePosition,
+          })) || [],
+          repairs: tyre.maintenanceHistory?.repairs?.map((r, i) => ({
+            ...r,
+            id: r.id || `repair-${tyre.id}-${i}`,
+          })) || [],
+          inspections: tyre.maintenanceHistory?.inspections?.map((i, idx) => ({
+            ...i,
+            id: i.id || `inspection-${tyre.id}-${idx}`,
           })) || [],
         },
       }));
@@ -170,13 +230,28 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }): Promise<Tyre[]> => {
     try {
       const tyres = await getTyres(filters);
-      return tyres.map((tyre, index) => ({
+      // Normalize the retrieved tyre data
+      return tyres.map((tyre) => ({
         ...tyre,
+        installation: tyre.installation ? {
+          ...tyre.installation,
+          position: tyre.installation.position as TyrePosition,
+        } : undefined,
         maintenanceHistory: {
           ...tyre.maintenanceHistory,
           rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
             ...r,
-            id: r.id ?? `rotation-${index}-${i}`,
+            id: r.id || `rotation-${tyre.id}-${i}`,
+            fromPosition: r.fromPosition as TyrePosition,
+            toPosition: r.toPosition as TyrePosition,
+          })) || [],
+          repairs: tyre.maintenanceHistory?.repairs?.map((r, i) => ({
+            ...r,
+            id: r.id || `repair-${tyre.id}-${i}`,
+          })) || [],
+          inspections: tyre.maintenanceHistory?.inspections?.map((i, idx) => ({
+            ...i,
+            id: i.id || `inspection-${tyre.id}-${idx}`,
           })) || [],
         },
       }));

@@ -62,7 +62,7 @@ const CARReportList: React.FC = () => {
 
   // Sort reports: newest first
   const sortedReports = [...filteredReports].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    (a, b) => new Date(b.createdAt || b.dateDue).getTime() - new Date(a.createdAt || a.dateDue).getTime()
   );
 
   // Handle filter changes
