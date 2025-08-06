@@ -1,28 +1,13 @@
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { defineConfig } from "vite";
-import { nodePolyfills } from 'vite-plugin-node-polyfills'; // Import the plugin
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    nodePolyfills({
-      // To disable specific polyfills, add them here.
-      // For example, to disable 'fs' polyfill:
-      // include: ['util', 'buffer'],
-      // exclude: ['fs'],
-      //
-      // globals: {
-      //   Buffer: true,
-      // },
-      // protocols: {
-      //   'http:': true,
-      //   'https:': true,
-      // },
-      // Removed 'perf_hooks' and 'v8' from exclude as they are not valid options
-      // and are causing TypeScript errors. The core issue is jiti bundling.
-    }),
+    // Removed nodePolyfills plugin as it's causing browser compatibility warnings
+    // and we don't actually need Node.js polyfills for our Firebase/React app
   ],
   server: {
     host: true,
@@ -68,9 +53,10 @@ export default defineConfig({
       external: [
         // Add the TyreReports file to handle the casing issue
         "/src/components/TyreManagement/TyreReports",
-        // Explicitly externalize 'jiti' as it's a Node.js runtime tool
-        // and should not be bundled for the browser.
+        // Explicitly externalize Node.js tools that shouldn't be bundled for browser
         "jiti",
+        "v8",
+        "perf_hooks",
       ],
       output: {
         // Create more granular chunks to optimize loading
