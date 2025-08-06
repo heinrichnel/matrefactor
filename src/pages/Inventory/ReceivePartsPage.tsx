@@ -13,7 +13,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import PartsReceivingForm from "../../components/forms/workshop/PartsReceivingForm";
 import PageWrapper from "../../components/ui/PageWrapper";
 import { db } from "../../firebase";
-import { POItem } from "../../types/inventory";
 
 // Interface for parts being received
 interface PartToReceive {

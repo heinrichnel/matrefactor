@@ -29,6 +29,12 @@ import {
   UITrip
 } from '../../types/index'; // Assuming these types are correctly imported
 
+// Define the SelectOption interface
+interface SelectOption {
+  label: string;
+  value: string;
+}
+
 // Mock data and helper functions
 const db = {}; // Placeholder for Firestore db instance
 const displayCurrency: SupportedCurrency = 'USD'; // Default currency
@@ -43,48 +49,8 @@ const formatCurrency = (amount: number, currency: SupportedCurrency) => {
 const formatDate = (dateString: string) => (dateString ? new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '-');
 const formatDateTime = (dateTimeString: string) =>
   dateTimeString ? new Date(dateTimeString).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
-const mockDrivers: DriverFormData[] = [
-  {
-    id: 'drv-001',
-    name: 'John Doe',
-    email: 'john.doe@matanuska.com',
-    phone: '+233 20 123 4567',
-    address: '123 Accra Road, Tema, Ghana',
-    dateOfBirth: '1985-05-15',
-    licenseNumber: 'GH-DL-123456',
-    licenseExpiry: '2026-03-14',
-    licenseClass: 'Commercial',
-    status: 'active',
-    emergencyContactName: 'Sarah Doe',
-    emergencyContactRelationship: 'Spouse',
-    emergencyContactPhone: '+233 20 123 9876',
-    nationality: 'Ghanaian',
-    nationalId: 'GHA-98765432',
-    bankName: 'Ghana Commercial Bank',
-    accountNumber: '1234567890',
-    branch: 'Accra Main',
-  },
-  {
-    id: 'drv-002',
-    name: 'Jane Smith',
-    email: 'jane.smith@matanuska.com',
-    phone: '+233 20 987 6543',
-    address: '456 Kumasi Road, Accra, Ghana',
-    dateOfBirth: '1990-08-22',
-    licenseNumber: 'GH-DL-789012',
-    licenseExpiry: '2025-05-19',
-    licenseClass: 'Commercial',
-    status: 'active',
-    emergencyContactName: 'Robert Smith',
-    emergencyContactRelationship: 'Father',
-    emergencyContactPhone: '+233 20 876 5432',
-    nationality: 'Ghanaian',
-    nationalId: 'GHA-12345678',
-    bankName: 'Ecobank Ghana',
-    accountNumber: '0987654321',
-    branch: 'Kumasi Branch',
-  },
-];
+// Real driver data would come from the AppContext or a custom hook
+// No mock data needed here as we'll use the real data from context
 const useRealtimeTrips = ({ status, onlyWebBook }: { status?: string; onlyWebBook?: boolean }) => {
   const { trips: allContextTrips } = useAppContext();
   const [loading, setLoading] = useState(true);
@@ -143,6 +109,7 @@ const Button = ({ children, onClick, type = 'button', variant = 'primary', disab
 };
 const Modal = ({ isOpen, onClose, title, maxWidth = 'lg', children }: any) => {
   if (!isOpen) return null;
+  type MaxWidthType = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
   const maxWidthClass = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -151,7 +118,7 @@ const Modal = ({ isOpen, onClose, title, maxWidth = 'lg', children }: any) => {
     '2xl': 'max-w-2xl',
     '3xl': 'max-w-3xl',
     '4xl': 'max-w-4xl',
-  }[maxWidth];
+  }[maxWidth as MaxWidthType];
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className={`bg-white rounded-lg shadow-xl w-full ${maxWidthClass} max-h-[90vh] overflow-y-auto`}>
@@ -282,13 +249,17 @@ const CompletedTripEditModal = ({ isOpen, onClose, trip, onSave }: any) => {
         </div>
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-lg font-medium text-gray-900">Edit Justification (Required)</h3>
-          <Select
+            <Select
             label="Reason for Edit *"
             value={editReason}
-            onChange={(e) => setEditReason(e.target.value)}
-            options={[{ label: 'Select reason for editing...', value: '' }, { label: 'Data Entry Error', value: 'Data Entry Error' }, { label: 'Other (specify in comments)', value: 'Other (specify in comments)' }]}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEditReason(e.target.value)}
+            options={[
+              { label: 'Select reason for editing...', value: '' },
+              { label: 'Data Entry Error', value: 'Data Entry Error' },
+              { label: 'Other (specify in comments)', value: 'Other (specify in comments)' }
+            ] as SelectOption[]}
             error={errors.editReason}
-          />
+            />
           {editReason === 'Other (specify in comments)' && (
             <TextArea label="Specify Reason *" value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="Please provide a detailed reason for editing this completed trip..." rows={3} error={errors.customReason} />
           )}
