@@ -5,6 +5,14 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import type {
+  Tyre,
+  TyreInspection, // Import TyrePosition
+  TyreInspectionRecord, // Ensure TyreRepair is imported
+  TyrePosition, // Import the new TyreInspectionRecord
+  TyreStoreLocation
+} from '../types/tyre'; // All types should now come from here
+import { listenToTyres } from '../types/tyres';
 import {
   addTyreInspection as addTyreInspectionToFirebase,
   deleteTyre,
@@ -13,15 +21,7 @@ import {
   getTyres, // Renamed to avoid conflict
   getTyresByVehicle,
   saveTyre,
-} from '../firebase/tyreStores';
-import { listenToTyres } from '../firebase/tyres';
-import type {
-  Tyre,
-  TyreInspection, // Import TyrePosition
-  TyreInspectionRecord, // Ensure TyreRepair is imported
-  TyrePosition, // Import the new TyreInspectionRecord
-  TyreStoreLocation
-} from '../types/tyre'; // All types should now come from here
+} from '../types/tyreStores';
 
 interface TyreContextType {
   tyres: Tyre[];

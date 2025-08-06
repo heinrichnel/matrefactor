@@ -12,13 +12,13 @@ import {
   updateDoc,
   where, // Added 'where' for filtering tyres
 } from "firebase/firestore";
-import {
-  Tyre, // Import Tyre from the consolidated types file
-  TyreInspectionRecord, // Import TyreInspectionRecord from the consolidated types file
-  StockEntry,
-  TyreStore,
-} from "../types/tyre"; // All types should now come from here
 import { firestore, handleFirestoreError } from "../utils/firebaseConnectionHandler";
+import {
+  StockEntry,
+  Tyre, // Import Tyre from the consolidated types file
+  TyreInspectionRecord,
+  TyreStore,
+} from "./tyre"; // All types should now come from here
 
 // --- Tyre Management Functions ---
 
@@ -229,7 +229,7 @@ export function listenToTyres(onChange: (tyres: Tyre[]) => void) {
   } catch (error) {
     console.error("Error setting up tyres listener:", error);
     handleFirestoreError(error);
-    return () => {}; // Return a no-op function as unsubscribe
+    return () => { }; // Return a no-op function as unsubscribe
   }
 }
 
@@ -476,7 +476,7 @@ export function listenToTyreStores(onChange: (stores: TyreStore[]) => void) {
     console.error("Error setting up tyre stores listener:", error);
     handleFirestoreError(error);
     // Return a no-op function as unsubscribe
-    return () => {};
+    return () => { };
   }
 }
 

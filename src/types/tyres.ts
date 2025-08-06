@@ -1,11 +1,11 @@
-import { 
-  collection, 
-  onSnapshot, 
-  query, 
-  orderBy
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query
 } from 'firebase/firestore';
 import { firestore, handleFirestoreError } from '../utils/firebaseConnectionHandler';
-import { Tyre } from '../types/tyre';
+import { Tyre } from './tyre';
 
 /**
  * Listen to tyres collection in real-time
