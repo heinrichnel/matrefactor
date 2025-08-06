@@ -48,7 +48,7 @@ export interface Trip {
   baseRevenue: number;
   revenueCurrency: 'USD' | 'ZAR';
   distanceKm?: number;
-  status: 'active' | 'completed' | 'invoiced' | 'paid';
+  status: 'active' | 'completed' | 'invoiced' | 'paid' | 'shipped' | 'delivered';
   costs: CostEntry[];
   completedAt?: string;
   completedBy?: string;
@@ -1170,3 +1170,53 @@ export const FUEL_STATIONS = [
   "Korridor Lusaka Truck Stop",
   "HASS Petroleum Kasumbalesa"
 ];
+
+// Additional types for ActiveTripsPageEnhanced
+export interface CostBreakdown {
+  fuelCosts: number;
+  tollFees: number;
+  maintenanceCosts: number;
+  driverExpenses: number;
+  overheadCosts: number;
+  total: number;
+  currency: string;
+  // Legacy properties for compatibility
+  fuel?: number;
+  maintenance?: number;
+  driver?: number;
+  tolls?: number;
+  other?: number;
+}
+
+export type ImportSource = 'manual' | 'wialon' | 'gps' | 'rfid' | 'barcode';
+
+export type SupportedCurrency = 'ZAR' | 'USD' | 'EUR' | 'GBP';
+
+export interface UITrip extends Trip {
+  displayStatus: string;
+  displayRevenue: string;
+  displayCurrency: string;
+  origin?: string;
+  destination?: string;
+  externalId?: string;
+  totalCost?: number;
+  costBreakdown?: any;
+  startTime?: string;
+  endTime?: string;
+  shippedStatus?: boolean;
+  deliveredStatus?: boolean;
+  shippedAt?: string;
+  deliveredAt?: string;
+}
+
+export interface DriverFormData {
+  id?: string;
+  name: string;
+  licenseNumber: string;
+  contactNumber: string;
+  email?: string;
+  emergencyContact?: string;
+  dateOfBirth?: string;
+  hireDate?: string;
+  status: 'active' | 'inactive' | 'suspended';
+}

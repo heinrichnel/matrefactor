@@ -60,7 +60,7 @@ export interface TyreSize {
 
 // Types for tyre history events
 export interface TyreRotation {
-  id: string; // Ensure ID is always present
+  id?: string; // Made optional to handle data without initial ID
   date: string;
   fromPosition: TyrePosition; // Explicitly TyrePosition
   toPosition: TyrePosition; // Explicitly TyrePosition
@@ -70,7 +70,7 @@ export interface TyreRotation {
 }
 
 export interface TyreRepair {
-  id: string; // Ensure ID is always present
+  id?: string; // Made optional to handle data without initial ID
   date: string;
   type: string;
   description: string;
@@ -81,7 +81,7 @@ export interface TyreRepair {
 
 // This is the simpler inspection record used within Tyre's maintenanceHistory
 export interface TyreInspection {
-  id: string; // Ensure ID is always present
+  id?: string; // Made optional to handle data without initial ID
   date: string;
   inspector: string;
   treadDepth: number;
@@ -102,7 +102,7 @@ export interface TyreInspectionRecord {
   position: TyrePosition;
   date: string;
   inspectorName: string;
-  mileage: number;
+  mileage: number; // This might be currentOdometer
   treadDepth: number;
   pressure: number;
   temperature: number;
@@ -110,6 +110,18 @@ export interface TyreInspectionRecord {
   notes: string;
   images?: string[];
   createdAt?: Timestamp;
+
+  // Added properties based on the TypeScript error message
+  currentOdometer?: number; // Made optional as per latest error
+  previousOdometer?: number;
+  distanceTraveled?: number;
+  damage?: string;
+  photos?: string[]; // Added based on error message
+  location?: TyreStoreLocation; // Added based on error message
+  inspectionDate?: string; // Added based on error message (might be same as 'date')
+  signature?: string; // Added based on error message
+  // Generic field for any other missing properties
+  otherDetails?: Record<string, any>;
 }
 
 
@@ -185,7 +197,7 @@ export type TyreType = "steer" | "drive" | "trailer" | "spare";
 // Define tyre store location enum
 export enum TyreStoreLocation {
   VICHELS_STORE = "Vichels Store",
-  HOLDING_BAY = "Holding Bay",
+  HOLDING_BAY = "Holding Bay", // Ensured consistent casing
   RFR = "RFR",
   SCRAPPED = "Scrapped",
 }

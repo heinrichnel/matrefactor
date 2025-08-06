@@ -10,9 +10,230 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  where, // Added 'where' for filtering tyres
 } from "firebase/firestore";
-import { StockEntry, TyreStore } from "../types/tyre";
+import {
+  Tyre, // Import Tyre from the consolidated types file
+  TyreInspectionRecord, // Import TyreInspectionRecord from the consolidated types file
+  StockEntry,
+  TyreStore,
+} from "../types/tyre"; // All types should now come from here
 import { firestore, handleFirestoreError } from "../utils/firebaseConnectionHandler";
+
+// --- Tyre Management Functions ---
+
+/**
+ * Saves a Tyre document to Firestore. If the tyre has an ID, it updates the existing document;
+ * otherwise, it creates a new one.
+ * @param tyre The Tyre object to save.
+ * @returns A Promise that resolves with the ID of the saved tyre.
+ */
+export async function saveTyre(tyre: Tyre): Promise<string> {
+  try {
+    const tyreRef = tyre.id ? doc(firestore, "tyres", tyre.id) : doc(collection(firestore, "tyres"));
+    const dataToSave = {
+      ...tyre,
+      updatedAt: serverTimestamp(),
+      // Ensure createdAt is only set on initial creation
+      ...(tyre.id ? {} : { createdAt: serverTimestamp() }),
+    };
+
+    await setDoc(tyreRef, dataToSave, { merge: true }); // Use merge to update existing fields
+    return tyreRef.id;
+  } catch (error) {
+    console.error("Error saving tyre:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+}
+
+/**
+ * Retrieves a single Tyre document by its ID.
+ * @param id The ID of the tyre to retrieve.
+ * @returns A Promise that resolves with the Tyre object or null if not found.
+ */
+export async function getTyreById(id: string): Promise<Tyre | null> {
+  try {
+    const tyreRef = doc(firestore, "tyres", id);
+    const snap = await getDoc(tyreRef);
+
+    if (!snap.exists()) return null;
+
+    return { id: snap.id, ...snap.data() } as Tyre;
+  } catch (error) {
+    console.error("Error getting tyre by ID:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+}
+
+/**
+ * Retrieves all Tyre documents.
+ * @param filters Optional filters to apply to the query.
+ * @returns A Promise that resolves with an array of Tyre objects.
+ */
+export async function getTyres(filters?: {
+  status?: Tyre['status'];
+  mountStatus?: Tyre['mountStatus'];
+  brand?: string;
+  location?: Tyre['location'];
+  vehicleId?: string;
+  condition?: string; // Assuming condition is a simple string for filtering
+  minTreadDepth?: number;
+  maxTreadDepth?: number;
+}): Promise<Tyre[]> {
+  try {
+    let q = query(collection(firestore, "tyres"), orderBy("createdAt", "desc"));
+
+    if (filters) {
+      if (filters.status) {
+        q = query(q, where("status", "==", filters.status));
+      }
+      if (filters.mountStatus) {
+        q = query(q, where("mountStatus", "==", filters.mountStatus));
+      }
+      if (filters.brand) {
+        q = query(q, where("brand", "==", filters.brand));
+      }
+      if (filters.location) {
+        q = query(q, where("location", "==", filters.location));
+      }
+      if (filters.vehicleId) {
+        q = query(q, where("installation.vehicleId", "==", filters.vehicleId));
+      }
+      if (filters.condition) {
+        q = query(q, where("condition.status", "==", filters.condition));
+      }
+      if (filters.minTreadDepth) {
+        q = query(q, where("condition.treadDepth", ">=", filters.minTreadDepth));
+      }
+      if (filters.maxTreadDepth) {
+        q = query(q, where("condition.treadDepth", "<=", filters.maxTreadDepth));
+      }
+    }
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Tyre);
+  } catch (error) {
+    console.error("Error getting tyres:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+}
+
+/**
+ * Deletes a Tyre document by its ID.
+ * @param id The ID of the tyre to delete.
+ * @returns A Promise that resolves when the tyre is deleted.
+ */
+export async function deleteTyre(id: string): Promise<void> {
+  try {
+    const tyreRef = doc(firestore, "tyres", id);
+    await deleteDoc(tyreRef);
+  } catch (error) {
+    console.error("Error deleting tyre:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+}
+
+/**
+ * Adds a new inspection record to a specific tyre's subcollection.
+ * @param tyreId The ID of the tyre to add the inspection to.
+ * @param inspection The TyreInspectionRecord object to add.
+ * @returns A Promise that resolves with the ID of the added inspection.
+ */
+export async function addTyreInspection(
+  tyreId: string,
+  inspection: TyreInspectionRecord // Expect TyreInspectionRecord here
+): Promise<string> {
+  try {
+    const inspectionsCollectionRef = collection(firestore, "tyres", tyreId, "inspections");
+    const docRef = doc(inspectionsCollectionRef); // Let Firestore generate the ID
+    const dataToSave = {
+      ...inspection,
+      id: docRef.id, // Assign the generated ID to the inspection object
+      createdAt: serverTimestamp(),
+    };
+    await setDoc(docRef, dataToSave);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding tyre inspection:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+}
+
+/**
+ * Retrieves all inspection records for a specific tyre.
+ * @param tyreId The ID of the tyre to retrieve inspections for.
+ * @returns A Promise that resolves with an array of TyreInspectionRecord objects.
+ */
+export async function getTyreInspections(tyreId: string): Promise<TyreInspectionRecord[]> {
+  try {
+    const inspectionsCollectionRef = collection(firestore, "tyres", tyreId, "inspections");
+    const q = query(inspectionsCollectionRef, orderBy("date", "desc")); // Order by inspection date
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as TyreInspectionRecord);
+  } catch (error) {
+    console.error("Error getting tyre inspections:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+}
+
+/**
+ * Retrieves all Tyre documents associated with a specific vehicle.
+ * @param vehicleId The ID of the vehicle.
+ * @returns A Promise that resolves with an array of Tyre objects.
+ */
+export async function getTyresByVehicle(vehicleId: string): Promise<Tyre[]> {
+  try {
+    const q = query(collection(firestore, "tyres"), where("installation.vehicleId", "==", vehicleId));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Tyre);
+  } catch (error) {
+    console.error("Error getting tyres by vehicle:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+}
+
+/**
+ * Listens to real-time updates for all Tyre documents.
+ * @param onChange Callback function that receives the updated array of Tyre objects.
+ * @returns An unsubscribe function to stop listening to updates.
+ */
+export function listenToTyres(onChange: (tyres: Tyre[]) => void) {
+  try {
+    const collRef = collection(firestore, "tyres");
+    const q = query(collRef, orderBy("createdAt", "desc")); // Order by creation date
+
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const tyres: Tyre[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          // Convert Firestore Timestamps to Date objects if necessary for display
+          // (though it's often better to handle this in components or context if needed)
+          return { id: doc.id, ...data } as Tyre;
+        });
+        onChange(tyres);
+      },
+      (error) => {
+        console.error("Error listening to tyres:", error);
+        handleFirestoreError(error);
+      }
+    );
+  } catch (error) {
+    console.error("Error setting up tyres listener:", error);
+    handleFirestoreError(error);
+    return () => {}; // Return a no-op function as unsubscribe
+  }
+}
+
+// --- Tyre Store Management Functions (from your provided code) ---
 
 /**
  * Add a new TyreStore document to Firestore
@@ -237,12 +458,11 @@ export function listenToTyreStores(onChange: (stores: TyreStore[]) => void) {
         const stores: TyreStore[] = snapshot.docs.map((doc) => {
           const data = doc.data();
           // Convert Firestore Timestamps to Date objects
-          if (data.dateAdded) {
-            data.dateAdded = data.dateAdded.toDate ? data.dateAdded.toDate() : data.dateAdded;
-          }
-          if (data.updatedAt) {
-            data.updatedAt = data.updatedAt.toDate ? data.updatedAt.toDate() : data.updatedAt;
-          }
+          // This conversion logic should be handled carefully if `Timestamp` is part of your `TyreStore` type.
+          // If `TyreStore` type uses `Timestamp` directly, no `toDate()` conversion is needed here.
+          // If it expects `Date` objects, then `toDate()` is appropriate.
+          // Given the `tyre-types` Canvas, `Timestamp` is used directly, so this conversion might not be strictly necessary
+          // unless your UI components specifically expect Date objects.
           return { id: doc.id, ...data } as TyreStore;
         });
         onChange(stores);

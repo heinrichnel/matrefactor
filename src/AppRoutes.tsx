@@ -14,6 +14,7 @@ const withSuspense = (Comp: React.LazyExoticComponent<any>, props = {}) => (
  * Top-level / dashboard pages
  * ----------------------------- */
 const DashboardPage = lazy(() => import("./pages/Dashboard"));
+const YearToDateKPIs = lazy(() => import("./pages/analytics/YearToDateKPIs"));
 const FormsIntegrationPage = lazy(() => import("./pages/FormsIntegrationPage"));
 const ConsolidatedDashboard = lazy(() => import("./pages/dashboard/ConsolidatedDashboard"));
 const DashboardWrapper = lazy(() => import("./pages/dashboard/DashboardWrapper"));
@@ -155,7 +156,6 @@ const PurchaseOrderTracker = lazy(() => import("./pages/Inventory/PurchaseOrderT
 const PurchaseOrderDetailView = lazy(() => import("./pages/Inventory/PurchaseOrderDetailView"));
 const ReportNewIncidentPage = lazy(() => import("./pages/workshop/ReportNewIncidentPage"));
 const ActionLog = lazy(() => import("./pages/qc/ActionLog"));
-const QAReviewPanelContainer = lazy(() => import("./pages/qc/QAReviewPanelContainer"));
 
 /* -----------------------------
  * Tyres
@@ -372,7 +372,6 @@ export const AppRoutes: React.FC = () => {
           <Route path="qa" element={withSuspense(QAReviewPanel)} />
           <Route path="incident/new" element={withSuspense(ReportNewIncidentPage)} />
           <Route path="action-log" element={withSuspense(ActionLog)} />
-          <Route path="qa-review-container" element={withSuspense(QAReviewPanelContainer)} />
         </Route>
 
         {/* Tyres */}
@@ -421,7 +420,6 @@ export const AppRoutes: React.FC = () => {
         <Route path="route-planning" element={withSuspense(RoutePlanningPage)} />
         <Route path="route-optimization" element={withSuspense(RouteOptimizationPage)} />
         <Route path="trip-calendar" element={withSuspense(TripCalendarPage)} />
-        <Route path="examples/client-selection" element={withSuspense(ClientSelectionExample)} /> {/* Added */}
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />
