@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
 import {
   saveTyre,
   getTyres,
@@ -7,11 +13,14 @@ import {
   addTyreInspection,
   getTyreInspections,
   getTyresByVehicle,
-  listenToTyres
+  listenToTyres,
 } from '../firebase';
-import { Tyre, TyreInspection, TyreStoreLocation } from '../types/tyre';
+import type {
+  Tyre,
+  TyreInspection,
+  TyreRotation,
+} from '../types/tyre';
 
-// Define the context interface
 interface TyreContextType {
   tyres: Tyre[];
   loading: boolean;
@@ -23,38 +32,43 @@ interface TyreContextType {
   getInspections: (tyreId: string) => Promise<TyreInspection[]>;
   getTyresByVehicle: (vehicleId: string) => Promise<Tyre[]>;
   filterTyres: (filters: {
-    status?: string;
-    mountStatus?: string;
+    status?: Tyre['status'];
+    mountStatus?: Tyre['mountStatus'];
     brand?: string;
-    location?: string;
+    location?: Tyre['location'];
     vehicleId?: string;
+    condition?: TyreInspection['condition'];
+    minTreadDepth?: number;
+    maxTreadDepth?: number;
   }) => Promise<Tyre[]>;
 }
 
-// Create the context with a default value
 const TyreContext = createContext<TyreContextType | undefined>(undefined);
 
-// Provider component
 export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [tyres, setTyres] = useState<Tyre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Set up real-time listener for tyres collection
   useEffect(() => {
     setLoading(true);
-
     const unsubscribe = listenToTyres((updatedTyres: Tyre[]) => {
-      setTyres(updatedTyres);
+      const mapped = updatedTyres.map((tyre, index) => ({
+        ...tyre,
+        maintenanceHistory: {
+          ...tyre.maintenanceHistory,
+          rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
+            ...r,
+            id: r.id ?? `rotation-${index}-${i}`,
+          })) || [],
+        },
+      }));
+      setTyres(mapped);
       setLoading(false);
     });
-
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
-  // Wrapper for saveTyre function
   const handleSaveTyre = async (tyre: Tyre): Promise<string> => {
     try {
       return await saveTyre(tyre);
@@ -64,17 +78,26 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Wrapper for getTyreById function
   const handleGetTyreById = async (id: string): Promise<Tyre | null> => {
     try {
-      return await getTyreById(id);
+      const result = await getTyreById(id);
+      if (!result) return null;
+      return {
+        ...result,
+        maintenanceHistory: {
+          ...result.maintenanceHistory,
+          rotations: result.maintenanceHistory?.rotations?.map((r, i) => ({
+            ...r,
+            id: r.id ?? `rotation-${i}`,
+          })) || [],
+        },
+      };
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error getting tyre'));
       throw err;
     }
   };
 
-  // Wrapper for deleteTyre function
   const handleDeleteTyre = async (id: string): Promise<void> => {
     try {
       await deleteTyre(id);
@@ -84,8 +107,10 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Wrapper for addTyreInspection function
-  const handleAddInspection = async (tyreId: string, inspection: TyreInspection): Promise<string> => {
+  const handleAddInspection = async (
+    tyreId: string,
+    inspection: TyreInspection
+  ): Promise<string> => {
     try {
       return await addTyreInspection(tyreId, inspection);
     } catch (err) {
@@ -94,44 +119,74 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Wrapper for getTyreInspections function
   const handleGetInspections = async (tyreId: string): Promise<TyreInspection[]> => {
     try {
-      return await getTyreInspections(tyreId);
+      const records = await getTyreInspections(tyreId);
+      return records.map((r, i) => ({
+        ...r,
+        id: r.id ?? `inspection-${i}`,
+        condition: r.condition,
+        date: r.date,
+        inspector: r.inspector,
+        pressure: r.pressure,
+        treadDepth: r.treadDepth,
+        temperature: r.temperature,
+        notes: r.notes,
+      }));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error getting inspections'));
       throw err;
     }
   };
 
-  // Wrapper for getTyresByVehicle function
   const handleGetTyresByVehicle = async (vehicleId: string): Promise<Tyre[]> => {
     try {
-      return await getTyresByVehicle(vehicleId);
+      const result = await getTyresByVehicle(vehicleId);
+      return result.map((tyre, index) => ({
+        ...tyre,
+        maintenanceHistory: {
+          ...tyre.maintenanceHistory,
+          rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
+            ...r,
+            id: r.id ?? `rotation-${index}-${i}`,
+          })) || [],
+        },
+      }));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error getting vehicle tyres'));
       throw err;
     }
   };
 
-  // Function to filter tyres based on criteria
   const handleFilterTyres = async (filters: {
-    status?: string;
-    mountStatus?: string;
+    status?: Tyre['status'];
+    mountStatus?: Tyre['mountStatus'];
     brand?: string;
-    location?: string;
+    location?: Tyre['location'];
     vehicleId?: string;
+    condition?: TyreInspection['condition'];
+    minTreadDepth?: number;
+    maxTreadDepth?: number;
   }): Promise<Tyre[]> => {
     try {
-      return await getTyres(filters);
+      const tyres = await getTyres(filters);
+      return tyres.map((tyre, index) => ({
+        ...tyre,
+        maintenanceHistory: {
+          ...tyre.maintenanceHistory,
+          rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
+            ...r,
+            id: r.id ?? `rotation-${index}-${i}`,
+          })) || [],
+        },
+      }));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error filtering tyres'));
       throw err;
     }
   };
 
-  // Context value
-  const value = {
+  const value: TyreContextType = {
     tyres,
     loading,
     error,
@@ -141,17 +196,12 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     addInspection: handleAddInspection,
     getInspections: handleGetInspections,
     getTyresByVehicle: handleGetTyresByVehicle,
-    filterTyres: handleFilterTyres
+    filterTyres: handleFilterTyres,
   };
 
-  return (
-    <TyreContext.Provider value={value}>
-      {children}
-    </TyreContext.Provider>
-  );
+  return <TyreContext.Provider value={value}>{children}</TyreContext.Provider>;
 };
 
-// Custom hook to use the context
 export function useTyres(): TyreContextType {
   const context = useContext(TyreContext);
   if (!context) {

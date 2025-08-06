@@ -1,8 +1,8 @@
-// useTimelineTrips.ts - Combines realtime + webhook trips and adds simulated entries
+// useTimelineTrips.ts - Combines realtime + webhook trips and adds simulated entries with type-safe filtering
 
 import { useEffect, useState } from 'react';
 import { useRealtimeTrips } from '../hooks/useRealtimeTrips';
-import { startOfWeek, endOfWeek, isSameWeek, addHours } from 'date-fns';
+import { startOfWeek, addHours, isSameWeek } from 'date-fns';
 
 interface Trip {
   id: string;
@@ -51,18 +51,36 @@ const COLOR_MAP: Record<string, string> = {
   simulated: '#e5e7eb',
 };
 
-export function useTimelineTrips(webhookTrips: Trip[] = []) {
+// Type guard to ensure data matches Trip interface
+function isValidTrip(trip: any): trip is Trip {
+  return (
+    trip &&
+    typeof trip.id === 'string' &&
+    typeof trip.tripNumber === 'string' &&
+    typeof trip.startDate === 'string' &&
+    typeof trip.endDate === 'string' &&
+    typeof trip.driver === 'string' &&
+    typeof trip.vehicle === 'string' &&
+    typeof trip.status === 'string'
+  );
+}
+
+export function useTimelineTrips(webhookTrips: unknown[] = []) {
   const { trips: fetchedTrips } = useRealtimeTrips({ status: 'active' });
   const [items, setItems] = useState<TimelineTrip[]>([]);
   const [groups, setGroups] = useState<VehicleGroup[]>([]);
 
   useEffect(() => {
-    const allTrips: Trip[] = [...(fetchedTrips ?? []), ...webhookTrips];
+    const safeFetched: Trip[] = (fetchedTrips ?? []).filter(isValidTrip);
+    const safeWebhooks: Trip[] = (webhookTrips ?? []).filter(isValidTrip);
+    const allTrips: Trip[] = [...safeFetched, ...safeWebhooks];
+
     const vehicleSet: Set<string> = new Set();
     const fleetMap: Record<string, boolean> = {};
     const timelineTrips: TimelineTrip[] = [];
+
     const now = new Date();
-    const startOfThisWeek = startOfWeek(now);
+    const startOfThisWeek = startOfWeek(now, { weekStartsOn: 1 });
 
     for (const trip of allTrips) {
       const vehicleId = trip.vehicle || 'unknown';
@@ -102,7 +120,11 @@ export function useTimelineTrips(webhookTrips: Trip[] = []) {
       }
     }
 
-    const groupArr: VehicleGroup[] = Array.from(vehicleSet).map((v) => ({ id: v, title: v }));
+    const groupArr: VehicleGroup[] = Array.from(vehicleSet).map((v) => ({
+      id: v,
+      title: v,
+    }));
+
     setItems(timelineTrips);
     setGroups(groupArr);
   }, [fetchedTrips, webhookTrips]);

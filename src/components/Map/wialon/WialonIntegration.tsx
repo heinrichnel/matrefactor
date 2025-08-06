@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { getEnvVar } from '../../utils/envUtils';
 
 interface WialonIntegrationProps {
   /** The Wialon token to use for authentication */
@@ -18,9 +17,9 @@ interface WialonIntegrationProps {
 
 /**
  * WialonIntegration Component
- * 
+ *
  * A component that provides integration with Wialon Hosting platform.
- * It can either display a button to open Wialon in a new tab or embed 
+ * It can either display a button to open Wialon in a new tab or embed
  * it directly in an iframe.
  */
 // Use direct Wialon link with token
@@ -42,7 +41,7 @@ const WialonIntegration: React.FC<WialonIntegrationProps> = ({
   useEffect(() => {
     // Use the direct URL provided instead of constructing one
     setWialonUrl(WIALON_LOGIN_URL);
-    
+
     // Check if iframe is supported (only if we're in iframe mode)
     if (displayMode === 'iframe') {
       checkIframeSupport(WIALON_LOGIN_URL);
@@ -56,12 +55,12 @@ const WialonIntegration: React.FC<WialonIntegrationProps> = ({
       // Try to fetch the headers to check X-Frame-Options
       const response = await fetch(url, { method: 'HEAD' });
       const frameOptions = response.headers.get('X-Frame-Options');
-      
+
       // If DENY or SAMEORIGIN is present, iframe embedding is not allowed
-      const supported = !frameOptions || 
-                        !(frameOptions.includes('DENY') || 
+      const supported = !frameOptions ||
+                        !(frameOptions.includes('DENY') ||
                           frameOptions.includes('SAMEORIGIN'));
-      
+
       setIframeSupported(supported);
     } catch (error) {
       console.error('Error checking iframe support:', error);
@@ -87,7 +86,7 @@ const WialonIntegration: React.FC<WialonIntegrationProps> = ({
         <div className="p-4 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-lg">
           <h3 className="font-medium">Iframe Embedding Not Supported</h3>
           <p className="mt-1">Wialon has X-Frame-Options that prevent embedding in an iframe. Please use the button mode instead.</p>
-          <button 
+          <button
             onClick={onClick}
             className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
@@ -114,7 +113,7 @@ const WialonIntegration: React.FC<WialonIntegrationProps> = ({
   // Button display mode
   return (
     <div className="wialon-button-container">
-      <button 
+      <button
         onClick={onClick}
         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
       >
