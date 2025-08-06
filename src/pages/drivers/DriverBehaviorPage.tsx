@@ -11,11 +11,12 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import DriverBehaviorEventDetails from "../../components/DriverManagement/DriverBehaviorEventDetails";
-import DriverPerformanceOverview from "../../components/DriverManagement/PerformanceAnalytics";
+import DriverPerformanceOverview from "../../components/DriverManagement/DriverPerformanceOverview";
 import DriverBehaviorEventForm from "../../components/forms/driver/DriverBehaviorEventForm";
 import CARReportForm from "../../components/forms/qc/CARReportForm";
 import CARReportList from "../../components/lists/CARReportList";
 import Button from "../../components/ui/Button";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 import SyncIndicator from "../../components/ui/SyncIndicator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 import { useAppContext } from "../../context/AppContext";
@@ -207,7 +208,7 @@ const DriverBehaviorPage: React.FC = () => {
       {/* Header with title and action buttons */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Driver Behavior Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Driver Management</h1>
           <div className="flex items-center mt-1">
             <p className="text-lg text-gray-600 mr-3">
               Monitor driver behavior and manage corrective actions
@@ -267,21 +268,8 @@ const DriverBehaviorPage: React.FC = () => {
 
         {/* Driver Performance Overview Tab */}
         <TabsContent value="performance" className="mt-6">
-          <DriverPerformanceOverview
-            onAddEvent={() => {
-              setSelectedEvent(null);
-              setShowEventForm(true);
-            }}
-            onViewEvent={handleViewEvent}
-            onEditEvent={(event: DriverBehaviorEvent) => {
-              setSelectedEvent(event);
-              setShowEventForm(true);
-            }}
-            onSyncNow={handleSyncNow}
-          />
-        </TabsContent>
-
-        {/* Behavior Events Tab */}
+          <DriverPerformanceOverview />
+        </TabsContent>        {/* Behavior Events Tab */}
         <TabsContent value="events" className="mt-6">
           <div className="space-y-4">
             {/* Filters Section */}
@@ -429,7 +417,7 @@ const DriverBehaviorPage: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    filteredEvents.map((event) => (
+                    filteredEvents.map((event: any) => (
                       <tr key={event.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {event.eventDate ? new Date(event.eventDate).toLocaleDateString() : "N/A"}
@@ -461,14 +449,14 @@ const DriverBehaviorPage: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <button
-                            onClick={() => handleViewEvent(event)}
+                            onClick={() => handleViewEvent(event as DriverBehaviorEvent)}
                             className="text-blue-600 hover:text-blue-900 mr-3"
                           >
                             View
                           </button>
                           <button
                             onClick={() => {
-                              setSelectedEvent(event);
+                              setSelectedEvent(event as DriverBehaviorEvent);
                               setShowEventForm(true);
                             }}
                             className="text-green-600 hover:text-green-900 mr-3"
@@ -476,7 +464,7 @@ const DriverBehaviorPage: React.FC = () => {
                             Edit
                           </button>
                           <button
-                            onClick={() => handleInitiateCAR(event)}
+                            onClick={() => handleInitiateCAR(event as DriverBehaviorEvent)}
                             className="text-purple-600 hover:text-purple-900"
                           >
                             CAR
@@ -493,7 +481,31 @@ const DriverBehaviorPage: React.FC = () => {
 
         {/* CAR Reports Tab */}
         <TabsContent value="car-reports" className="mt-6">
-          <CARReportList />
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-800">Corrective Action Reports</h2>
+                  <Button
+                    onClick={() => {
+                      setSelectedEvent(null);
+                      setShowCARForm(true);
+                    }}
+                    icon={<Plus className="w-4 h-4" />}
+                    size="sm"
+                  >
+                    New CAR Report
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Corrective Action Reports are used to document and track driver behavior issues that require formal intervention.
+                </p>
+              </CardContent>
+            </Card>
+            <CARReportList />
+          </div>
         </TabsContent>
       </Tabs>
 

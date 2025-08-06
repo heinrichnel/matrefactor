@@ -13,7 +13,7 @@ import Card, { CardContent, CardHeader } from "../ui/Card";
 import { Input, Select } from "../ui/FormElements";
 
 // ─── Custom Components ───────────────────────────────────────────
-import CARReportDetails from "../Adminmangement/CARReportDetails";
+import CARReportDetails from "../AdminManagement/CARReportDetails";
 import CARReportForm from "../forms/qc/CARReportForm";
 
 // ─── Icons ───────────────────────────────────────────────────────

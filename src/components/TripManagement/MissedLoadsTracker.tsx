@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from '../../utils/helpers';
 import Card, { CardContent, CardHeader } from '../ui/Card';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
-import { Input, Select, Textarea } from '../ui/FormElements';
+import { Input, Select, TextArea } from '../ui/FormElements';
 
 // ─── Icons ───────────────────────────────────────────────────────
 import {
@@ -84,7 +84,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.customerName.trim()) {
       newErrors.customerName = 'Customer name is required';
     }
@@ -113,7 +113,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
 
   const validateResolutionForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!resolutionData.resolutionNotes.trim()) {
       newErrors.resolutionNotes = 'Resolution notes are required';
     }
@@ -168,9 +168,9 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
     };
 
     onUpdateMissedLoad(updatedLoad);
-    
+
     alert(`Missed load resolved successfully!\n\nResolution: ${resolutionData.resolutionNotes}\n${resolutionData.compensationOffered ? `Compensation offered: ${formatCurrency(Number(resolutionData.compensationOffered), resolvingLoad.currency)}` : ''}`);
-    
+
     setShowResolutionModal(false);
     setResolvingLoad(null);
     setResolutionData({
@@ -474,7 +474,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                       )}
 
                       <div className="text-xs text-gray-500">
-                        Recorded on {formatDate(load.recordedAt)} • 
+                        Recorded on {formatDate(load.recordedAt)} •
                         {load.followUpRequired && <span className="text-amber-600 font-medium ml-1">Follow-up required</span>}
                       </div>
                     </div>
@@ -528,7 +528,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               <div>
                 <h4 className="text-sm font-medium text-amber-800">Missed Load Documentation</h4>
                 <p className="text-sm text-amber-700 mt-1">
-                  Record all missed business opportunities to identify patterns and improve our response capabilities. 
+                  Record all missed business opportunities to identify patterns and improve our response capabilities.
                   This data helps in capacity planning and competitive analysis.
                 </p>
               </div>
@@ -637,7 +637,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
             />
           </div>
 
-          <Textarea
+          <TextArea
             label="Additional Details"
             value={formData.reasonDescription}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('reasonDescription', e.target.value)}
@@ -676,7 +676,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Button
               variant="outline"
-              onClick={onClick}
+              onClick={handleClose}
               icon={<X className="w-4 h-4" />}
             >
               Cancel
@@ -732,7 +732,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
             </div>
 
             <div className="space-y-4">
-              <Textarea
+              <TextArea
                 label="Resolution Notes *"
                 value={resolutionData.resolutionNotes}
                 onChange={(e) => handleResolutionChange('resolutionNotes', e.target.value)}
@@ -754,7 +754,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                 <div></div>
               </div>
 
-              <Textarea
+              <TextArea
                 label="Compensation Notes"
                 value={resolutionData.compensationNotes}
                 onChange={(e) => handleResolutionChange('compensationNotes', e.target.value)}

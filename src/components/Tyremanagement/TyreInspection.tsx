@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { TyreInspectionEntry, TyreSize as TyreSizeData } from "../../data/tyreData";
-import VehicleTyreView from "../../pages/VehicleTyreView";
+import VehicleTyreView from "../../pages/tyres/VehicleTyreView";
 import { Tyre } from "../../types/tyre"; // Import Tyre from types/tyre to match VehicleTyreView
 import { VehicleSelector } from "../common/VehicleSelector";
 

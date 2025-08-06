@@ -62,8 +62,8 @@ const TripCalendarPage: React.FC = () => {
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">{getMonthName(currentMonth)}</h2>
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm" onClick={onClick} icon={<ChevronLeft className="w-4 h-4" />} />
-              <Button variant="outline" size="sm" onClick={onClick} icon={<ChevronRight className="w-4 h-4" />} />
+              <Button variant="outline" size="sm" onClick={prevMonth} icon={<ChevronLeft className="w-4 h-4" />} />
+              <Button variant="outline" size="sm" onClick={nextMonth} icon={<ChevronRight className="w-4 h-4" />} />
             </div>
           </div>
         </CardHeader>
@@ -76,7 +76,7 @@ const TripCalendarPage: React.FC = () => {
               <div
                 key={i}
                 className={`min-h-[100px] border rounded-md p-1 ${!day ? 'bg-gray-50' : selectedDate && day?.toDateString() === selectedDate?.toDateString() ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50 cursor-pointer'}`}
-                onClick={onClick}
+                onClick={() => day && handleDayClick(day)}
               >
                 {day && (
                   <>

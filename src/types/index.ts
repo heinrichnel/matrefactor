@@ -104,18 +104,18 @@ export interface Trip {
   deliveredAt?: string;
   deliveredNotes?: string;
   statusNotes?: string; // Added for storing notes when updating trip status
-  
+
   // NEW: Metadata and audit trail
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
   updatedBy?: string;
-  
-  // NEW: Web booking integration  
+
+  // NEW: Web booking integration
   loadRef?: string; // Reference from web booking system
   webBookingId?: string; // ID from external booking system
   bookingSource?: 'manual' | 'web' | 'api' | 'import'; // How the trip was created
-  
+
   // Additional web import fields (for compatibility)
   importSource?: string; // e.g., "web_book"
   importedVia?: string; // e.g., "enhancedWebBookImport"
@@ -332,12 +332,14 @@ export interface DieselConsumptionRecord {
 }
 
 // NEW: Driver Behavior Event Types
+export type DriverBehaviorEventType = 'speeding' | 'harsh_braking' | 'harsh_acceleration' | 'idling' | 'route_deviation' | 'unauthorized_stop' | 'fatigue_alert' | 'phone_usage' | 'seatbelt_violation' | 'other';
+
 export interface DriverBehaviorEvent {
   id: string;
   driverId: string;
   driverName: string;
   fleetNumber: string;
-  eventType: 'speeding' | 'harsh_braking' | 'harsh_acceleration' | 'idling' | 'route_deviation' | 'unauthorized_stop' | 'fatigue_alert' | 'phone_usage' | 'seatbelt_violation' | 'other';
+  eventType: DriverBehaviorEventType;
   severity: 'low' | 'medium' | 'high' | 'critical';
   eventDate: string;
   eventTime: string;
@@ -357,11 +359,11 @@ export interface DriverBehaviorEvent {
   reportedBy: string;
   reportedAt: string;
   attachments?: Attachment[];
-  // ADDED: points for scoring and carReportId for linkage
-  points?: number;
+  // Points for scoring and carReportId for linkage
+  points: number; // Making points required with no "?"
   carReportId?: string;
-  // ADDED: status for event workflow (for UI and logic)
-  status?: 'pending' | 'acknowledged' | 'resolved' | 'disputed';
+  // Status for event workflow (for UI and logic)
+  status: 'pending' | 'acknowledged' | 'resolved' | 'disputed'; // Making status required with no "?"
 }
 
 // NEW: Action Item Types
@@ -394,6 +396,7 @@ export interface ActionItemComment {
 // NEW: CAR (Corrective Action Report) Types
 export interface CARReport {
   id: string;
+  carNumber?: string;        // Added for report reference number
   reportNumber: string;
   responsibleReporter: string;
   responsiblePerson: string;
@@ -401,39 +404,54 @@ export interface CARReport {
   dateOfIncident: string;
   dateDue: string;
   clientReport: string;
+
+  // Status and details
+  status: 'open' | 'inProgress' | 'completed' | 'cancelled' | 'draft' | 'submitted' | 'in_progress';
+  priority: 'high' | 'medium' | 'low';
   severity: 'high' | 'medium' | 'low';
 
-  // Problem identification
-  problemIdentification: string;
+  // Dates
+  issueDate: string;         // Date the report was issued
+  dueDate: string;           // When action needs to be completed
+  resolutionDate?: string;   // When it was resolved
 
-  // Primary cause analysis (fishbone)
+  // People
+  issuedBy: string;          // Person who issued the report
+  verifiedBy?: string;       // Person who verified resolution
+
+  // Incident details
+  incidentType: string;      // Type of incident
+  description: string;       // Description of incident
+
+  // Root cause analysis
+  rootCause?: string;         // Root cause of the incident
+  contributingFactors?: string;  // Factors that contributed
+
+  // Actions taken
+  immediateActions?: string;   // Immediate actions taken
+  correctiveActions: string;  // Longer-term corrective actions (removed optional)
+  preventativeMeasures?: string; // Preventative measures
+  resolutionComments?: string;  // Comments on resolution
+
+  // Legacy fields (keeping for backward compatibility)
+  problemIdentification: string;
   causeAnalysisPeople: string;
   causeAnalysisMaterials: string;
   causeAnalysisEquipment: string;
   causeAnalysisMethods: string;
   causeAnalysisMetrics: string;
   causeAnalysisEnvironment: string;
-
-  // Root cause analysis
   rootCauseAnalysis: string;
-
-  // Actions
-  correctiveActions: string;
   preventativeActionsImmediate: string;
   preventativeActionsLongTerm: string;
-
-  // Impact and comments
   financialImpact: string;
   generalComments: string;
 
-  // Status and tracking
-  status: 'draft' | 'submitted' | 'in_progress' | 'completed';
+  // Metadata
   completedAt?: string;
   completedBy?: string;
-
-  // Metadata
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   attachments?: Attachment[];
 }
 

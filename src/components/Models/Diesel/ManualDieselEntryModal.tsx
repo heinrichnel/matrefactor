@@ -10,9 +10,9 @@ import { useAppContext } from '../../../context/AppContext';
 import { DRIVERS, FUEL_STATIONS, FLEET_NUMBERS, DieselConsumptionRecord, FLEETS_WITH_PROBES } from '../../../types';
 
 // ─── Icons ───────────────────────────────────────────────────────
-import { 
-  Save, 
-  X, 
+import {
+  Save,
+  X,
   Calculator,
   AlertTriangle,
   Fuel,
@@ -31,12 +31,12 @@ interface ManualDieselEntryModalProps {
   dieselRecords?: DieselConsumptionRecord[];
 }
 
-const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({ 
+const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
   isOpen,
   onClose
 }) => {
   const { addDieselRecord, trips, dieselRecords, connectionStatus } = useAppContext();
-  
+
   const [formData, setFormData] = useState({
     fleetNumber: '',
     date: new Date().toISOString().split('T')[0],
@@ -61,15 +61,15 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
   const [possibleDuplicates, setPossibleDuplicates] = useState<DieselConsumptionRecord[]>([]);
 
   // Get available trips for the selected fleet
-  const availableTrips = trips.filter(trip => 
-    trip.fleetNumber === formData.fleetNumber && 
+  const availableTrips = trips.filter(trip =>
+    trip.fleetNumber === formData.fleetNumber &&
     trip.status === 'active'
   );
 
   // Get available horses for reefer units
-  const availableHorses = formData.isReeferUnit ? 
-    dieselRecords.filter(record => 
-      !record.isReeferUnit && 
+  const availableHorses = formData.isReeferUnit ?
+    dieselRecords.filter(record =>
+      !record.isReeferUnit &&
       ['4H', '6H', '21H', '22H', '23H', '24H', '26H', '28H', '29H', '30H', '31H', '32H', '33H', 'UD'].includes(record.fleetNumber)
     ) : [];
 
@@ -77,11 +77,11 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
   useEffect(() => {
     if (formData.fleetNumber && formData.date) {
       // Find records with the same fleet and date
-      const potentialDuplicates = dieselRecords.filter(record => 
-        record.fleetNumber === formData.fleetNumber && 
+      const potentialDuplicates = dieselRecords.filter(record =>
+        record.fleetNumber === formData.fleetNumber &&
         record.date === formData.date
       );
-      
+
       setPossibleDuplicates(potentialDuplicates);
     } else {
       setPossibleDuplicates([]);
@@ -90,9 +90,9 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
 
   const handleChange = (field: string, event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> | string | boolean) => {
     const value = typeof event === 'object' ? (event as React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>).target.value : event;
-    
+
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear errors
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -129,7 +129,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.fleetNumber) newErrors.fleetNumber = 'Fleet number is required';
     if (!formData.date) newErrors.date = 'Date is required';
     if (!formData.litresFilled) newErrors.litresFilled = 'Litres filled is required';
@@ -145,7 +145,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
     if (formData.totalCost && (isNaN(Number(formData.totalCost)) || Number(formData.totalCost) <= 0)) {
       newErrors.totalCost = 'Must be a valid positive number';
     }
-    
+
     // For reefer units, validate hours operated
     if (formData.isReeferUnit) {
       if (!formData.hoursOperated) {
@@ -158,7 +158,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
       if (!formData.kmReading || isNaN(Number(formData.kmReading)) || Number(formData.kmReading) <= 0) {
         newErrors.kmReading = 'KM reading must be a valid positive number';
       }
-      
+
       // Validate KM readings
       if (formData.kmReading && formData.previousKmReading) {
         const current = Number(formData.kmReading);
@@ -214,7 +214,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
         hoursOperated,
         litresPerHour
       };
-      
+
       // Add trip ID for regular diesel or linked horse ID for reefer units
       if (!formData.isReeferUnit && formData.tripId && typeof formData.tripId === 'string' && formData.tripId.trim() !== '') {
         recordData.tripId = formData.tripId;
@@ -223,19 +223,19 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
       }
 
       await addDieselRecord(recordData);
-      
+
       // Prepare success message
       let successMessage = `Diesel record added successfully!\n\nFleet: ${formData.fleetNumber}\n`;
-      
+
       if (formData.isReeferUnit) {
         successMessage += `Reefer Unit\n`;
         successMessage += `Hours Operated: ${hoursOperated} hours\n`;
         successMessage += `Consumption Rate: ${(litresFilled / (hoursOperated || 1)).toFixed(2)} L/hr\n`;
-        
+
         if (formData.linkedHorseId) {
           const horseRecord = dieselRecords.find(r => r.id === formData.linkedHorseId);
           successMessage += `Linked to Horse: ${horseRecord?.fleetNumber || formData.linkedHorseId}\n`;
-          
+
           // If the horse is linked to a trip, mention that costs will be allocated
           if (horseRecord?.tripId) {
             const trip = trips.find(t => t.id === horseRecord.tripId);
@@ -250,11 +250,11 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
           successMessage += `Cost will be allocated to trip expenses\n`;
         }
       }
-      
+
       successMessage += `Cost: ${formData.currency === 'USD' ? '$' : 'R'}${totalCost.toFixed(2)}\n`;
-      
+
       alert(successMessage);
-      
+
       // Reset form
       setFormData({
         fleetNumber: '',
@@ -453,7 +453,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
               ]}
               error={errors.currency}
             />
-            
+
             <Input
               label="Total Cost *"
               type="number"
@@ -495,9 +495,9 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
               onChange={val => handleChange('tripId', val)}
               options={[
                 { label: 'No trip linkage', value: '' },
-                ...availableTrips.map(trip => ({ 
-                  label: `${trip.route} (${formatDate(trip.startDate)} - ${formatDate(trip.endDate)})`, 
-                  value: trip.id 
+                ...availableTrips.map(trip => ({
+                  label: `${trip.route} (${formatDate(trip.startDate)} - ${formatDate(trip.endDate)})`,
+                  value: trip.id
                 }))
               ]}
               disabled={!formData.fleetNumber}
@@ -510,12 +510,12 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
               options={[
                 { label: 'No horse linkage', value: '' },
                 ...availableHorses.map(horse => {
-                  const tripInfo = horse.tripId ? 
-                    ` - ${trips.find(t => t.id === horse.tripId)?.route || 'Unknown Trip'}` : 
+                  const tripInfo = horse.tripId ?
+                    ` - ${trips.find(t => t.id === horse.tripId)?.route || 'Unknown Trip'}` :
                     ' - No active trip';
-                  return { 
-                    label: `${horse.fleetNumber} (${horse.driverName})${tripInfo}`, 
-                    value: horse.id 
+                  return {
+                    label: `${horse.fleetNumber} (${horse.driverName})${tripInfo}`,
+                    value: horse.id
                   };
                 })
               ]}
@@ -674,14 +674,14 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
         <div className="flex justify-end space-x-3 pt-6 border-t">
           <Button
             variant="outline"
-            onClick={onClick}
+            onClick={onClose}
             icon={<X className="w-4 h-4" />}
             disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button
-            onClick={onClick}
+            onClick={handleSubmit}
             icon={<Save className="w-4 h-4" />}
             isLoading={isSubmitting}
             disabled={isSubmitting || connectionStatus !== 'connected'}

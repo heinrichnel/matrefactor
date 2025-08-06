@@ -10,8 +10,9 @@ import { calculateKPIs, formatCurrency, formatDateTime } from '../../../utils/he
 import AdditionalCostsForm from '../../forms/cost/AdditionalCostsForm';
 import Button from '../../ui/Button';
 import FileUpload from '../../ui/FileUpload';
-import { Input, Textarea } from '../../ui/FormElements';
+import { Input } from '../../ui/FormElements';
 import Modal from '../../ui/Modal';
+import { TextArea } from "../../ui/FormElements";
 
 interface InvoiceSubmissionModalProps {
   isOpen: boolean;
@@ -324,7 +325,7 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
           </div>
 
           {hasDiscrepancies && (
-            <Textarea
+            <TextArea
               label="Timeline Validation Notes *"
               value={formData.validationNotes}
               onChange={(e) => handleChange('validationNotes', e.target.value)}

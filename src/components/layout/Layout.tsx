@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 import { Trip } from "../../types";
-import Sidebar from "./Sidebar";
+import Navigation from "./Navigation"; // Assuming this is the updated Navigation
+import Sidebar from "./Sidebar";     // Assuming this is the updated Sidebar with drawer logic
 
 interface LayoutProps {
   setShowTripForm: (show: boolean) => void;
@@ -10,79 +11,53 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ setShowTripForm, setEditingTrip }) => {
+  // Hooks
   const location = useLocation();
   const navigate = useNavigate();
-  useAppContext(); // Keep this to ensure we're still using the AppContext
   const [searchParams] = useSearchParams();
-
-  // State for outlet context
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  useAppContext();
 
-  // Use the props for editingTrip and showTripForm
-  const handleSetEditingTrip = (trip: Trip | undefined) => {
-    setEditingTrip(trip);
-  };
-
-  const handleShowTripForm = (show: boolean) => {
-    setShowTripForm(show);
-  };
-
-  // Get current path from location to determine active menu item
-  const currentView = (() => {
+  // Calculate current view from URL path
+  const currentView = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
     if (pathSegments.length === 0) return "dashboard";
+    if (pathSegments.length > 1) return pathSegments.join("/");
+    return pathSegments[0] === "workshop" && searchParams.get("tab")
+      ? `workshop-${searchParams.get("tab")}`
+      : pathSegments[0];
+  }, [location.pathname, searchParams]);
 
-    // If we have a subpath, include it to properly highlight nested menu items
-    if (pathSegments.length > 1) {
-      return pathSegments.join("/");
-    }
-
-    // Special handling for workshop with tabs
-    if (pathSegments[0] === "workshop") {
-      const tab = searchParams.get("tab");
-      if (tab) return `workshop-${tab}`;
-    }
-
-    return pathSegments[0];
-  })();
-
-  // Navigate to a new route
+  // Navigation handler
   const handleNavigate = (view: string) => {
-    // Handle special cases like workshop?tab=tyres
-    if (view.includes("?")) {
-      const [path, query] = view.split("?");
-      navigate(`/${path}?${query}`);
-    } else {
-      // Always ensure path starts with a slash for consistent routing
-      const formattedPath = view.startsWith("/") ? view : `/${view}`;
-      navigate(formattedPath);
-      console.log(`Navigating to: ${formattedPath}`);
-    }
-  };
-
-  // Context object to pass to outlet
-  const outletContext = {
-    setSelectedTrip,
-    setEditingTrip: handleSetEditingTrip,
-    setShowTripForm: handleShowTripForm,
+    const hasQuery = view.includes("?");
+    navigate(hasQuery
+      ? `/${view.split("?")[0]}?${view.split("?")[1]}`
+      : `/${view.startsWith("/") ? view.substring(1) : view}`
+    );
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar is now responsible for its own mobile toggle and drawer behavior */}
       <Sidebar currentView={currentView} onNavigate={handleNavigate} />
-      <main className="ml-64 p-6 pt-8">
-        {/* widened container: no max-w cap, full width with responsive padding */}
-        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-4">
-            {/* The title should be rendered by the page component instead of here */}
-            <div></div>
-          </div>
-
-          {/* Outlet renders the active route component */}
-          <Outlet context={outletContext} />
-        </div>
-      </main>
+      {/*
+        This div now has 'lg:ml-60'. On large screens (lg:), it adds a left margin
+        equal to the sidebar's width (60 units) to prevent content from being
+        hidden behind the fixed sidebar. On smaller screens, the sidebar is a drawer
+        and this margin is not applied, allowing the content to take full width.
+      */}
+      <div className="flex flex-col flex-1 overflow-hidden lg:ml-60">
+        <Navigation />
+        {/* Changed padding from p-3 md:p-4 to p-2 md:p-3 for a more compact layout */}
+        <main className="flex-1 overflow-y-auto p-2 md:p-3">
+          <Outlet context={{
+            setSelectedTrip,
+            setEditingTrip,
+            setShowTripForm
+          }} />
+        </main>
+      </div>
     </div>
   );
 };
