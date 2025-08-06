@@ -1,17 +1,7 @@
-import {
-  Activity,
-  Clock,
-  Download,
-  Globe,
-  MapPin,
-  RefreshCw,
-  Upload
-} from "lucide-react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Trip } from "../../api/tripsApi";
 import AddTripModal from "../../components/Models/Trips/AddTripModal";
 import { useRealtimeTrips } from "../../hooks/useRealtimeTrips";
-import { useWebBookTrips } from "../../hooks/useWebBookTrips";
 import { formatCurrency, SupportedCurrency } from "../../lib/currency";
 
 interface ActiveTripsProps {
@@ -83,20 +73,8 @@ const initialActiveTrips: Trip[] = [
 ];
 
 const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) => {
-  // Hook for fetching real-time trips
-  const { trips: fetchedTrips } = useRealtimeTrips({ status: "active" });
-
-  // Hook for fetching web book trips
-  const {
-    trips: webBookTrips,
-    loading: webBookLoading,
-    error: webBookError,
-    activeTrips: activeWebBookTrips,
-    deliveredTrips: deliveredWebBookTrips,
-    completedTrips: completedWebBookTrips
-  } = useWebBookTrips();
-
   // State variables
+  const { trips: fetchedTrips } = useRealtimeTrips({ status: "active" });
   const [activeTrips, setActiveTrips] = useState<Trip[]>(initialActiveTrips);
   const [webhookTrips, setWebhookTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -105,13 +83,6 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
-  const [filterWebBookOnly, setFilterWebBookOnly] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [editingCost, setEditingCost] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState<{
     cost: number;
@@ -129,31 +100,10 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
     other: 0,
   });
 
-  // Function to normalize web book trips to Trip format
-  const normalizeWebBookTrip = (webBookTrip: any): Trip => ({
-    id: webBookTrip.id,
-    tripNumber: webBookTrip.loadRef || `WB-${webBookTrip.id.substring(0, 8)}`,
-    origin: webBookTrip.origin || "Unknown",
-    destination: webBookTrip.destination || "Unknown",
-    startDate: webBookTrip.startTime || new Date().toISOString(),
-    endDate: webBookTrip.endTime || new Date().toISOString(),
-    status: webBookTrip.status as "active" | "completed" | "scheduled",
-    driver: webBookTrip.driver || "Unassigned",
-    vehicle: webBookTrip.vehicle || "Unassigned",
-    distance: webBookTrip.distance || 0,
-    cost: webBookTrip.totalCost || 0,
-    costBreakdown: webBookTrip.costBreakdown || {},
-    source: "web_book",
-    externalId: webBookTrip.id,
-    lastUpdated: webBookTrip.updatedAt || new Date().toISOString(),
-  });
-
-  // Combine all trips with filtering
-  const allTrips = useMemo(() => {
-    let combinedTrips: Trip[] = [];
-
-    // Add formatted fetchedTrips (real-time)
+  // Update state when real data arrives
+  useEffect(() => {
     if (fetchedTrips && fetchedTrips.length > 0) {
+      // Map the fetched trips to the expected format
       const formattedTrips = fetchedTrips.map((trip) => ({
         id: trip.id,
         tripNumber: trip.loadRef || `TR-${trip.id.substring(0, 8)}`,
@@ -167,44 +117,20 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
         distance: trip.distance || 0,
         cost: trip.totalCost || 0,
         costBreakdown: trip.costBreakdown || {},
-        source: "internal" as const,
-        lastUpdated: trip.updatedAt || new Date().toISOString(),
       }));
-      combinedTrips = [...combinedTrips, ...formattedTrips];
+      setActiveTrips(formattedTrips);
     }
-
-    // Add web book trips
-    if (webBookTrips && webBookTrips.length > 0) {
-      const normalizedWebBookTrips = webBookTrips.map(normalizeWebBookTrip);
-      combinedTrips = [...combinedTrips, ...normalizedWebBookTrips];
-    }
-
-    // Add manual trips
-    combinedTrips = [...combinedTrips, ...activeTrips];
-
-    // Add webhook trips
-    combinedTrips = [...combinedTrips, ...webhookTrips];
-
-    // Apply filters
-    if (filterWebBookOnly) {
-      combinedTrips = combinedTrips.filter(trip => trip.source === 'web_book');
-    }
-
-    if (statusFilter) {
-      combinedTrips = combinedTrips.filter(trip => trip.status === statusFilter);
-    }
-
-    return combinedTrips;
-  }, [fetchedTrips, webBookTrips, activeTrips, webhookTrips, filterWebBookOnly, statusFilter]);
-
-  const webBookTripsCount = allTrips.filter(trip => trip.source === 'web_book').length;
-  const manualAndOtherTripsCount = allTrips.filter(trip => trip.source !== 'web_book').length;
+  }, [fetchedTrips]);
 
   // Mock function to fetch webhook trips - replace with actual API call
   const fetchWebhookTrips = async () => {
     try {
       setIsLoading(true);
       setError(null);
+
+      // This is a placeholder - replace with actual API call
+      // Example: const response = await fetch('/api/webhook-trips');
+      // const data = await response.json();
 
       // Simulate API response with mock data
       const mockWebhookData: Trip[] = [
@@ -219,7 +145,7 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
           driver: "Alex Thompson",
           vehicle: "Truck WH-123",
           distance: 235,
-          cost: 0,
+          cost: 0, // Initial cost is 0, needs to be allocated
           source: "webhook",
           externalId: "ext-12345",
           lastUpdated: new Date().toISOString(),
@@ -235,7 +161,7 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
           driver: "Jamie Rodriguez",
           vehicle: "Truck WH-456",
           distance: 162,
-          cost: 0,
+          cost: 0, // Initial cost is 0, needs to be allocated
           source: "webhook",
           externalId: "ext-67890",
           lastUpdated: new Date().toISOString(),
@@ -255,6 +181,9 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
   useEffect(() => {
     fetchWebhookTrips();
   }, []);
+
+  // Combine internal and webhook trips
+  const allTrips = [...activeTrips, ...webhookTrips];
 
   const handleEditClick = (trip: Trip) => {
     setEditingTrip(trip);
@@ -551,143 +480,93 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
         <div>
           <h1 className="text-2xl font-bold">Active Trips</h1>
           <p className="text-gray-600">
-            Showing {allTrips.length} trips ({manualAndOtherTripsCount} manual/webhook,{" "}
-            {webBookTripsCount} from web book)
+            Showing {allTrips.length} active trips ({activeTrips.length} manual,{" "}
+            {webhookTrips.length} from webhooks)
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Globe className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-medium text-green-600">Real-time updates enabled</span>
-          </div>
+        <div className="flex space-x-2">
+          {/* File input (hidden) */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".csv"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
+
+          {/* File upload button */}
+          <button
+            onClick={handleFileUploadClick}
+            className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 flex items-center"
+            disabled={isUploading}
+          >
+            {isUploading ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Importing...
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-5 h-5 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                  ></path>
+                </svg>
+                Import CSV
+              </>
+            )}
+          </button>
+
+          {/* Template download button */}
+          <button
+            onClick={handleDownloadTemplate}
+            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 flex items-center"
+          >
+            Download Template
+          </button>
+
+          <button
+            onClick={handleRefresh}
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+          >
+            Refresh Webhook Trips
+          </button>
+
+          <button
+            onClick={() => setIsAddTripModalOpen(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            + New Trip
+          </button>
         </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6">
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="webBookFilter"
-              checked={filterWebBookOnly}
-              onChange={(e) => setFilterWebBookOnly(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label htmlFor="webBookFilter" className="ml-2 text-sm text-gray-700">
-              Web Book Trips Only
-            </label>
-          </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="scheduled">Scheduled</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center">
-            <Activity className="h-8 w-8 text-blue-600" />
-            <div className="ml-5">
-              <dt className="text-sm text-gray-500">Total Active</dt>
-              <dd className="text-lg font-medium text-gray-900">{filteredTrips.length}</dd>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center">
-            <Globe className="h-8 w-8 text-green-600" />
-            <div className="ml-5">
-              <dt className="text-sm text-gray-500">Web Book</dt>
-              <dd className="text-lg font-medium text-gray-900">{webBookTripsCount}</dd>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center">
-            <Clock className="h-8 w-8 text-yellow-600" />
-            <div className="ml-5">
-              <dt className="text-sm text-gray-500">Manual/Webhook</dt>
-              <dd className="text-lg font-medium text-gray-900">{manualAndOtherTripsCount}</dd>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center">
-            <MapPin className="h-8 w-8 text-purple-600" />
-            <div className="ml-5">
-              <dt className="text-sm text-gray-500">Completed</dt>
-              <dd className="text-lg font-medium text-gray-900">
-                {allTrips.filter(t => t.status === 'completed').length}
-              </dd>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex space-x-2 mb-6">
-        {/* File input (hidden) */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          accept=".csv"
-          className="hidden"
-          onChange={handleFileUpload}
-        />
-
-        {/* File upload button */}
-        <button
-          onClick={handleFileUploadClick}
-          className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 flex items-center"
-          disabled={isUploading}
-        >
-          {isUploading ? (
-            <>
-              <RefreshCw className="animate-spin h-4 w-4 mr-2" />
-              Importing...
-            </>
-          ) : (
-            <>
-              <Upload className="w-4 h-4 mr-2" />
-              Import CSV
-            </>
-          )}
-        </button>
-
-        {/* Template download button */}
-        <button
-          onClick={handleDownloadTemplate}
-          className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 flex items-center"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Download Template
-        </button>
-
-        <button
-          onClick={handleRefresh}
-          className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh Webhook Trips
-        </button>
-
-        <button
-          onClick={() => setIsAddTripModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-        >
-          + New Trip
-        </button>
       </div>
 
       {success && (
@@ -922,12 +801,6 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Source
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
                   Start Date
                 </th>
                 <th
@@ -957,75 +830,54 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTrips.map((trip) => (
-                <tr key={trip.id} className="hover:bg-gray-50">
+              {allTrips.map((trip: Trip) => (
+                <tr key={trip.id} className={trip.source === "webhook" ? "bg-blue-50" : ""}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {trip.tripNumber || 'N/A'}
-                    <div className="mt-1">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${trip.source === 'web_book'
-                            ? 'bg-blue-100 text-blue-800'
-                            : trip.source === 'webhook'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                      >
-                        {trip.source === 'web_book' ? 'Web Book' :
-                          trip.source === 'webhook' ? 'Webhook' : 'Manual'}
+                    {trip.tripNumber}
+                    {trip.source === "webhook" && (
+                      <span className="ml-2 px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-blue-100 text-blue-800">
+                        Webhook
                       </span>
-                    </div>
+                    )}
                     {trip.externalId && (
                       <div className="text-xs text-gray-500 mt-1">Ext ID: {trip.externalId}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex flex-col">
-                      <span className="font-medium">From: {trip.pickup || trip.origin}</span>
+                      <span className="font-medium">From: {trip.origin}</span>
                       <span>To: {trip.destination}</span>
-                      <span className="text-xs text-gray-400">{trip.distance || 'N/A'} miles</span>
+                      <span className="text-xs text-gray-400">{trip.distance} miles</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex flex-col">
-                      <span className="font-medium">{trip.driverName || trip.driver || 'N/A'}</span>
-                      <span className="text-xs">{trip.vehicleId || trip.vehicle || 'N/A'}</span>
+                      <span className="font-medium">{trip.driver}</span>
+                      <span className="text-xs">{trip.vehicle}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {trip.startDate ? new Date(trip.startDate).toLocaleDateString() : 'N/A'}
+                    {new Date(trip.startDate).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {(trip.expectedCompletionDate || trip.endDate)
-                      ? new Date(trip.expectedCompletionDate || trip.endDate).toLocaleDateString()
-                      : 'N/A'}
+                    {new Date(trip.endDate).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${trip.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : trip.status === 'completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : trip.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-gray-100 text-gray-800'
-                        }`}
-                    >
-                      {trip.status ? trip.status.charAt(0).toUpperCase() + trip.status.slice(1) : 'In Progress'}
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                      In Progress
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>
                       <div className="font-medium">
-                        {formatCurrency(trip.cost || 0, displayCurrency)}
+                        {formatCurrency(trip.cost, displayCurrency)}
                       </div>
-                      {trip.source !== 'web_book' && (
-                        <button
-                          className="text-xs text-blue-600 hover:underline mt-1"
-                          onClick={() => handleEditClick(trip)}
-                        >
-                          {trip.costBreakdown ? "View Breakdown" : "Allocate Costs"}
-                        </button>
-                      )}
+                      <button
+                        className="text-xs text-blue-600 hover:underline mt-1"
+                        onClick={() => handleEditClick(trip)}
+                      >
+                        {trip.costBreakdown ? "View Breakdown" : "Allocate Costs"}
+                      </button>
                       {trip.lastUpdated && (
                         <div className="text-xs text-gray-500 mt-1">
                           Updated: {new Date(trip.lastUpdated).toLocaleString()}
@@ -1035,23 +887,15 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      <button
-                        className="text-indigo-600 hover:text-indigo-900"
-                        onClick={() => {
-                          setSelectedTrip(trip);
-                          setShowViewModal(true);
-                        }}
-                      >
+                      <button className="text-indigo-600 hover:text-indigo-900" onClick={() => { }}>
                         View
                       </button>
-                      {trip.source !== 'web_book' && (
-                        <button
-                          className="text-blue-600 hover:text-blue-900"
-                          onClick={() => handleEditClick(trip)}
-                        >
-                          Edit Costs
-                        </button>
-                      )}
+                      <button
+                        className="text-blue-600 hover:text-blue-900"
+                        onClick={() => handleEditClick(trip)}
+                      >
+                        Edit Costs
+                      </button>
                     </div>
                   </td>
                 </tr>

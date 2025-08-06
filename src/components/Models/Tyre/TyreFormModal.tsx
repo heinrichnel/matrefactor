@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from "react";
-import Modal from "@/components/ui/Modal";
-import { Button } from "@/components/ui/Button";
-import { Input, Select, Textarea } from "@/components/ui/FormElements";
-import { X, Save, ChevronRight } from "lucide-react";
-import { useTyreReferenceData } from "@/context/TyreReferenceDataContext";
 import VehiclePositionDiagram from "@/components/tyres/VehiclePositionDiagram";
+import { Button } from "@/components/ui/Button";
+import { Input, Select, TextArea } from "@/components/ui/FormElements";
+import Modal from "@/components/ui/Modal";
+import { useTyreReferenceData } from "@/context/TyreReferenceDataContext";
 import { Timestamp } from "firebase/firestore";
+import { ChevronRight, Save, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 // *** HIERDIE IS JOU ENIGSTE TYRE DATA BRON ***
 import type { Tyre } from "@/data/tyreData";
 import {
+  TyreConditionStatus, // <-- Import TyreStatus
+  TyreMountStatus, // <-- Import TyreConditionStatus
+  TyreStatus,
+  TyreStoreLocation, // <-- Import TyreMountStatus
+  TyreType,
   tyreTypes,
-  TyreStoreLocation,
-  TyreConditionStatus, // <-- Import TyreConditionStatus
-  TyreStatus, // <-- Import TyreStatus
-  TyreMountStatus, // <-- Import TyreMountStatus
-  TyreType, // <-- Import TyreType
 } from "@/data/tyreData";
 
 interface TyreFormModalProps {
@@ -156,15 +156,15 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
     // This is important for Select components where the 'value' will be a string
     let parsedValue: any = value;
     if (name === "condition.status" && Object.values(TyreConditionStatus).includes(value as TyreConditionStatus)) {
-        parsedValue = value as TyreConditionStatus;
+      parsedValue = value as TyreConditionStatus;
     } else if (name === "status" && Object.values(TyreStatus).includes(value as TyreStatus)) {
-        parsedValue = value as TyreStatus;
+      parsedValue = value as TyreStatus;
     } else if (name === "mountStatus" && Object.values(TyreMountStatus).includes(value as TyreMountStatus)) {
-        parsedValue = value as TyreMountStatus;
+      parsedValue = value as TyreMountStatus;
     } else if (name === "location" && Object.values(TyreStoreLocation).includes(value as TyreStoreLocation)) {
-        parsedValue = value as TyreStoreLocation;
+      parsedValue = value as TyreStoreLocation;
     } else if (name === "type" && tyreTypes.includes(value as TyreType)) {
-        parsedValue = value as TyreType;
+      parsedValue = value as TyreType;
     }
 
 
@@ -313,14 +313,14 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
               />
             </div>
             <Select
-                label="Location"
-                name="location" // Added name prop
-                value={safeString(formData.location as string)}
-                onChange={handleChange}
-                options={[
-                    { label: "Select location...", value: "" },
-                    ...Object.values(TyreStoreLocation).map(loc => ({ label: loc, value: loc }))
-                ]}
+              label="Location"
+              name="location" // Added name prop
+              value={safeString(formData.location as string)}
+              onChange={handleChange}
+              options={[
+                { label: "Select location...", value: "" },
+                ...Object.values(TyreStoreLocation).map(loc => ({ label: loc, value: loc }))
+              ]}
             />
           </div>
         )}
@@ -498,7 +498,7 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
                 onChange={handleChange}
               />
             </div>
-            <Textarea
+            <TextArea
               label="Notes"
               name="notes" // Added name prop
               value={safeString(formData.notes)}

@@ -1,8 +1,8 @@
+import { AlertTriangle, Camera, CheckCircle, Info, Save, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { Camera, Save, X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { Button } from '../../ui/Button';
-import { Input, Textarea } from '../../ui/FormElements';
 import { Card, CardContent, CardHeader } from '../../ui/Card';
+import { Input, TextArea } from '../../ui/FormElements';
 import TyreScanner from './TyreScanner';
 
 interface TyreInspectionMobileProps {
@@ -38,7 +38,7 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
 }) => {
   const [showScanner, setShowScanner] = useState(!tyreId);
   const [saving, setSaving] = useState(false);
-  
+
   const [formData, setFormData] = useState<TyreInspectionData>({
     tyreId: tyreId || '',
     tyreNumber: tyreNumber || '',
@@ -70,18 +70,18 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
     if (scanData.barcode) {
       setFormData(prev => ({
         ...prev,
-        tyreId: scanData.barcode,
-        tyreNumber: scanData.barcode
+        tyreId: scanData.barcode || '',
+        tyreNumber: scanData.barcode || ''
       }));
     }
-    
+
     if (scanData.photo) {
       setFormData(prev => ({
         ...prev,
         photos: [...prev.photos, scanData.photo!]
       }));
     }
-    
+
     setShowScanner(false);
   };
 
@@ -148,7 +148,7 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
           <h2 className="text-lg font-semibold">Tyre Inspection</h2>
-          <Button variant="ghost" size="sm" onClick={onCancel}>
+          <Button variant="outline" size="sm" onClick={onCancel}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -163,11 +163,9 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tyre Number *
-              </label>
               <div className="flex space-x-2">
                 <Input
+                  label="Tyre Number *"
                   value={formData.tyreNumber}
                   onChange={(e) => handleInputChange('tyreNumber', e.target.value)}
                   placeholder="Enter or scan tyre number"
@@ -187,10 +185,8 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Inspector Name *
-              </label>
               <Input
+                label="Inspector Name *"
                 value={formData.inspectorName}
                 onChange={(e) => handleInputChange('inspectorName', e.target.value)}
                 placeholder="Enter inspector name"
@@ -203,10 +199,8 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Inspection Date
-                </label>
                 <Input
+                  label="Inspection Date"
                   type="date"
                   value={formData.inspectionDate}
                   onChange={(e) => handleInputChange('inspectionDate', e.target.value)}
@@ -214,10 +208,8 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Current Mileage *
-                </label>
                 <Input
+                  label="Current Mileage *"
                   type="number"
                   value={formData.mileage}
                   onChange={(e) => handleInputChange('mileage', parseInt(e.target.value) || 0)}
@@ -240,10 +232,8 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
           <CardContent>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Outside *
-                </label>
                 <Input
+                  label="Outside *"
                   type="number"
                   step="0.1"
                   value={formData.treadDepthOutside}
@@ -253,10 +243,8 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Center *
-                </label>
                 <Input
+                  label="Center *"
                   type="number"
                   step="0.1"
                   value={formData.treadDepthCenter}
@@ -266,10 +254,8 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Inside *
-                </label>
                 <Input
+                  label="Inside *"
                   type="number"
                   step="0.1"
                   value={formData.treadDepthInside}
@@ -288,10 +274,8 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Pressure (PSI) *
-              </label>
               <Input
+                label="Pressure (PSI) *"
                 type="number"
                 value={formData.pressure}
                 onChange={(e) => handleInputChange('pressure', parseInt(e.target.value) || 0)}
@@ -361,11 +345,10 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
                     key={option.value}
                     type="button"
                     onClick={() => handleInputChange('overallRating', option.value)}
-                    className={`p-3 rounded-lg border-2 flex items-center justify-center space-x-2 ${
-                      formData.overallRating === option.value
-                        ? getOverallRatingColor(option.value)
-                        : 'border-gray-200 text-gray-600'
-                    }`}
+                    className={`p-3 rounded-lg border-2 flex items-center justify-center space-x-2 ${formData.overallRating === option.value
+                      ? getOverallRatingColor(option.value)
+                      : 'border-gray-200 text-gray-600'
+                      }`}
                   >
                     {formData.overallRating === option.value && getOverallRatingIcon(option.value)}
                     <span className="font-medium">{option.label}</span>
@@ -378,7 +361,7 @@ const TyreInspectionMobile: React.FC<TyreInspectionMobileProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Notes & Observations
               </label>
-              <Textarea
+              <TextArea
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
                 placeholder="Enter any additional notes or observations..."

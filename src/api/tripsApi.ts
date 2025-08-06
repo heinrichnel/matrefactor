@@ -18,7 +18,7 @@ export interface Trip {
     tolls?: number;
     other?: number;
   };
-  source?: 'internal' | 'webhook' | 'api';
+  source?: 'internal' | 'webhook' | 'api' | 'web_book';
   externalId?: string;
   lastUpdated?: string;
   loadRef?: string;

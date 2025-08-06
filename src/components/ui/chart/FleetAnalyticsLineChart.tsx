@@ -6,11 +6,10 @@ import {
   LineChart,
   ResponsiveContainer,
   Tooltip,
-  TooltipProps,
   XAxis,
-  YAxis,
+  YAxis
 } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "..";
+import { Card, CardContent, CardHeader, CardTitle } from "..";
 import { useFleetAnalytics } from "../../../context/FleetAnalyticsContext";
 
 // Define chart configuration
@@ -35,7 +34,7 @@ const chartConfig = {
 export type ChartType = keyof typeof chartConfig;
 
 // Custom tooltip component
-const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border rounded shadow-md">
@@ -77,7 +76,7 @@ export function FleetAnalyticsLineChart() {
       <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 pb-3 sm:pb-0">
           <CardTitle>Fleet Cost Analytics</CardTitle>
-          <CardDescription>Cost metrics and ROI over the last 6 months</CardDescription>
+          <p className="text-sm text-muted-foreground">Cost metrics and ROI over the last 6 months</p>
         </div>
         <div className="flex" role="group" aria-label="Chart metrics">
           {(Object.keys(chartConfig) as ChartType[]).map((key) => (

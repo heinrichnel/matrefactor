@@ -404,3 +404,55 @@ export const parseTyreSize = (sizeString: string): TyreSize | null => {
   }
   return null;
 };
+
+// Helper functions for tyre management
+export const getTyresByVehicle = (vehicleId: string): Tyre[] => {
+  return SAMPLE_TYRES.filter(tyre => tyre.installation.vehicleId === vehicleId);
+};
+
+export const getTyreStatusColor = (status: TyreStatus): string => {
+  switch (status) {
+    case TyreStatus.NEW:
+      return "bg-green-100 text-green-800";
+    case TyreStatus.IN_SERVICE:
+      return "bg-blue-100 text-blue-800";
+    case TyreStatus.SPARE:
+      return "bg-yellow-100 text-yellow-800";
+    case TyreStatus.RETREADED:
+      return "bg-orange-100 text-orange-800";
+    case TyreStatus.SCRAPPED:
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+export const getTyreConditionColor = (condition: TyreConditionStatus): string => {
+  switch (condition) {
+    case TyreConditionStatus.GOOD:
+      return "bg-green-100 text-green-800";
+    case TyreConditionStatus.WARNING:
+      return "bg-yellow-100 text-yellow-800";
+    case TyreConditionStatus.CRITICAL:
+      return "bg-red-100 text-red-800";
+    case TyreConditionStatus.NEEDS_REPLACEMENT:
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+export const getVehicleTyreConfiguration = (vehicleId: string) => {
+  // This would typically come from a configuration mapping
+  // For now, return a simple default configuration
+  return {
+    positions: [
+      { id: "front-left", name: "Front Left", type: "steer" },
+      { id: "front-right", name: "Front Right", type: "steer" },
+      { id: "rear-left-outer", name: "Rear Left Outer", type: "drive" },
+      { id: "rear-left-inner", name: "Rear Left Inner", type: "drive" },
+      { id: "rear-right-outer", name: "Rear Right Outer", type: "drive" },
+      { id: "rear-right-inner", name: "Rear Right Inner", type: "drive" },
+    ],
+  };
+};

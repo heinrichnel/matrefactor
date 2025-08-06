@@ -7,19 +7,19 @@
 export { default as Button } from './Button';
 
 // Re-export Card components
-export { Card, CardContent, CardHeader } from './Card';
+export { Card, CardContent, CardHeader, CardTitle } from './Card';
 
 // Re-export Input component
 export { default as Input } from './Input';
 
 // Re-export Table components
-export { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+export {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from './table';
 
 // Re-export GenericPlaceholderPage component
@@ -30,5 +30,6 @@ export { default as ApplicantInfoCard } from './ApplicantInfoCard';
 
 // Re-export new UI components
 export { default as ProgressStepper } from './ProgressStepper';
-export { default as VerticalStepper } from './VerticalStepper';
 export { default as StatsCardGroup } from './StatsCardGroup';
+export { default as VerticalStepper } from './VerticalStepper';
+

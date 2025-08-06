@@ -1,5 +1,4 @@
-import { CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Area, AreaChart } from "recharts/es6/chart/AreaChart";
+import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const data = [
   { date: "2025-01", operations: 6800, maintenance: 2400 },

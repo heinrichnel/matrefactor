@@ -23,7 +23,6 @@ import AddTripModal from '../../components/Models/Trips/AddTripModal';
 import { useAppContext } from '../../context/AppContext';
 import {
   CostBreakdown,
-  DriverFormData,
   ImportSource,
   SupportedCurrency,
   UITrip
@@ -249,7 +248,7 @@ const CompletedTripEditModal = ({ isOpen, onClose, trip, onSave }: any) => {
         </div>
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-lg font-medium text-gray-900">Edit Justification (Required)</h3>
-            <Select
+          <Select
             label="Reason for Edit *"
             value={editReason}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEditReason(e.target.value)}
@@ -259,25 +258,25 @@ const CompletedTripEditModal = ({ isOpen, onClose, trip, onSave }: any) => {
               { label: 'Other (specify in comments)', value: 'Other (specify in comments)' }
             ] as SelectOption[]}
             error={errors.editReason}
-            />
+          />
           {editReason === 'Other (specify in comments)' && (
-            <TextArea label="Specify Reason *" value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="Please provide a detailed reason for editing this completed trip..." rows={3} error={errors.customReason} />
+            <TextArea label="Specify Reason *" value={customReason} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomReason(e.target.value)} placeholder="Please provide a detailed reason for editing this completed trip..." rows={3} error={errors.customReason} />
           )}
         </div>
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-lg font-medium text-gray-900">Trip Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Fleet Number" value={formData.fleetNumber} onChange={(e) => handleChange('fleetNumber', e.target.value)} />
-            <Input label="Driver Name" value={formData.driverName} onChange={(e) => handleChange('driverName', e.target.value)} />
-            <Input label="Client Name" value={formData.clientName} onChange={(e) => handleChange('clientName', e.target.value)} />
-            <Input label="Route" value={formData.route} onChange={(e) => handleChange('route', e.target.value)} />
-            <Input label="Start Date" type="date" value={formData.startDate} onChange={(e) => handleChange('startDate', e.target.value)} />
-            <Input label="End Date" type="date" value={formData.endDate} onChange={(e) => handleChange('endDate', e.target.value)} />
-            <Select label="Currency" value={formData.revenueCurrency} onChange={(e) => handleChange('revenueCurrency', e.target.value)} options={[{ label: 'ZAR (R)', value: 'ZAR' }, { label: 'USD ($)', value: 'USD' }]} />
-            <Input label="Base Revenue" type="number" step="0.01" value={formData.baseRevenue} onChange={(e) => handleChange('baseRevenue', e.target.value)} />
-            <Input label="Distance (km)" type="number" step="0.1" value={formData.distanceKm} onChange={(e) => handleChange('distanceKm', e.target.value)} />
+            <Input label="Fleet Number" value={formData.fleetNumber} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('fleetNumber', e.target.value)} />
+            <Input label="Driver Name" value={formData.driverName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('driverName', e.target.value)} />
+            <Input label="Client Name" value={formData.clientName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('clientName', e.target.value)} />
+            <Input label="Route" value={formData.route} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('route', e.target.value)} />
+            <Input label="Start Date" type="date" value={formData.startDate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('startDate', e.target.value)} />
+            <Input label="End Date" type="date" value={formData.endDate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('endDate', e.target.value)} />
+            <Select label="Currency" value={formData.revenueCurrency} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('revenueCurrency', e.target.value)} options={[{ label: 'ZAR (R)', value: 'ZAR' }, { label: 'USD ($)', value: 'USD' }]} />
+            <Input label="Base Revenue" type="number" step="0.01" value={formData.baseRevenue} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('baseRevenue', e.target.value)} />
+            <Input label="Distance (km)" type="number" step="0.1" value={formData.distanceKm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('distanceKm', e.target.value)} />
           </div>
-          <TextArea label="Description" value={formData.description} onChange={(e) => handleChange('description', e.target.value)} rows={3} />
+          <TextArea label="Description" value={formData.description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('description', e.target.value)} rows={3} />
         </div>
         {errors.general && (
           <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
@@ -389,11 +388,11 @@ const TripDeletionModal = ({ isOpen, onClose, trip, onDelete, userRole }: any) =
           <Select
             label="Reason for Deletion *"
             value={deletionReason}
-            onChange={(e) => setDeletionReason(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDeletionReason(e.target.value)}
             options={[{ label: 'Select reason for deletion...', value: '' }, { label: 'Duplicate Entry', value: 'Duplicate Entry' }, { label: 'Other (specify in comments)', value: 'Other (specify in comments)' }]}
             error={errors.deletionReason}
           />
-          {deletionReason === 'Other (specify in comments)' && <TextArea label="Specify Reason *" value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="Please provide a detailed reason for deleting this completed trip..." rows={3} error={errors.customReason} />}
+          {deletionReason === 'Other (specify in comments)' && <TextArea label="Specify Reason *" value={customReason} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomReason(e.target.value)} placeholder="Please provide a detailed reason for deleting this completed trip..." rows={3} error={errors.customReason} />}
         </div>
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-lg font-medium text-gray-900">Confirmation Required</h3>
@@ -439,71 +438,137 @@ const ActiveTripsPage: React.FC = () => {
   const [confirm, setConfirm] = useState<{ open: boolean; tripId?: string; action?: string }>({ open: false });
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [editingTrip, setEditingTrip] = useState<UITrip | null>(null);
-  const [editForm, setEditForm] = useState<Required<CostBreakdown> & { cost: number }>({ cost: 0, fuel: 0, maintenance: 0, driver: 0, tolls: 0, other: 0 });
+  const [editForm, setEditForm] = useState<{
+    cost: number;
+    fuelCosts: number;
+    tollFees: number;
+    maintenanceCosts: number;
+    driverExpenses: number;
+    overheadCosts: number;
+    total: number;
+    currency: string;
+    // Legacy properties for backward compatibility
+    fuel: number;
+    maintenance: number;
+    driver: number;
+    tolls: number;
+    other: number;
+  }>({
+    cost: 0,
+    fuelCosts: 0,
+    tollFees: 0,
+    maintenanceCosts: 0,
+    driverExpenses: 0,
+    overheadCosts: 0,
+    total: 0,
+    currency: 'ZAR',
+    fuel: 0,
+    maintenance: 0,
+    driver: 0,
+    tolls: 0,
+    other: 0
+  });
   const [showLoadImportModal, setShowLoadImportModal] = useState(false);
 
   const normalizeRtTrip = (trip: any): UITrip => ({
     id: trip.id,
-    loadRef: trip.loadRef || `TR-${trip.id.substring(0, 8)}`,
-    customer: trip.clientName,
+    fleetNumber: trip.fleetNumber || `TR-${trip.id.substring(0, 8)}`,
+    driverName: trip.driverName || 'Unassigned',
+    clientName: trip.clientName,
+    clientType: 'external' as const,
+    startDate: trip.startDate,
+    endDate: trip.endDate,
+    route: trip.route || 'Unknown',
+    status: trip.status,
+    baseRevenue: trip.baseRevenue || 0,
+    revenueCurrency: trip.revenueCurrency || 'ZAR' as const,
+    distanceKm: trip.distanceKm || 0,
+    costs: [],
+    additionalCosts: [],
+    paymentStatus: 'unpaid' as const,
+    followUpHistory: [],
+    // UITrip specific properties
+    displayStatus: trip.status || 'active',
+    displayRevenue: `${trip.revenueCurrency || 'ZAR'} ${trip.baseRevenue || 0}`,
+    displayCurrency: trip.revenueCurrency || 'ZAR',
     origin: trip.route?.split(' - ')[0] || 'Unknown',
     destination: trip.route?.split(' - ')[1] || 'Unknown',
-    status: trip.status,
     shippedStatus: trip.status === 'shipped' || trip.status === 'delivered',
     deliveredStatus: trip.status === 'delivered',
     importSource: (trip.importSource as ImportSource) || 'manual',
     startTime: trip.startDate,
     endTime: trip.endDate,
-    driver: trip.driverName || 'Unassigned',
-    vehicle: trip.fleetNumber || 'Unassigned',
-    distance: trip.distanceKm || 0,
     totalCost: trip.baseRevenue,
     costBreakdown: trip.costBreakdown || {},
     externalId: trip.externalId,
-    lastUpdated: trip.lastUpdated,
+    // Remove lastUpdated as it's not part of UITrip interface
   });
 
   const fetchWebhookTrips = async () => {
     const mock: UITrip[] = [
       {
         id: 'wh-1',
-        loadRef: 'WH-2023-001',
-        customer: 'WebhookCustomer1',
+        fleetNumber: 'WH-123',
+        driverName: 'Alex Thompson',
+        clientName: 'WebhookCustomer1',
+        clientType: 'external',
+        startDate: '2025-07-14T10:00:00',
+        endDate: '2025-07-15T16:00:00',
+        route: 'Miami, FL - Orlando, FL',
+        baseRevenue: 2500,
+        revenueCurrency: 'USD',
+        distanceKm: 235,
+        status: 'active',
+        costs: [],
+        additionalCosts: [],
+        paymentStatus: 'unpaid' as const,
+        followUpHistory: [],
+        // UITrip specific properties
+        displayStatus: 'Active',
+        displayRevenue: 'USD 2500',
+        displayCurrency: 'USD',
         origin: 'Miami, FL',
         destination: 'Orlando, FL',
-        status: 'active',
         shippedStatus: false,
         deliveredStatus: false,
         importSource: 'webhook',
         startTime: '2025-07-14T10:00:00',
         endTime: '2025-07-15T16:00:00',
-        driver: 'Alex Thompson',
-        vehicle: 'Truck WH-123',
-        distance: 235,
-        totalCost: 0,
+        totalCost: 2500,
         costBreakdown: { fuel: 0, maintenance: 0, driver: 0, tolls: 0, other: 0 },
         externalId: 'ext-12345',
-        lastUpdated: '2025-07-14T10:00:00.000Z',
       },
       {
         id: 'wh-2',
-        loadRef: 'WH-2023-002',
-        customer: 'WebhookCustomer2',
+        fleetNumber: 'WH-456',
+        driverName: 'Jamie Rodriguez',
+        clientName: 'WebhookCustomer2',
+        clientType: 'external',
+        startDate: '2025-07-16T08:30:00',
+        endDate: '2025-07-17T12:00:00',
+        route: 'Austin, TX - Houston, TX',
+        baseRevenue: 1800,
+        revenueCurrency: 'USD',
+        distanceKm: 162,
+        status: 'active',
+        costs: [],
+        additionalCosts: [],
+        paymentStatus: 'unpaid' as const,
+        followUpHistory: [],
+        // UITrip specific properties
+        displayStatus: 'Active',
+        displayRevenue: 'USD 1800',
+        displayCurrency: 'USD',
         origin: 'Austin, TX',
         destination: 'Houston, TX',
-        status: 'active',
         shippedStatus: false,
         deliveredStatus: false,
         importSource: 'webhook',
         startTime: '2025-07-16T08:30:00',
         endTime: '2025-07-17T12:00:00',
-        driver: 'Jamie Rodriguez',
-        vehicle: 'Truck WH-456',
-        distance: 162,
-        totalCost: 0,
+        totalCost: 1800,
         costBreakdown: { fuel: 0, maintenance: 0, driver: 0, tolls: 0, other: 0 },
         externalId: 'ext-67890',
-        lastUpdated: '2025-07-16T08:30:00.000Z',
       },
     ];
     setWebhookTrips(mock);
@@ -521,7 +586,22 @@ const ActiveTripsPage: React.FC = () => {
     setEditingTrip(trip);
     const cb = trip.costBreakdown || {};
     const cost = (cb.fuel || 0) + (cb.maintenance || 0) + (cb.driver || 0) + (cb.tolls || 0) + (cb.other || 0) || trip.totalCost || 0;
-    setEditForm({ cost, fuel: cb.fuel || 0, maintenance: cb.maintenance || 0, driver: cb.driver || 0, tolls: cb.tolls || 0, other: cb.other || 0 });
+    setEditForm({
+      cost,
+      fuelCosts: cb.fuel || 0,
+      tollFees: cb.tolls || 0,
+      maintenanceCosts: cb.maintenance || 0,
+      driverExpenses: cb.driver || 0,
+      overheadCosts: cb.other || 0,
+      total: cost,
+      currency: 'ZAR',
+      // Legacy properties for backward compatibility
+      fuel: cb.fuel || 0,
+      maintenance: cb.maintenance || 0,
+      driver: cb.driver || 0,
+      tolls: cb.tolls || 0,
+      other: cb.other || 0
+    });
   };
   const handleEditCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -538,7 +618,7 @@ const ActiveTripsPage: React.FC = () => {
       ...editingTrip,
       totalCost: editForm.cost,
       costBreakdown: { fuel: editForm.fuel, maintenance: editForm.maintenance, driver: editForm.driver, tolls: editForm.tolls, other: editForm.other },
-      lastUpdated: new Date().toISOString(),
+      // Remove lastUpdated as it's not part of UITrip interface
     };
     if (updatedTrip.importSource === 'webhook') {
       setWebhookTrips((prev) => prev.map((t) => (t.id === updatedTrip.id ? updatedTrip : t)));
@@ -547,7 +627,7 @@ const ActiveTripsPage: React.FC = () => {
     } else {
       const tripInContext = allContextTrips.find((t) => t.id === updatedTrip.id);
       if (tripInContext) {
-        updateTrip({ ...tripInContext, baseRevenue: updatedTrip.totalCost, updatedAt: new Date().toISOString() });
+        updateTrip({ ...tripInContext, baseRevenue: updatedTrip.totalCost || 0, updatedAt: new Date().toISOString() });
       }
     }
     setEditingTrip(null);
@@ -719,7 +799,7 @@ const ActiveTripsPage: React.FC = () => {
         />
         <CardContent className="p-6">
           <div className="flex flex-wrap gap-4 items-center">
-            <Checkbox label="Web Book Trips Only" checked={filterWebBookOnly} onChange={(e) => setFilterWebBookOnly(e.target.checked)} />
+            <Checkbox label="Web Book Trips Only" checked={filterWebBookOnly} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterWebBookOnly(e.target.checked)} />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
