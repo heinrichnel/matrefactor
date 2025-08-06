@@ -39,6 +39,7 @@ import {
 
 // Mock data and helper functions
 const db = {}; // Placeholder for Firestore db instance
+const displayCurrency: SupportedCurrency = 'USD'; // Default currency
 const formatCurrency = (amount: number, currency: SupportedCurrency) => {
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',

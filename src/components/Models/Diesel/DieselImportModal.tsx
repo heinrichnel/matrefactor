@@ -1,4 +1,18 @@
-// ─── React & Context ─────────────────────────────────────────────
+// ─── React & Context ─────────────────────────────────────  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  
+  // Handler for downloading template
+  const handleDownloadTemplate = () => {
+    // Template download logic would go here
+    console.log('Download template clicked');
+  };
+
+  // Handler for file upload and import
+  const handleImport = () => {
+    if (!file) return;
+    // Import logic would go here
+    console.log('Import file:', file.name);
+  };──────
 import React, { useState } from 'react';
 import { useAppContext } from '../../../context/AppContext';
 
@@ -62,6 +76,19 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
   const [success, setSuccess] = useState<string>('');
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Handler for downloading template
+  const handleDownloadTemplate = () => {
+    // Template download logic would go here
+    console.log('Download template clicked');
+  };
+
+  // Handler for file upload and import
+  const handleImport = () => {
+    if (!file) return;
+    // Import logic would go here
+    console.log('Import file:', file.name);
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -266,7 +293,7 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={onClick}
+                  onClick={handleDownloadTemplate}
                   icon={<Download className="w-4 h-4" />}
                 >
                   Download Template
@@ -350,14 +377,14 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
           <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
-              onClick={onClick}
+              onClick={onClose}
               disabled={isProcessing}
               icon={<X className="w-4 h-4" />}
             >
               Cancel
             </Button>
             <Button
-              onClick={onClick}
+              onClick={handleImport}
               disabled={!file || isProcessing}
               isLoading={isProcessing}
               icon={<Upload className="w-4 h-4" />}

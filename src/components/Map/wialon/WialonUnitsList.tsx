@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useWialonUnits, WialonUnitData } from '../../../hooks/useWialonUnits';
-
-// Extended Wialon unit interface with additional properties we might receive
-interface ExtendedWialonUnit extends WialonUnitData {
-  cls_id?: number;
-  type?: string;
-  hw_id?: string;
-  last_message?: number;
-  connection_state?: number;
-  [key: string]: any; // Allow any other properties for dynamic access
-}
+// This import path is correct if WialonUnitsList.tsx is in src/components/Map/wialon/
+import { ExtendedWialonUnit } from '../../../hooks/useWialon'; // Import ExtendedWialonUnit from the new hook
 
 interface WialonUnitsListProps {
+  /** The list of Wialon units to display */
+  units: ExtendedWialonUnit[] | null;
+  /** Loading state from the Wialon hook */
+  loading: boolean;
+  /** Error state from the Wialon hook */
+  error: Error | null;
   /** Optional filter for units by name */
   nameFilter?: string;
   /** Optional filter for units by type/class */
@@ -25,86 +22,93 @@ interface WialonUnitsListProps {
 /**
  * WialonUnitsList Component
  *
- * Displays a list of Wialon units with filtering options.
+ * Displays a list of Wialon units with filtering and sorting options.
+ * It receives unit data, loading, and error states as props.
  */
 const WialonUnitsList: React.FC<WialonUnitsListProps> = ({
   nameFilter = '',
   typeFilter = '',
   limit,
-  onSelectUnit
+  onSelectUnit,
+  units, // Now a prop
+  loading, // Now a prop
+  error // Now a prop
 }) => {
   const [searchQuery, setSearchQuery] = useState(nameFilter);
   const [selectedType, setSelectedType] = useState(typeFilter);
-  // Explicitly cast the units to ExtendedWialonUnit[] to include additional properties.
-  // This assumes that the data returned by useWialonUnits will actually contain these properties at runtime.
-  const { units, loading, error } = useWialonUnits() as {
-    units: ExtendedWialonUnit[] | null;
-    loading: boolean;
-    error: Error | null;
-  };
   const [filteredUnits, setFilteredUnits] = useState<ExtendedWialonUnit[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({
     key: 'name',
     direction: 'ascending'
   });
 
+  // Effect to filter and sort units whenever the 'units' prop, filters, or sort config change
   useEffect(() => {
-    if (!units) return;
+    if (!units) {
+      setFilteredUnits([]); // Clear units if not available
+      return;
+    }
 
-    let filtered = [...units]; // units is now correctly typed as ExtendedWialonUnit[]
+    let currentFiltered = [...units]; // Start with the units received as props
 
     // Apply name search filter
     if (searchQuery) {
-      filtered = filtered.filter(unit =>
+      currentFiltered = currentFiltered.filter(unit =>
         unit.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     // Apply type filter
     if (selectedType) {
-      filtered = filtered.filter(unit =>
-        // Accessing cls_id and type directly on ExtendedWialonUnit, which now includes them.
-        unit.cls_id === parseInt(selectedType) ||
+      currentFiltered = currentFiltered.filter(unit =>
+        // Check for both cls_id (number) and type (string) for filtering
+        (unit.cls_id && String(unit.cls_id) === selectedType) ||
         (unit.type && unit.type.toLowerCase() === selectedType.toLowerCase())
       );
     }
 
     // Apply sorting
-    filtered.sort((a, b) => {
-      // Accessing properties via string index is now allowed due to '[key: string]: any;' in ExtendedWialonUnit
+    currentFiltered.sort((a, b) => {
+      // Safely access properties for sorting, handling potential undefined values
       const valueA = a[sortConfig.key] !== undefined ? a[sortConfig.key] : '';
       const valueB = b[sortConfig.key] !== undefined ? b[sortConfig.key] : '';
 
-      if (valueA < valueB) {
-        return sortConfig.direction === 'ascending' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return sortConfig.direction === 'ascending' ? 1 : -1;
+      // Handle numerical sorting specifically for 'last_message'
+      if (sortConfig.key === 'last_message') {
+        const numA = typeof valueA === 'number' ? valueA : -Infinity;
+        const numB = typeof valueB === 'number' ? valueB : -Infinity;
+        if (numA < numB) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (numA > numB) return sortConfig.direction === 'ascending' ? 1 : -1;
+      } else {
+        // Default string comparison for other keys
+        if (valueA < valueB) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (valueA > valueB) return sortConfig.direction === 'ascending' ? 1 : -1;
       }
       return 0;
     });
 
     // Apply limit if specified
     if (limit && limit > 0) {
-      filtered = filtered.slice(0, limit);
+      currentFiltered = currentFiltered.slice(0, limit);
     }
 
-    setFilteredUnits(filtered);
-  }, [units, searchQuery, selectedType, sortConfig, limit]);
+    setFilteredUnits(currentFiltered);
+  }, [units, searchQuery, selectedType, sortConfig, limit]); // Re-run when these dependencies change
 
   // Get unique unit types for the filter dropdown
   const unitTypes = units ?
-    Array.from(new Set(units.map(unit => unit.cls_id || unit.type)))
-      .filter(Boolean)
+    Array.from(new Set(units.map(unit => unit.cls_id ? `Class ${unit.cls_id}` : unit.type)))
+      .filter(Boolean) // Remove any null or undefined types
       .map(type => ({
-        id: String(type),
-        name: typeof type === 'number' ? `Class ${type}` : type
+        id: String(type), // Use the string representation as the option value
+        name: type as string // Display name
       })) : [];
 
+  // Display loading, error, or no units messages
   if (loading) {
     return (
       <div className="p-4 text-center">
-        <div className="animate-pulse">Loading Wialon units...</div>
+        <div className="animate-pulse text-gray-600">Loading Wialon units...</div>
       </div>
     );
   }
@@ -121,13 +125,13 @@ const WialonUnitsList: React.FC<WialonUnitsListProps> = ({
   if (!units || units.length === 0) {
     return (
       <div className="p-4 text-center text-gray-600">
-        No units available. Please check your Wialon connection.
+        No units available. Please ensure Wialon is initialized and you have access to units.
       </div>
     );
   }
 
   return (
-    <div className="wialon-units-list">
+    <div className="wialon-units-list p-2">
       <div className="mb-4 flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <label htmlFor="unit-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -163,12 +167,12 @@ const WialonUnitsList: React.FC<WialonUnitsListProps> = ({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200 shadow-sm rounded-lg">
+      <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+        <table className="min-w-full bg-white divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th
-                className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 onClick={() => setSortConfig(prevConfig => ({
                   key: 'name',
                   direction:
@@ -184,11 +188,11 @@ const WialonUnitsList: React.FC<WialonUnitsListProps> = ({
                   </span>
                 )}
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Type
               </th>
               <th
-                className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 onClick={() => setSortConfig(prevConfig => ({
                   key: 'last_message',
                   direction:
@@ -204,7 +208,7 @@ const WialonUnitsList: React.FC<WialonUnitsListProps> = ({
                   </span>
                 )}
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
             </tr>
@@ -216,7 +220,7 @@ const WialonUnitsList: React.FC<WialonUnitsListProps> = ({
                 onClick={() => {
                   if (onSelectUnit) onSelectUnit(unit.id, unit);
                 }}
-                className="hover:bg-blue-50 cursor-pointer"
+                className="hover:bg-blue-50 cursor-pointer transition-colors duration-150 ease-in-out"
               >
                 <td className="px-4 py-3">
                   <div className="text-sm font-medium text-gray-900">{unit.name}</div>
@@ -225,14 +229,14 @@ const WialonUnitsList: React.FC<WialonUnitsListProps> = ({
                   )}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500">
-                  {unit.type || `Class ${unit.cls_id}`}
+                  {unit.type || (unit.cls_id ? `Class ${unit.cls_id}` : 'N/A')}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500">
                   {unit.last_message ? new Date(unit.last_message * 1000).toLocaleString() : 'Never'}
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                       ${unit.connection_state === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`
                     }
                   >
@@ -245,7 +249,7 @@ const WialonUnitsList: React.FC<WialonUnitsListProps> = ({
         </table>
       </div>
 
-      <div className="mt-2 text-right text-sm text-gray-500">
+      <div className="mt-4 text-right text-sm text-gray-500">
         {filteredUnits.length} units shown {units.length > filteredUnits.length && `(out of ${units.length})`}
       </div>
     </div>

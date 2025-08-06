@@ -1,29 +1,28 @@
-import React, { useState, useMemo } from 'react';
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  ClipboardList,
+  Clock,
+  Eye,
+  FileUp,
+  MessageSquare,
+  Plus,
+  Save,
+  Trash2,
+  User,
+  X
+} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import ActionItemDetails from '../../components/Adminmangement/ActionItemDetails';
+import Button from '../../components/ui/Button';
+import Card, { CardContent, CardHeader } from '../../components/ui/Card';
+import { Input, Select, TextArea } from '../../components/ui/FormElements';
+import Modal from '../../components/ui/Modal';
+import SyncIndicator from '../../components/ui/SyncIndicator';
 import { useAppContext } from '../../context/AppContext';
 import { ActionItem, RESPONSIBLE_PERSONS } from '../../types';
-import Card, { CardContent, CardHeader } from '../ui/Card';
-import Button from '../ui/Button';
-import { Input, Select, TextArea } from '../ui/FormElements';
-import Modal from '../ui/Modal';
-import {
-  ClipboardList,
-  Plus,
-  Calendar,
-  Clock,
-  User,
-  CheckCircle,
-  AlertTriangle,
-  Edit,
-  Trash2,
-  X,
-  Save,
-  Eye,
-  MessageSquare,
-  FileUp
-} from 'lucide-react';
 import { formatDate, formatDateTime } from '../../utils/helpers';
-import SyncIndicator from '../ui/SyncIndicator';
-import ActionItemDetails from './ActionItemDetails';
 
 const ActionLog: React.FC = () => {
   const { actionItems, addActionItem, updateActionItem, deleteActionItem, connectionStatus } = useAppContext();
@@ -345,7 +344,7 @@ const ActionLog: React.FC = () => {
             <Select
               label="Status"
               value={filters.status}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters(prev => ({ ...prev, status: e.target.value }))}
               options={[
                 { label: 'All Statuses', value: '' },
                 { label: 'Initiated', value: 'initiated' },
@@ -357,7 +356,7 @@ const ActionLog: React.FC = () => {
             <Select
               label="Responsible Person"
               value={filters.responsiblePerson}
-              onChange={(e) => setFilters(prev => ({ ...prev, responsiblePerson: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters(prev => ({ ...prev, responsiblePerson: e.target.value }))}
               options={[
                 { label: 'All Persons', value: '' },
                 ...RESPONSIBLE_PERSONS.map(person => ({ label: person, value: person }))
@@ -619,7 +618,7 @@ const ActionLog: React.FC = () => {
             <Input
               label="Title *"
               value={formData.title}
-              onChange={(e) => handleFormChange('title', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange('title', e.target.value)}
               placeholder="Enter action item title..."
               error={errors.title}
             />
@@ -627,7 +626,7 @@ const ActionLog: React.FC = () => {
             <TextArea
               label="Description *"
               value={formData.description}
-              onChange={(e) => handleFormChange('description', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFormChange('description', e.target.value)}
               placeholder="Provide details about the action item..."
               rows={3}
               error={errors.description}
@@ -637,7 +636,7 @@ const ActionLog: React.FC = () => {
               <Select
                 label="Responsible Person *"
                 value={formData.responsiblePerson}
-                onChange={(e) => handleFormChange('responsiblePerson', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFormChange('responsiblePerson', e.target.value)}
                 options={[
                   { label: 'Select responsible person...', value: '' },
                   ...RESPONSIBLE_PERSONS.map(person => ({ label: person, value: person }))
@@ -649,7 +648,7 @@ const ActionLog: React.FC = () => {
                 label="Due Date *"
                 type="date"
                 value={formData.dueDate}
-                onChange={(e) => handleFormChange('dueDate', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange('dueDate', e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
                 error={errors.dueDate}
               />
@@ -658,7 +657,7 @@ const ActionLog: React.FC = () => {
             <Select
               label="Initial Status"
               value={formData.status}
-              onChange={(e) => handleFormChange('status', e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFormChange('status', e.target.value as any)}
               options={[
                 { label: 'Initiated', value: 'initiated' },
                 { label: 'In Progress', value: 'in_progress' }
