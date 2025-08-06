@@ -56,7 +56,7 @@ import TripDashboard from "./pages/TripDashboard";
 import TripReportPage from "./pages/TripReportPage";
 import ActiveTripsPage from "./pages/trips/ActiveTripsPageEnhanced";
 import MainTripWorkflow from "./pages/trips/MainTripWorkflow";
-import TripDetailsPage from "./pages/trips/TripDetailsPage.jsx";
+import TripDetailsPage from "./pages/trips/TripDetailsPage";
 import TripManagementPage from "./pages/trips/TripManagementPage";
 import TripTimelinePage from "./pages/trips/TripTimelinePage";
 
@@ -252,15 +252,7 @@ const App: React.FC = () => {
                           {/* Trips */}
                           <Route path="trips" element={<TripManagementPage />} />
                           <Route path="trips/active" element={<ActiveTripsPage />} />
-                          <Route
-                            path="trips/:id"
-                            element={
-                              <TripDetailsPage
-                                trip={{} as any} // This should be replaced with actual trip data
-                                onBack={() => window.history.back()}
-                              />
-                            }
-                          />
+                          <Route path="trips/:tripId" element={<TripDetailsPage />} />
                           <Route path="trips/timeline" element={<TripTimelinePage />} />
                           <Route path="trips/planning" element={<RoutePlanningPage />} />
                           <Route path="trips/optimization" element={<RouteOptimizationPage />} />

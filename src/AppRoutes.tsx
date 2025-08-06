@@ -24,7 +24,7 @@ const TripDashboardPage = lazy(() => import("./pages/TripDashboardPage"));
 const TripManagementPage = lazy(() => import("./pages/trips/TripManagementPage"));
 const ActiveTripsPage = lazy(() => import("./pages/trips/ActiveTripsPageEnhanced"));
 const CompletedTrips = lazy(() => import("./pages/trips/CompletedTrips"));
-const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage.jsx"));
+const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage"));
 const SystemCostGenerator = lazy(() => import("./pages/trips/SystemCostGenerator"));
 const PaymentTrackingPanel = lazy(() => import("./pages/trips/PaymentTrackingPanel"));
 const ReportingPanel = lazy(() => import("./pages/trips/ReportingPanel"));
@@ -75,8 +75,8 @@ const DriverViolations = lazy(() => import("./pages/drivers/DriverViolations"));
 const HoursOfService = lazy(() => import("./pages/drivers/HoursOfService"));
 const TrainingRecords = lazy(() => import("./pages/drivers/TrainingRecords"));
 const LicenseManagement = lazy(() => import("./pages/drivers/LicenseManagement"));
-const AddNewDriver = lazy(() => import("./pages/drivers/AddNewDriver"));
-const EditDriver = lazy(() => import("./pages/drivers/EditDriver"));
+const AddEditDriverPage = lazy(() => import("./pages/drivers/AddEditDriverPage"));
+const DriverProfiles = lazy(() => import("./pages/drivers/DriverProfiles"));
 
 /* -----------------------------
  * Clients
@@ -251,9 +251,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="drivers">
           <Route index element={withSuspense(DriverManagementPage)} />
           <Route path="dashboard" element={withSuspense(DriverDashboard)} />
+          <Route path="profiles" element={withSuspense(DriverProfiles)} />
           <Route path="integrated" element={withSuspense(DriverManagementPageIntegrated)} />
           <Route path="manage" element={withSuspense(DriverManagementPage)} />
-          <Route path="details/:driverId" element={withSuspense(DriverDetailsPage)} />
+          <Route path="profiles/:id" element={withSuspense(DriverDetailsPage)} />
           <Route path="behavior" element={withSuspense(DriverBehaviorPage)} />
           <Route path="safety-scores" element={withSuspense(SafetyScores)} />
           <Route path="performance-analytics" element={withSuspense(PerformanceAnalytics)} />
@@ -263,8 +264,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="hours-of-service" element={withSuspense(HoursOfService)} />
           <Route path="training" element={withSuspense(TrainingRecords)} />
           <Route path="licenses" element={withSuspense(LicenseManagement)} />
-          <Route path="add" element={withSuspense(AddNewDriver)} />
-          <Route path="edit/:driverId" element={withSuspense(EditDriver)} />
+          <Route path="add" element={withSuspense(AddEditDriverPage)} />
+          <Route path="edit/:id" element={withSuspense(AddEditDriverPage)} />
         </Route>
 
         {/* Clients */}

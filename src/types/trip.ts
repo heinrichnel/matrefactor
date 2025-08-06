@@ -4,11 +4,16 @@ export type TripStatus =
   | "completed"
   | "cancelled"
   | "in_progress"
-  | "pending";
+  | "pending"
+  | "shipped"
+  | "delivered";
 
 export type Currency = "ZAR" | "USD";
+export type SupportedCurrency = "ZAR" | "USD";
 
 export type ClientType = "internal" | "external";
+
+export type ImportSource = "web_book" | "manual" | "webhook" | "csv";
 
 export interface PlannedRoute {
   origin: string;
@@ -30,6 +35,27 @@ export interface CostEntry {
   notes?: string;
   createdBy?: string;
   updatedAt?: string;
+}
+
+export interface UITrip {
+  id: string;
+  loadRef: string;
+  customer: string;
+  origin: string;
+  destination: string;
+  status: string;
+  shippedStatus: boolean;
+  deliveredStatus: boolean;
+  importSource: ImportSource;
+  startTime: string;
+  endTime: string;
+  driver: string;
+  vehicle: string;
+  distance: number;
+  totalCost: number;
+  costBreakdown?: Record<string, any>; // Object with cost breakdown
+  externalId?: string;
+  lastUpdated?: string;
 }
 
 // --- Main Trip type from Firestore ---

@@ -269,3 +269,5 @@ export const TripForm: React.FC<TripFormProps> = ({
     </form>
   );
 };
+
+export default TripForm;

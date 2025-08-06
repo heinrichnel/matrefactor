@@ -58,25 +58,25 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
   const [taxRate, setTaxRate] = useState(15); // Default tax rate (%)
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Calculate totals
   const calculateTotals = () => {
     const partsCost = invoiceItems
       .filter(item => item.itemType === 'part')
       .reduce((sum, item) => sum + item.total, 0);
-    
+
     const laborCost = invoiceItems
       .filter(item => item.itemType === 'labor')
       .reduce((sum, item) => sum + item.total, 0);
-      
+
     const otherCost = invoiceItems
       .filter(item => item.itemType !== 'part' && item.itemType !== 'labor')
       .reduce((sum, item) => sum + item.total, 0);
-    
+
     const subtotal = partsCost + laborCost + otherCost;
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount;
-    
+
     return {
       partsCost,
       laborCost,
@@ -86,14 +86,14 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
       total
     };
   };
-  
+
   const totals = calculateTotals();
-  
+
   // Initialize invoice items when modal opens
   useEffect(() => {
     if (isOpen) {
       const newItems: InvoiceItem[] = [];
-      
+
       // Add parts as invoice items
       parts.forEach((part, index) => {
         newItems.push({
@@ -105,7 +105,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
           itemType: 'part'
         });
       });
-      
+
       // Add labor as invoice items
       tasks.forEach((task, index) => {
         const hours = task.actualHours || task.estimatedHours;
@@ -118,18 +118,18 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
           itemType: 'labor'
         });
       });
-      
+
       setInvoiceItems(newItems);
     }
   }, [isOpen, parts, tasks, laborRate]);
-  
+
   // Handle form submission
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
-      
+
       const { partsCost, laborCost, taxAmount, total } = totals;
-      
+
       await onGenerateInvoice({
         jobCardId,
         customerName,
@@ -141,7 +141,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
         totalAmount: total,
         notes: notes.trim() || undefined
       });
-      
+
       onClose();
     } catch (error) {
       console.error('Error generating invoice:', error);
@@ -150,7 +150,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
       setIsLoading(false);
     }
   };
-  
+
   // Update tax rate
   const handleTaxRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -158,7 +158,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
       setTaxRate(value);
     }
   };
-  
+
   return (
     <Modal
       isOpen={isOpen}
@@ -178,7 +178,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -191,7 +191,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
             </div>
           </div>
         </div>
-        
+
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Invoice Items</h3>
           <div className="overflow-x-auto">
@@ -273,7 +273,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
             </table>
           </div>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Invoice Notes (Optional)
@@ -286,18 +286,18 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
             placeholder="Add any notes to be displayed on the invoice..."
           />
         </div>
-        
+
         <div className="flex justify-end space-x-3 pt-4 border-t">
           <Button
             variant="outline"
-            onClick={onClick}
+            onClick={onClose}
             icon={<X className="w-4 h-4" />}
             disabled={isLoading}
           >
             Cancel
           </Button>
           <Button
-            onClick={onClick}
+            onClick={handleSubmit}
             icon={<Send className="w-4 h-4" />}
             isLoading={isLoading}
           >

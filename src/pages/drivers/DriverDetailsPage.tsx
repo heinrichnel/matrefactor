@@ -1,7 +1,7 @@
+import { collection, doc, getDoc, getDocs, getFirestore, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { Card, CardContent, CardHeader, Button } from '../../components/ui';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button, Card, CardContent, CardHeader } from '../../components/ui';
 // Using our custom formatDate helper instead of date-fns
 
 interface DriverAuthorization {
@@ -40,19 +40,19 @@ const DriverDetailsPage: React.FC = () => {
   useEffect(() => {
     const fetchDriverData = async () => {
       if (!id) return;
-      
+
       setLoading(true);
       try {
         // Get driver details from Firestore
         const driverRef = doc(db, 'drivers', id);
         const driverSnap = await getDoc(driverRef);
-        
+
         if (!driverSnap.exists()) {
           setError('Driver not found');
           setLoading(false);
           return;
         }
-        
+
         const driverData = driverSnap.data();
         setDriver({
           id: driverSnap.id,
@@ -69,22 +69,22 @@ const DriverDetailsPage: React.FC = () => {
           joinDate: driverData.joinDate,
           profileImage: driverData.profileImage
         });
-        
+
         // Fetch driver authorizations if idNo exists
         if (driverData.idNo) {
           const authQuery = query(
             collection(db, 'authorizations'),
             where('idNo', '==', driverData.idNo)
           );
-          
+
           const authSnap = await getDocs(authQuery);
           const authData: DriverAuthorization[] = [];
-          
+
           authSnap.forEach((doc) => {
             const data = doc.data() as DriverAuthorization;
             authData.push(data);
           });
-          
+
           setAuthorizations(authData);
         }
       } catch (err) {
@@ -94,12 +94,12 @@ const DriverDetailsPage: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchDriverData();
   }, [id, db]);
 
   const handleEdit = () => {
-    navigate(`/drivers/profiles/${id}/edit`);
+    navigate(`/drivers/edit/${id}`);
   };
 
   const handleBack = () => {
@@ -109,7 +109,7 @@ const DriverDetailsPage: React.FC = () => {
   // Function to check if a document is expiring soon (within 90 days)
   const isExpiringSoon = (expireDate: string | null): boolean => {
     if (!expireDate) return false;
-    
+
     try {
       // Parse the expiration date (assuming format DD/MM/YYYY)
       const parts = expireDate.split('/');
@@ -118,12 +118,12 @@ const DriverDetailsPage: React.FC = () => {
         parseInt(parts[1]) - 1, // Month (0-based)
         parseInt(parts[0]) // Day
       );
-      
+
       // Calculate days until expiry
       const today = new Date();
       const diffTime = expiryDate.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
       return diffDays >= 0 && diffDays <= 90;
     } catch (err) {
       console.error('Error parsing date:', err);
@@ -134,7 +134,7 @@ const DriverDetailsPage: React.FC = () => {
   // Function to check if a document is expired
   const isExpired = (expireDate: string | null): boolean => {
     if (!expireDate) return false;
-    
+
     try {
       // Parse the expiration date (assuming format DD/MM/YYYY)
       const parts = expireDate.split('/');
@@ -143,7 +143,7 @@ const DriverDetailsPage: React.FC = () => {
         parseInt(parts[1]) - 1, // Month (0-based)
         parseInt(parts[0]) // Day
       );
-      
+
       // Check if expired
       return expiryDate < new Date();
     } catch (err) {
@@ -217,8 +217,8 @@ const DriverDetailsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium">Personal Information</h2>
               <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                driver.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                driver.status === 'Inactive' ? 'bg-red-100 text-red-800' : 
+                driver.status === 'Active' ? 'bg-green-100 text-green-800' :
+                driver.status === 'Inactive' ? 'bg-red-100 text-red-800' :
                 'bg-gray-100 text-gray-800'
               }`}>
                 {driver.status}
@@ -243,7 +243,7 @@ const DriverDetailsPage: React.FC = () => {
               <h3 className="text-xl font-bold mt-2">{driver.name} {driver.surname}</h3>
               <p className="text-sm text-gray-500">ID: {driver.idNo || 'Not available'}</p>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between border-b border-gray-100 py-2">
                 <span className="text-gray-500">Email</span>
@@ -350,7 +350,7 @@ const DriverDetailsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-md font-medium mb-2">Quick Actions</h3>
                 <div className="grid grid-cols-2 gap-2">

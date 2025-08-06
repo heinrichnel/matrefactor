@@ -27,7 +27,13 @@ const rootCauseOptions = [
   "Other",
 ];
 
-export const RCAModal: React.FC<RCAModalProps> = ({ open, initial, onSubmit, onClose, userName }) => {
+export const RCAModal: React.FC<RCAModalProps> = ({
+  open,
+  initial,
+  onSubmit,
+  onClose,
+  userName,
+}) => {
   const [entry, setEntry] = useState<RCAEntry>(
     initial || {
       id: "",
@@ -70,25 +76,31 @@ export const RCAModal: React.FC<RCAModalProps> = ({ open, initial, onSubmit, onC
         </div>
         <div className="space-y-3">
           <div>
-            <label className="block font-semibold">Root Cause <span className="text-red-500">*</span></label>
+            <label className="block font-semibold">
+              Root Cause <span className="text-red-500">*</span>
+            </label>
             <select
               className="border rounded p-2 w-full"
               value={entry.rootCause}
-              onChange={e => handleChange("rootCause", e.target.value)}
+              onChange={(e) => handleChange("rootCause", e.target.value)}
               required
             >
               <option value="">--Select Root Cause--</option>
-              {rootCauseOptions.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
+              {rootCauseOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block font-semibold">RCA Conducted By <span className="text-red-500">*</span></label>
+            <label className="block font-semibold">
+              RCA Conducted By <span className="text-red-500">*</span>
+            </label>
             <input
               className="border rounded p-2 w-full"
               value={entry.rcaConductedBy}
-              onChange={e => handleChange("rcaConductedBy", e.target.value)}
+              onChange={(e) => handleChange("rcaConductedBy", e.target.value)}
               required
               autoComplete="name"
             />
@@ -98,7 +110,7 @@ export const RCAModal: React.FC<RCAModalProps> = ({ open, initial, onSubmit, onC
             <input
               className="border rounded p-2 w-full"
               value={entry.responsiblePerson}
-              onChange={e => handleChange("responsiblePerson", e.target.value)}
+              onChange={(e) => handleChange("responsiblePerson", e.target.value)}
               autoComplete="name"
             />
           </div>
@@ -108,15 +120,19 @@ export const RCAModal: React.FC<RCAModalProps> = ({ open, initial, onSubmit, onC
               className="border rounded p-2 w-full"
               rows={3}
               value={entry.note}
-              onChange={e => handleChange("note", e.target.value)}
+              onChange={(e) => handleChange("note", e.target.value)}
               placeholder="Any relevant detail or corrective action..."
             />
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
         </div>
         <div className="flex justify-end mt-6 space-x-2">
-          <Button onClick={onClick} size="sm" variant="secondary">Cancel</Button>
-          <Button onClick={onClick} size="sm" variant="primary">Submit RCA</Button>
+          <Button onClick={onClose} size="sm" variant="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} size="sm" variant="primary">
+            Submit RCA
+          </Button>
         </div>
       </div>
     </div>

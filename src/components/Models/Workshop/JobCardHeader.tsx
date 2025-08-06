@@ -1,7 +1,7 @@
-import React from 'react';
-import { formatDate } from '../../../utils/helpers';
-import { Truck, User, Calendar, AlertTriangle } from 'lucide-react';
-import Button from '../../ui/Button';
+import { AlertTriangle, Calendar, Clock, Truck, User } from "lucide-react";
+import React from "react";
+import { formatDate } from "../../../utils/helpers";
+import Button from "../../ui/Button";
 
 interface JobCardHeaderProps {
   jobCard: {
@@ -9,7 +9,7 @@ interface JobCardHeaderProps {
     workOrderNumber: string;
     vehicleId: string;
     customerName: string;
-    priority: 'low' | 'medium' | 'high' | 'critical';
+    priority: "low" | "medium" | "high" | "critical";
     status: string;
     createdDate: string;
     scheduledDate?: string;
@@ -28,31 +28,44 @@ const JobCardHeader: React.FC<JobCardHeaderProps> = ({
   onEdit,
   onAssign,
   onPrint,
-  onBack
+  onBack,
 }) => {
   const getPriorityClass = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "critical":
+        return "bg-red-100 text-red-800";
+      case "high":
+        return "bg-orange-100 text-orange-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800";
+      case "low":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
-  
+
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'created':
-      case 'assigned': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'parts_pending': return 'bg-purple-100 text-purple-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "created":
+      case "assigned":
+        return "bg-yellow-100 text-yellow-800";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800";
+      case "parts_pending":
+        return "bg-purple-100 text-purple-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
-  
+
   const getStatusDisplay = (status: string) => {
-    return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return status
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   return (
@@ -61,24 +74,21 @@ const JobCardHeader: React.FC<JobCardHeaderProps> = ({
         <div>
           <div className="flex items-center">
             {onBack && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="mr-2"
-                onClick={onClick}
-              >
+              <Button variant="outline" size="sm" className="mr-2" onClick={onBack}>
                 ←
               </Button>
             )}
-            <h1 className="text-xl font-bold text-gray-900">
-              Job Card: {jobCard.workOrderNumber}
-            </h1>
+            <h1 className="text-xl font-bold text-gray-900">Job Card: {jobCard.workOrderNumber}</h1>
           </div>
           <div className="flex items-center mt-1 space-x-2">
-            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getPriorityClass(jobCard.priority)}`}>
+            <span
+              className={`px-2 py-0.5 text-xs font-medium rounded-full ${getPriorityClass(jobCard.priority)}`}
+            >
               {jobCard.priority.toUpperCase()} PRIORITY
             </span>
-            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getStatusClass(jobCard.status)}`}>
+            <span
+              className={`px-2 py-0.5 text-xs font-medium rounded-full ${getStatusClass(jobCard.status)}`}
+            >
               {getStatusDisplay(jobCard.status)}
             </span>
             {jobCard.inspectionId && (
@@ -90,35 +100,23 @@ const JobCardHeader: React.FC<JobCardHeaderProps> = ({
         </div>
         <div className="flex space-x-2">
           {onEdit && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={onClick}
-            >
+            <Button variant="outline" size="sm" onClick={onEdit}>
               Edit
             </Button>
           )}
           {onAssign && !jobCard.assignedTo && (
-            <Button 
-              variant="primary" 
-              size="sm"
-              onClick={onClick}
-            >
+            <Button variant="primary" size="sm" onClick={onAssign}>
               Assign
             </Button>
           )}
           {onPrint && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={onClick}
-            >
+            <Button variant="outline" size="sm" onClick={onPrint}>
               Print
             </Button>
           )}
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="flex items-center space-x-2">
           <Truck className="w-5 h-5 text-gray-400" />
@@ -127,7 +125,7 @@ const JobCardHeader: React.FC<JobCardHeaderProps> = ({
             <p className="font-medium">{jobCard.vehicleId}</p>
           </div>
         </div>
-        
+
         {jobCard.assignedTo && (
           <div className="flex items-center space-x-2">
             <User className="w-5 h-5 text-gray-400" />
@@ -137,7 +135,7 @@ const JobCardHeader: React.FC<JobCardHeaderProps> = ({
             </div>
           </div>
         )}
-        
+
         <div className="flex items-center space-x-2">
           <Calendar className="w-5 h-5 text-gray-400" />
           <div>
@@ -145,7 +143,7 @@ const JobCardHeader: React.FC<JobCardHeaderProps> = ({
             <p className="font-medium">{formatDate(jobCard.createdDate)}</p>
           </div>
         </div>
-        
+
         {jobCard.scheduledDate && (
           <div className="flex items-center space-x-2">
             <Calendar className="w-5 h-5 text-gray-400" />
@@ -155,7 +153,7 @@ const JobCardHeader: React.FC<JobCardHeaderProps> = ({
             </div>
           </div>
         )}
-        
+
         {jobCard.estimatedCompletion && (
           <div className="flex items-center space-x-2">
             <Clock className="w-5 h-5 text-gray-400" />
@@ -166,8 +164,8 @@ const JobCardHeader: React.FC<JobCardHeaderProps> = ({
           </div>
         )}
       </div>
-      
-      {jobCard.priority === 'critical' && (
+
+      {jobCard.priority === "critical" && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
           <AlertTriangle className="w-5 h-5 text-red-600 mr-2 mt-0.5" />
           <div>

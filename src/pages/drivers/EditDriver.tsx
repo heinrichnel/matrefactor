@@ -4,8 +4,61 @@ import Card, { CardHeader, CardContent } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { Save, ArrowLeft, Upload, Trash2, AlertTriangle } from 'lucide-react';
 
+// Define interfaces for nested objects
+interface EmergencyContact {
+  name: string;
+  relationship: string;
+  phone: string;
+}
+
+interface BankDetails {
+  bankName: string;
+  accountNumber: string;
+  branch: string;
+}
+
+// Define the main Driver interface for mock data
+interface MockDriver {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  dateOfBirth: string;
+  dateJoined: string;
+  licenseNumber: string;
+  licenseExpiry: string;
+  licenseClass: string;
+  status: 'active' | 'inactive' | 'suspended';
+  emergencyContact: EmergencyContact;
+  nationality: string;
+  nationalId: string;
+  bankDetails: BankDetails;
+}
+
+// Define the interface for the formData state
+interface DriverFormData {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  dateOfBirth: string;
+  licenseNumber: string;
+  licenseExpiry: string;
+  licenseClass: string;
+  status: 'active' | 'inactive' | 'suspended';
+  emergencyContactName: string;
+  emergencyContactRelationship: string;
+  emergencyContactPhone: string;
+  nationality: string;
+  nationalId: string;
+  bankName: string;
+  accountNumber: string;
+  branch: string;
+}
+
 // Mock driver data - same as used in DriverDetails.tsx
-const mockDrivers = [
+const mockDrivers: MockDriver[] = [
   {
     id: 'drv-001',
     name: 'John Doe',
@@ -61,7 +114,7 @@ const mockDrivers = [
 const EditDriver: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<DriverFormData>({ // Explicitly type formData
     name: '',
     email: '',
     phone: '',
@@ -114,7 +167,7 @@ const EditDriver: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev: DriverFormData) => ({ // Explicitly type prev
       ...prev,
       [name]: value
     }));
@@ -123,7 +176,7 @@ const EditDriver: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       setSaving(false);
@@ -154,8 +207,8 @@ const EditDriver: React.FC = () => {
             </div>
           </div>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => navigate('/drivers/profiles')}
           className="flex items-center gap-2"
         >
@@ -170,8 +223,8 @@ const EditDriver: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => navigate(`/drivers/profiles/${id}`)}
             className="mr-4"
           >
@@ -188,7 +241,7 @@ const EditDriver: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Personal Information */}
           <Card>
-            <CardHeader title="Personal Information" />
+            <CardHeader>Personal Information</CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -295,7 +348,7 @@ const EditDriver: React.FC = () => {
 
           {/* License & Emergency Contact */}
           <Card>
-            <CardHeader title="License & Emergency Contact" />
+            <CardHeader>License & Emergency Contact</CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -353,7 +406,7 @@ const EditDriver: React.FC = () => {
 
               <div className="pt-4 border-t border-gray-200 mt-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Emergency Contact</h3>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                   <input
@@ -365,7 +418,7 @@ const EditDriver: React.FC = () => {
                     required
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
@@ -398,7 +451,7 @@ const EditDriver: React.FC = () => {
         {/* Banking Details */}
         <div className="mt-6">
           <Card>
-            <CardHeader title="Banking Details" />
+            <CardHeader>Banking Details</CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -441,26 +494,26 @@ const EditDriver: React.FC = () => {
 
         {/* Form Actions */}
         <div className="mt-6 flex justify-between">
-          <Button 
+          <Button
             type="button"
-            variant="outline" 
+            variant="outline"
             onClick={() => navigate(`/drivers/profiles/${id}`)}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Cancel
           </Button>
-          
+
           <div className="flex space-x-2">
-            <Button 
+            <Button
               type="button"
-              variant="outline" 
+              variant="outline"
               className="flex items-center gap-2 text-red-600 hover:bg-red-50"
             >
               <Trash2 className="w-4 h-4" />
               Delete
             </Button>
-            <Button 
+            <Button
               type="submit"
               className="flex items-center gap-2"
               disabled={saving}

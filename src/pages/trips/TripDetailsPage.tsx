@@ -10,7 +10,8 @@ import {
   Plus,
   Send,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import CostForm from "../../components/forms/cost/CostForm";
 import TripPlanningForm from "../../components/forms/trips/TripPlanningForm";
 import CostList from "../../components/lists/CostList";
@@ -32,19 +33,64 @@ import {
 } from "../../utils/helpers";
 
 interface TripDetailsProps {
-  trip: Trip;
-  onBack: () => void;
+  trip?: Trip;
+  onBack?: () => void;
 }
 
-const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
-  const { addCostEntry, updateCostEntry, deleteCostEntry, updateTrip, addDelayReason } =
-    useAppContext();
+const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip: propTrip, onBack }) => {
+  const { tripId } = useParams<{ tripId: string }>();
+  const navigate = useNavigate();
+  const { getTrip, addCostEntry, updateCostEntry, deleteCostEntry, updateTrip, addDelayReason } = useAppContext();
+
+  // State for trip data - use prop trip or fetch from context
+  const [trip, setTrip] = useState<Trip | undefined>(propTrip);
   const [showCostForm, setShowCostForm] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showSystemCostGenerator, setShowSystemCostGenerator] = useState(false);
   const [showInvoiceSubmission, setShowInvoiceSubmission] = useState(false);
   const [showTripPlanning, setShowTripPlanning] = useState(false);
   const [editingCost, setEditingCost] = useState<CostEntry | undefined>();
+
+  useEffect(() => {
+    // If no trip prop provided, try to get it from the route parameter
+    if (!propTrip && tripId) {
+      const fetchedTrip = getTrip(tripId);
+      setTrip(fetchedTrip);
+    }
+  }, [propTrip, tripId, getTrip]);
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate("/trips");
+    }
+  };
+
+  // Early return if trip data is not available or incomplete
+  if (!trip || !trip.costs) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertTriangle className="h-5 w-5 text-yellow-400 mr-2" />
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">Trip Data Loading</h3>
+              <p className="text-sm text-yellow-700">
+                Trip information is not yet available. Please try refreshing the page.
+              </p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Button variant="outline" onClick={handleBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Trip List
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Enhanced handleAddCost with file support
   const handleAddCost = (costData: Omit<CostEntry, "id" | "attachments">, files?: FileList) => {
@@ -138,7 +184,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
   };
 
   const handleCompleteTrip = () => {
-    const unresolvedFlags = getUnresolvedFlagsCount(trip.costs);
+    const unresolvedFlags = getUnresolvedFlagsCount(trip.costs || []);
 
     if (unresolvedFlags > 0) {
       alert(
@@ -165,7 +211,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
         });
 
         alert("Trip has been successfully completed and is now ready for invoicing.");
-        onBack();
+        handleBack();
       } catch (error) {
         console.error("Error completing trip:", error);
         alert("Error completing trip. Please try again.");
@@ -242,7 +288,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
       alert(
         `Trip successfully submitted for invoicing!\n\nInvoice Number: ${invoiceData.invoiceNumber}\nDue Date: ${invoiceData.invoiceDueDate}\n\nThe trip is now in the invoicing workflow and payment tracking has begun.`
       );
-      onBack();
+      handleBack();
     } catch (error) {
       console.error("Error submitting invoice:", error);
       alert("Error submitting invoice. Please try again.");
@@ -278,14 +324,14 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
   };
 
   const kpis = calculateKPIs(trip);
-  const flaggedCount = getFlaggedCostsCount(trip.costs);
-  const unresolvedFlags = getUnresolvedFlagsCount(trip.costs);
+  const flaggedCount = getFlaggedCostsCount(trip.costs || []);
+  const unresolvedFlags = getUnresolvedFlagsCount(trip.costs || []);
   const canComplete = canCompleteTrip(trip);
 
   // Check if system costs have been generated
-  const hasSystemCosts = trip.costs.some((cost) => cost.isSystemGenerated);
-  const systemCosts = trip.costs.filter((cost) => cost.isSystemGenerated);
-  const manualCosts = trip.costs.filter((cost) => !cost.isSystemGenerated);
+  const hasSystemCosts = trip?.costs?.some((cost) => cost.isSystemGenerated) || false;
+  const systemCosts = trip?.costs?.filter((cost) => cost.isSystemGenerated) || [];
+  const manualCosts = trip?.costs?.filter((cost) => !cost.isSystemGenerated) || [];
 
   // Calculate timeline discrepancies for display
   const hasTimelineDiscrepancies = () => {
@@ -666,7 +712,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
                 )}
                 <div>
                   <p className="text-sm text-gray-500">Cost Entries</p>
-                  <p className="font-medium">{trip.costs.length} entries</p>
+                  <p className="font-medium">{(trip.costs || []).length} entries</p>
                   {hasSystemCosts && (
                     <div className="text-xs text-gray-500">
                       {manualCosts.length} manual • {systemCosts.length} system
@@ -693,13 +739,17 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
                     <div className="flex justify-between text-sm">
                       <span>With receipts:</span>
                       <span className="text-green-600 font-medium">
-                        {trip.costs.filter((c) => c.attachments.length > 0).length}
+                        {(trip.costs || []).filter((c) => c.attachments?.length > 0).length}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Missing receipts:</span>
                       <span className="text-red-600 font-medium">
-                        {trip.costs.filter((c) => c.attachments.length === 0).length}
+                        {
+                          (trip.costs || []).filter(
+                            (c) => !c.attachments || c.attachments.length === 0
+                          ).length
+                        }
                       </span>
                     </div>
                   </div>
@@ -726,7 +776,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
       {/* Cost Entries Section */}
       <Card>
         <CardHeader
-          title={`Cost Entries (${trip.costs.length})`}
+          title={`Cost Entries (${(trip.costs || []).length})`}
           action={
             trip.status === "active" && (
               <Button
@@ -741,7 +791,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
         />
         <CardContent>
           <CostList
-            costs={trip.costs}
+            costs={trip.costs || []}
             onEdit={trip.status === "active" ? handleEditCost : undefined}
             onDelete={trip.status === "active" ? handleDeleteCost : undefined}
           />
@@ -795,6 +845,25 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip, onBack }) => {
           trip={trip}
           onClose={() => setShowInvoiceSubmission(false)}
           onSubmit={handleInvoiceSubmission}
+          onAddAdditionalCost={(cost, files) => {
+            if (trip && trip.id) {
+              // Handle adding additional cost
+              updateTrip({
+                ...trip,
+                additionalCosts: [...trip.additionalCosts,
+                  { ...cost, id: `addcost-${Date.now()}` }]
+              });
+            }
+          }}
+          onRemoveAdditionalCost={(costId) => {
+            if (trip && trip.id) {
+              // Handle removing additional cost
+              updateTrip({
+                ...trip,
+                additionalCosts: trip.additionalCosts.filter(cost => cost.id !== costId)
+              });
+            }
+          }}
         />
       )}
 

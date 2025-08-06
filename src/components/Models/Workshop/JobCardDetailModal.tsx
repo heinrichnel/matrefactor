@@ -19,7 +19,7 @@ export interface JobCardDetail {
   completedDate?: string;
   assigned: string[];
   memo: string;
-  tasks: JobCardTask[]; 
+  tasks: JobCardTask[];
   parts: PartItem[];
   labor: LaborItem[];
   costs: CostItem[];
@@ -119,8 +119,8 @@ interface Props {
   userName: string;
 }
 
-export const JobCardDetailModal: React.FC<Props> = ({ 
-  jobCard, onClose, onSave, onPDF, onPrint, userName 
+export const JobCardDetailModal: React.FC<Props> = ({
+  jobCard, onClose, onSave, onPDF, onPrint, userName
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [data, setData] = useState(jobCard);
@@ -130,7 +130,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
   const handleEdit = () => setEditMode(true);
   const handleCancel = () => { setData(jobCard); setEditMode(false); };
   const handleChange = (field: keyof JobCardDetail, value: any) => setData(d => ({ ...d, [field]: value }));
-  
+
   const handleTaskChange = (taskId: string, field: keyof JobCardTask, value: any) => {
     setData(d => ({
       ...d,
@@ -272,34 +272,34 @@ export const JobCardDetailModal: React.FC<Props> = ({
             <span className="ml-2 text-gray-400">ODO: {data.odometer} km</span>
           </div>
           <div className="flex space-x-2">
-            <Button onClick={onClick} size="sm" variant="outline">
+            <Button onClick={() => onPrint(data.id)} size="sm" variant="outline">
               <Printer size={16} className="mr-2" />
               Print
             </Button>
-            <Button onClick={onClick} size="sm" variant="outline">
+            <Button onClick={() => onPDF(data.id)} size="sm" variant="outline">
               <Download size={16} className="mr-2" />
               PDF
             </Button>
             {editMode ? (
               <>
-                <Button onClick={onClick} size="sm" variant="primary">
+                <Button onClick={handleSave} size="sm" variant="primary">
                   <Check size={16} className="mr-2" />
                   Save
                 </Button>
-                <Button onClick={onClick} size="sm" variant="secondary">
+                <Button onClick={handleCancel} size="sm" variant="secondary">
                   <X size={16} className="mr-2" />
                   Cancel
                 </Button>
               </>
             ) : (
               data.canEdit && (
-                <Button onClick={onClick} size="sm" variant="primary">
+                <Button onClick={handleEdit} size="sm" variant="primary">
                   <Edit2 size={16} className="mr-2" />
                   Edit
                 </Button>
               )
             )}
-            <Button onClick={onClick} size="sm" variant="secondary">
+            <Button onClick={onClose} size="sm" variant="secondary">
               Close
             </Button>
           </div>
@@ -310,15 +310,15 @@ export const JobCardDetailModal: React.FC<Props> = ({
           className="p-4"
         >
           <TabsList className="mb-4">
-            <TabsTrigger value="general" onClick={onClick}>General</TabsTrigger>
-            <TabsTrigger value="tasks" onClick={onClick}>Tasks</TabsTrigger>
-            <TabsTrigger value="parts" onClick={onClick}>Parts</TabsTrigger>
-            <TabsTrigger value="labor" onClick={onClick}>Labor</TabsTrigger>
-            <TabsTrigger value="costs" onClick={onClick}>Costs</TabsTrigger>
-            <TabsTrigger value="attachments" onClick={onClick}>Attachments</TabsTrigger>
-            <TabsTrigger value="remarks" onClick={onClick}>Remarks</TabsTrigger>
-            <TabsTrigger value="timelog" onClick={onClick}>Time Log</TabsTrigger>
-            <TabsTrigger value="audit" onClick={onClick}>Audit</TabsTrigger>
+            <TabsTrigger value="general" onClick={() => setActiveTab("general")}>General</TabsTrigger>
+            <TabsTrigger value="tasks" onClick={() => setActiveTab("tasks")}>Tasks</TabsTrigger>
+            <TabsTrigger value="parts" onClick={() => setActiveTab("parts")}>Parts</TabsTrigger>
+            <TabsTrigger value="labor" onClick={() => setActiveTab("labor")}>Labor</TabsTrigger>
+            <TabsTrigger value="costs" onClick={() => setActiveTab("costs")}>Costs</TabsTrigger>
+            <TabsTrigger value="attachments" onClick={() => setActiveTab("attachments")}>Attachments</TabsTrigger>
+            <TabsTrigger value="remarks" onClick={() => setActiveTab("remarks")}>Remarks</TabsTrigger>
+            <TabsTrigger value="timelog" onClick={() => setActiveTab("timelog")}>Time Log</TabsTrigger>
+            <TabsTrigger value="audit" onClick={() => setActiveTab("audit")}>Audit</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -332,11 +332,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <div className="flex items-center">
                         <span className="text-gray-500 w-32">Vehicle:</span>
                         {editMode ? (
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             className="form-input rounded border px-2 py-1"
-                            value={data.vehicle} 
-                            onChange={e => handleChange('vehicle', e.target.value)} 
+                            value={data.vehicle}
+                            onChange={e => handleChange('vehicle', e.target.value)}
                           />
                         ) : (
                           <span>{data.vehicle}</span>
@@ -345,11 +345,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <div className="flex items-center">
                         <span className="text-gray-500 w-32">Model:</span>
                         {editMode ? (
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             className="form-input rounded border px-2 py-1"
-                            value={data.model} 
-                            onChange={e => handleChange('model', e.target.value)} 
+                            value={data.model}
+                            onChange={e => handleChange('model', e.target.value)}
                           />
                         ) : (
                           <span>{data.model}</span>
@@ -358,11 +358,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <div className="flex items-center">
                         <span className="text-gray-500 w-32">Odometer:</span>
                         {editMode ? (
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             className="form-input rounded border px-2 py-1"
-                            value={data.odometer} 
-                            onChange={e => handleChange('odometer', parseInt(e.target.value) || 0)} 
+                            value={data.odometer}
+                            onChange={e => handleChange('odometer', parseInt(e.target.value) || 0)}
                           />
                         ) : (
                           <span>{data.odometer} km</span>
@@ -376,9 +376,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <div className="flex items-center">
                         <span className="text-gray-500 w-32">Status:</span>
                         {editMode ? (
-                          <select 
+                          <select
                             className="form-select rounded border px-2 py-1"
-                            value={data.status} 
+                            value={data.status}
                             onChange={e => handleChange('status', e.target.value)}
                           >
                             <option value="initiated">Initiated</option>
@@ -397,9 +397,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <div className="flex items-center">
                         <span className="text-gray-500 w-32">Priority:</span>
                         {editMode ? (
-                          <select 
+                          <select
                             className="form-select rounded border px-2 py-1"
-                            value={data.priority} 
+                            value={data.priority}
                             onChange={e => handleChange('priority', e.target.value)}
                           >
                             <option value="low">Low</option>
@@ -420,11 +420,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <div className="flex items-center">
                         <span className="text-gray-500 w-32">Due:</span>
                         {editMode ? (
-                          <input 
-                            type="datetime-local" 
+                          <input
+                            type="datetime-local"
                             className="form-input rounded border px-2 py-1"
-                            value={data.dueDate ? new Date(data.dueDate).toISOString().slice(0, 16) : ''} 
-                            onChange={e => handleChange('dueDate', e.target.value)} 
+                            value={data.dueDate ? new Date(data.dueDate).toISOString().slice(0, 16) : ''}
+                            onChange={e => handleChange('dueDate', e.target.value)}
                           />
                         ) : (
                           <span>{formatDate(data.dueDate)}</span>
@@ -443,29 +443,29 @@ export const JobCardDetailModal: React.FC<Props> = ({
                 <div className="mt-4">
                   <h3 className="font-medium text-gray-700">Memo</h3>
                   {editMode ? (
-                    <textarea 
+                    <textarea
                       className="form-textarea mt-1 w-full rounded border px-2 py-1"
-                      value={data.memo} 
-                      onChange={e => handleChange('memo', e.target.value)} 
+                      value={data.memo}
+                      onChange={e => handleChange('memo', e.target.value)}
                       rows={3}
                     />
                   ) : (
                     <p className="mt-1 whitespace-pre-wrap">{data.memo}</p>
                   )}
                 </div>
-                
+
                 <div className="mt-4">
                   <h3 className="font-medium text-gray-700">Assigned To</h3>
                   <div className="mt-1">
                     {editMode ? (
-                      <select 
+                      <select
                         multiple
                         className="form-multiselect mt-1 w-full rounded border px-2 py-1"
-                        value={data.assigned} 
+                        value={data.assigned}
                         onChange={e => {
                           const values = Array.from(e.target.selectedOptions, option => option.value);
                           handleChange('assigned', values);
-                        }} 
+                        }}
                       >
                         <option value="John Smith">John Smith</option>
                         <option value="Jane Doe">Jane Doe</option>
@@ -504,7 +504,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                           </div>
                         ) : (
                           <div className="mt-4">
-                            <Button onClick={onClick} size="sm" variant="secondary">
+                            <Button onClick={() => setRcaModalOpen(true)} size="sm" variant="secondary">
                               Complete RCA
                             </Button>
                           </div>
@@ -546,7 +546,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-medium text-lg">Tasks</h3>
                   {editMode && (
-                    <Button onClick={onClick} size="sm" variant="secondary">
+                    <Button onClick={handleAddTask} size="sm" variant="secondary">
                       Add Task
                     </Button>
                   )}
@@ -568,11 +568,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <tr key={task.id}>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={task.description} 
-                              onChange={e => handleTaskChange(task.id, 'description', e.target.value)} 
+                              value={task.description}
+                              onChange={e => handleTaskChange(task.id, 'description', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{task.description}</span>
@@ -580,9 +580,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <select 
+                            <select
                               className="form-select rounded border px-2 py-1 text-sm"
-                              value={task.status} 
+                              value={task.status}
                               onChange={e => handleTaskChange(task.id, 'status', e.target.value)}
                             >
                               <option value="pending">Pending</option>
@@ -592,21 +592,21 @@ export const JobCardDetailModal: React.FC<Props> = ({
                             </select>
                           ) : (
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                              task.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                              task.status === 'completed' ? 'bg-green-100 text-green-800' :
                               task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
                               task.status === 'failed' ? 'bg-red-100 text-red-800' :
                               'bg-gray-100 text-gray-800'
                             }`}>
-                              {task.status === 'in_progress' ? 'In Progress' : 
+                              {task.status === 'in_progress' ? 'In Progress' :
                                 task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                             </span>
                           )}
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <select 
+                            <select
                               className="form-select rounded border px-2 py-1 text-sm"
-                              value={task.type} 
+                              value={task.type}
                               onChange={e => handleTaskChange(task.id, 'type', e.target.value)}
                             >
                               <option value="repair">Repair</option>
@@ -622,11 +622,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={task.assigned} 
-                              onChange={e => handleTaskChange(task.id, 'assigned', e.target.value)} 
+                              value={task.assigned}
+                              onChange={e => handleTaskChange(task.id, 'assigned', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{task.assigned}</span>
@@ -634,11 +634,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={task.notes} 
-                              onChange={e => handleTaskChange(task.id, 'notes', e.target.value)} 
+                              value={task.notes}
+                              onChange={e => handleTaskChange(task.id, 'notes', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{task.notes}</span>
@@ -666,7 +666,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-medium text-lg">Parts Used</h3>
                   {editMode && (
-                    <Button onClick={onClick} size="sm" variant="secondary">
+                    <Button onClick={handleAddPart} size="sm" variant="secondary">
                       Add Part
                     </Button>
                   )}
@@ -689,11 +689,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <tr key={part.id}>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={part.name} 
-                              onChange={e => handlePartChange(part.id, 'name', e.target.value)} 
+                              value={part.name}
+                              onChange={e => handlePartChange(part.id, 'name', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{part.name}</span>
@@ -701,11 +701,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={part.partNumber} 
-                              onChange={e => handlePartChange(part.id, 'partNumber', e.target.value)} 
+                              value={part.partNumber}
+                              onChange={e => handlePartChange(part.id, 'partNumber', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{part.partNumber}</span>
@@ -713,16 +713,16 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="number" 
+                            <input
+                              type="number"
                               className="form-input w-20 rounded border px-2 py-1 text-sm"
-                              value={part.quantity} 
+                              value={part.quantity}
                               min="1"
                               onChange={e => {
                                 const qty = parseInt(e.target.value) || 0;
                                 handlePartChange(part.id, 'quantity', qty);
                                 handlePartChange(part.id, 'total', qty * part.unitCost);
-                              }} 
+                              }}
                             />
                           ) : (
                             <span className="text-sm">{part.quantity}</span>
@@ -730,17 +730,17 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="number" 
+                            <input
+                              type="number"
                               className="form-input w-24 rounded border px-2 py-1 text-sm"
-                              value={part.unitCost} 
+                              value={part.unitCost}
                               min="0"
                               step="0.01"
                               onChange={e => {
                                 const cost = parseFloat(e.target.value) || 0;
                                 handlePartChange(part.id, 'unitCost', cost);
                                 handlePartChange(part.id, 'total', part.quantity * cost);
-                              }} 
+                              }}
                             />
                           ) : (
                             <span className="text-sm">${part.unitCost.toFixed(2)}</span>
@@ -749,11 +749,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         <td className="px-2 py-2 text-sm">${part.total.toFixed(2)}</td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={part.notes} 
-                              onChange={e => handlePartChange(part.id, 'notes', e.target.value)} 
+                              value={part.notes}
+                              onChange={e => handlePartChange(part.id, 'notes', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{part.notes}</span>
@@ -787,7 +787,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-medium text-lg">Labor</h3>
                   {editMode && (
-                    <Button onClick={onClick} size="sm" variant="secondary">
+                    <Button onClick={handleAddLabor} size="sm" variant="secondary">
                       Add Labor
                     </Button>
                   )}
@@ -810,11 +810,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       <tr key={labor.id}>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={labor.worker} 
-                              onChange={e => handleLaborChange(labor.id, 'worker', e.target.value)} 
+                              value={labor.worker}
+                              onChange={e => handleLaborChange(labor.id, 'worker', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{labor.worker}</span>
@@ -822,11 +822,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={labor.code} 
-                              onChange={e => handleLaborChange(labor.id, 'code', e.target.value)} 
+                              value={labor.code}
+                              onChange={e => handleLaborChange(labor.id, 'code', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{labor.code}</span>
@@ -834,17 +834,17 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="number" 
+                            <input
+                              type="number"
                               className="form-input w-24 rounded border px-2 py-1 text-sm"
-                              value={labor.rate} 
+                              value={labor.rate}
                               min="0"
                               step="0.01"
                               onChange={e => {
                                 const rate = parseFloat(e.target.value) || 0;
                                 handleLaborChange(labor.id, 'rate', rate);
                                 handleLaborChange(labor.id, 'cost', rate * labor.hours);
-                              }} 
+                              }}
                             />
                           ) : (
                             <span className="text-sm">${labor.rate.toFixed(2)}/hr</span>
@@ -852,17 +852,17 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         </td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="number" 
+                            <input
+                              type="number"
                               className="form-input w-20 rounded border px-2 py-1 text-sm"
-                              value={labor.hours} 
+                              value={labor.hours}
                               min="0"
                               step="0.25"
                               onChange={e => {
                                 const hours = parseFloat(e.target.value) || 0;
                                 handleLaborChange(labor.id, 'hours', hours);
                                 handleLaborChange(labor.id, 'cost', labor.rate * hours);
-                              }} 
+                              }}
                             />
                           ) : (
                             <span className="text-sm">{labor.hours}</span>
@@ -871,11 +871,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         <td className="px-2 py-2 text-sm">${labor.cost.toFixed(2)}</td>
                         <td className="px-2 py-2">
                           {editMode ? (
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
-                              value={labor.notes} 
-                              onChange={e => handleLaborChange(labor.id, 'notes', e.target.value)} 
+                              value={labor.notes}
+                              onChange={e => handleLaborChange(labor.id, 'notes', e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{labor.notes}</span>

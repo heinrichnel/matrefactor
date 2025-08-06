@@ -1,4 +1,4 @@
-import { FirebaseOptions, initializeApp } from "firebase/app";
+import { FirebaseOptions, getApps, initializeApp } from "firebase/app";
 
 // Development configuration - only used in development mode
 const devConfig: FirebaseOptions = {
@@ -84,6 +84,6 @@ const validateConfig = () => {
 
 validateConfig();
 
-// Initialize Firebase with the appropriate configuration
-export const firebaseApp = initializeApp(firebaseConfig);
+// Initialize Firebase with the appropriate configuration - only if not already initialized
+export const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export default firebaseApp;

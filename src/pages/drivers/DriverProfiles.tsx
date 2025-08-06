@@ -1,6 +1,6 @@
+import { Download, Filter, Search, UserPlus } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Download, UserPlus } from 'lucide-react';
 
 /**
  * Driver Profiles Page
@@ -24,13 +24,13 @@ const DriverProfiles: React.FC = () => {
 
   // Filter drivers based on search term and status filter
   const filteredDrivers = drivers.filter(driver => {
-    const matchesSearch = 
-      driver.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch =
+      driver.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       driver.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       driver.id.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = filterStatus === 'all' || driver.status.toLowerCase() === filterStatus.toLowerCase();
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -38,15 +38,15 @@ const DriverProfiles: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Driver Profiles</h2>
-        <Link 
-          to="/drivers/new" 
+        <Link
+          to="/drivers/add"
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Add Driver
         </Link>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow p-4">
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
           {/* Search Bar */}
@@ -62,7 +62,7 @@ const DriverProfiles: React.FC = () => {
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm"
             />
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-2">
             {/* Status Filter */}
             <div className="relative">
@@ -80,7 +80,7 @@ const DriverProfiles: React.FC = () => {
                 <option value="on leave">On Leave</option>
               </select>
             </div>
-            
+
             {/* Export Button */}
             <button className="inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50" onClick={() => {}}>
               <Download className="w-5 h-5 mr-2" />
@@ -88,7 +88,7 @@ const DriverProfiles: React.FC = () => {
             </button>
           </div>
         </div>
-        
+
         {/* Drivers Table */}
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full divide-y divide-gray-200">
@@ -109,7 +109,7 @@ const DriverProfiles: React.FC = () => {
                 const today = new Date();
                 const expiryDate = new Date(driver.licenseExpiry);
                 const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                
+
                 return (
                   <tr key={driver.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -124,7 +124,7 @@ const DriverProfiles: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        driver.status === 'Active' ? 'bg-green-100 text-green-800' : 
+                        driver.status === 'Active' ? 'bg-green-100 text-green-800' :
                         driver.status === 'Inactive' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         {driver.status}
@@ -133,11 +133,11 @@ const DriverProfiles: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{new Date(driver.licenseExpiry).toLocaleDateString()}</div>
                       <div className={`text-xs ${
-                        daysUntilExpiry < 30 ? 'text-red-600 font-medium' : 
+                        daysUntilExpiry < 30 ? 'text-red-600 font-medium' :
                         daysUntilExpiry < 60 ? 'text-amber-600' : 'text-gray-500'
                       }`}>
-                        {daysUntilExpiry < 0 ? 'Expired' : 
-                         daysUntilExpiry === 0 ? 'Expires today' : 
+                        {daysUntilExpiry < 0 ? 'Expired' :
+                         daysUntilExpiry === 0 ? 'Expires today' :
                          `${daysUntilExpiry} days left`}
                       </div>
                     </td>
@@ -147,11 +147,11 @@ const DriverProfiles: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div 
+                          <div
                             className={`h-2.5 rounded-full ${
-                              driver.safetyScore >= 90 ? 'bg-green-500' : 
+                              driver.safetyScore >= 90 ? 'bg-green-500' :
                               driver.safetyScore >= 80 ? 'bg-yellow-500' : 'bg-red-500'
-                            }`} 
+                            }`}
                             style={{ width: `${driver.safetyScore}%` }}
                           ></div>
                         </div>
@@ -165,7 +165,7 @@ const DriverProfiles: React.FC = () => {
                       <Link to={`/drivers/profiles/${driver.id}`} className="text-blue-600 hover:text-blue-900 mr-3">
                         View
                       </Link>
-                      <Link to={`/drivers/profiles/${driver.id}/edit`} className="text-blue-600 hover:text-blue-900">
+                      <Link to={`/drivers/edit/${driver.id}`} className="text-blue-600 hover:text-blue-900">
                         Edit
                       </Link>
                     </td>
@@ -175,7 +175,7 @@ const DriverProfiles: React.FC = () => {
             </tbody>
           </table>
         </div>
-        
+
         {/* Pagination */}
         <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 mt-4">
           <div className="flex-1 flex justify-between sm:hidden">

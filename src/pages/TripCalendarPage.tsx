@@ -1,4 +1,5 @@
 import Button from "@/components/ui/Button";
+import "../styles/calendar.css";
 import Card from "@/components/ui/Card";
 import CardContent from "@/components/ui/CardContent";
 import { addWeeks, endOfWeek, format, isValid, parseISO, startOfWeek, subWeeks } from "date-fns";

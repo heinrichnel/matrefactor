@@ -3,6 +3,7 @@ import JobCardHeader from './JobCardHeader';
 // import TaskManager from './TaskManager'; // Component commented out - missing file
 // import InventoryPanel from './InventoryPanel'; // Component commented out - missing file
 import JobCardNotes from './JobCardNotes';
+import TaskHistoryList from './TaskHistoryList';
 // import QAReviewPanel from './QAReviewPanel'; // Component commented out - missing file
 // import CompletionPanel from './CompletionPanel'; // Component commented out - missing file 
 import { v4 as uuidv4 } from 'uuid';
@@ -10,6 +11,7 @@ import { JobCardTask, TaskHistoryEntry } from '../../../types';
 import Button from '../../ui/Button';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
+import { logStatusChange, logTaskEdit, logTaskAssignment } from '../../../utils/taskHistory';
 
 // Mock data for a job card
 const mockJobCard = {
@@ -78,28 +80,6 @@ const mockTasks: JobCardTask[] = [
   }
 ];
 
-// Mock task history
-const mockTaskHistory: TaskHistoryEntry[] = [
-  {
-    id: 'th1',
-    taskId: 't1',
-    event: 'statusChanged',
-    previousStatus: 'pending',
-    newStatus: 'in_progress',
-    by: 'John Smith - Senior Mechanic',
-    at: '2025-06-28T10:15:00Z'
-  },
-  {
-    id: 'th2',
-    taskId: 't1',
-    event: 'statusChanged',
-    previousStatus: 'in_progress',
-    newStatus: 'completed',
-    by: 'John Smith - Senior Mechanic',
-    at: '2025-06-28T11:30:00Z'
-  }
-];
-
 // Mock parts
 const mockAssignedParts = [
   {
@@ -136,27 +116,52 @@ const JobCard: React.FC = () => {
   // These variables are needed for the commented out components below
   // They will be used once the TaskManager and QAReviewPanel components are implemented
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const taskHistory = mockTaskHistory;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const assignedParts = mockAssignedParts;
   const [notes, setNotes] = useState(mockNotes);
   const [userRole, setUserRole] = useState<'technician' | 'supervisor'>('technician');
   // Adding isLoading state that's used in the functions
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
-  const [setTaskHistory] = useState(() => (newEntries: TaskHistoryEntry[]) => {
-    // This will be replaced with actual function when components are implemented
-    console.log('Task history updated:', newEntries);
-  });
   
   // Handler functions for tasks
   // These handlers will be used once the TaskManager component is implemented
-  const handleTaskUpdate = (taskId: string, updates: Partial<JobCardTask>) => {
+  const handleTaskUpdate = async (taskId: string, updates: Partial<JobCardTask>) => {
+    const currentTask = tasks.find(task => task.id === taskId);
+    
     setTasks(prevTasks => 
       prevTasks.map(task => 
         task.id === taskId ? { ...task, ...updates } : task
       )
     );
+
+    // Log status changes to history
+    if (currentTask && updates.status && updates.status !== currentTask.status) {
+      try {
+        await logStatusChange(
+          jobCard.id, // Using jobCard.id as the main task ID
+          currentTask.status,
+          updates.status,
+          jobCard.assignedTo || 'Unknown User',
+          `Task "${currentTask.title}" status updated`
+        );
+      } catch (error) {
+        console.error('Failed to log status change:', error);
+      }
+    }
+
+    // Log assignment changes
+    if (currentTask && updates.assignedTo && updates.assignedTo !== currentTask.assignedTo) {
+      try {
+        await logTaskAssignment(
+          jobCard.id,
+          updates.assignedTo,
+          jobCard.assignedTo || 'Unknown User',
+          `Task "${currentTask.title}" reassigned`
+        );
+      } catch (error) {
+        console.error('Failed to log assignment change:', error);
+      }
+    }
   };
   
   // Will be used once the TaskManager component is implemented
@@ -175,13 +180,13 @@ const JobCard: React.FC = () => {
     setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
   };
   
-  // Log task history entry
-  const handleLogTaskHistory = (entry: Omit<TaskHistoryEntry, 'id'>) => {
-    const newEntry: TaskHistoryEntry = {
-      ...entry,
-      id: uuidv4()
-    };
-    setTaskHistory(prev => [newEntry, ...prev]);
+  // Log task history entry - now uses Firestore
+  const handleLogTaskHistory = async (entry: Omit<TaskHistoryEntry, 'id'>) => {
+    try {
+      await logTaskEdit(jobCard.id, entry.by, entry.notes);
+    } catch (error) {
+      console.error('Failed to log task history:', error);
+    }
   };
 
   // Handler for verifying a task (supervisor only)
@@ -396,7 +401,7 @@ const JobCard: React.FC = () => {
             onTaskUpdate={handleTaskUpdate}
             onTaskAdd={handleTaskAdd}
             onTaskDelete={handleTaskDelete}
-            taskHistory={taskHistory}
+            taskHistory={[]}
             onLogTaskHistory={handleLogTaskHistory}
             userRole={userRole}
           />
@@ -419,7 +424,7 @@ const JobCard: React.FC = () => {
             <QAReviewPanel
               jobCardId={jobCard.id}
               tasks={tasks}
-              taskHistory={taskHistory}
+              taskHistory={[]}
               onVerifyTask={handleVerifyTask}
               canVerifyAllTasks={tasks.some(task => task.status === 'completed' && !task.verifiedBy)}
               onVerifyAllTasks={handleVerifyAllTasks}
@@ -453,6 +458,9 @@ const JobCard: React.FC = () => {
             />
           )}
           */}
+          
+          {/* Task History */}
+          <TaskHistoryList taskId={jobCard.id} />
         </div>
       </div>
     </div>
