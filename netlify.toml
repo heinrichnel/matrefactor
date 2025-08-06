@@ -1,13 +1,13 @@
 [build]
-  command = "npm run build"
+  command = "./netlify-build.sh"
   publish = "dist"
 
 # Site configuration for matanuskatransportt
-# Site ID: a158bbfe-98ff-4c1c-abdd-0cf921e6380a
+# Site ID: 58378633-127a-44c4-878e-61f92936861d
 
 [build.environment]
-  # Node version - updated to recommended version for this project
-  NODE_VERSION = "22.15.1"
+  # Node version - updated to match development environment
+  NODE_VERSION = "22"
 
   # SECURITY NOTE: Environment variables should be set in the Netlify UI
   # rather than in this file to avoid exposing sensitive information.

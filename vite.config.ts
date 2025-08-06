@@ -4,11 +4,7 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    // Removed nodePolyfills plugin as it's causing browser compatibility warnings
-    // and we don't actually need Node.js polyfills for our Firebase/React app
-  ],
+  plugins: [react()],
   server: {
     host: true,
     port: 5173,
