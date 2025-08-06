@@ -252,7 +252,7 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
           <div className="space-y-4 border-t pt-4">
             <h3 className="text-lg font-medium text-gray-900">Previous Edit History</h3>
             <div className="bg-gray-50 rounded-md p-4 max-h-40 overflow-y-auto">
-              {trip.editHistory.map((edit, index) => (
+              {trip.editHistory.map((edit: TripEditRecord, index: number) => (
                 <div key={index} className="text-sm border-b border-gray-200 pb-2 mb-2 last:border-0">
                   <div className="flex justify-between items-start">
                     <div>
