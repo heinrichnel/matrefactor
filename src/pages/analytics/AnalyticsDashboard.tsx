@@ -1,7 +1,7 @@
-import { FleetStatusDoughnut } from "@/components/charts/FleetStatusDoughnut";
-import { PerformanceLineChart } from "@/components/charts/PerformanceLineChart";
-import { RechartsLineChart } from "@/components/charts/RechartsLineChart";
-import { ROIBarChart } from "@/components/charts/ROIBarChart";
+import { FleetStatusDoughnut } from "@/components/ui/chart/FleetStatusDoughnut";
+import { PerformanceLineChart } from "@/components/ui/chart/PerformanceLineChart";
+import { RechartsLineChart } from "@/components/ui/chart/RechartsLineChart";
+import { ROIBarChart } from "@/components/ui/chart/ROIBarChart";
 
 const DashboardPage = () => {
   return (

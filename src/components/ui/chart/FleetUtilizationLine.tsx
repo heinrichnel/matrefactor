@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { useFleetAnalytics } from "../../context/FleetAnalyticsContext";
+import { useFleetAnalytics } from "../../../context/FleetAnalyticsContext";
 
 // Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);

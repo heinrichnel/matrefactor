@@ -10,8 +10,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui";
-import { useFleetAnalytics } from "../../context/FleetAnalyticsContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "..";
+import { useFleetAnalytics } from "../../../context/FleetAnalyticsContext";
 
 // Define chart configuration
 const chartConfig = {
@@ -98,8 +98,8 @@ export function FleetAnalyticsLineChart() {
                 }}
               >
                 {fleetAnalytics.length > 0 &&
-                fleetAnalytics[fleetAnalytics.length - 1] &&
-                fleetAnalytics[fleetAnalytics.length - 1][key] !== undefined
+                  fleetAnalytics[fleetAnalytics.length - 1] &&
+                  fleetAnalytics[fleetAnalytics.length - 1][key] !== undefined
                   ? key === "roi"
                     ? `${fleetAnalytics[fleetAnalytics.length - 1][key]}%`
                     : `$${fleetAnalytics[fleetAnalytics.length - 1][key]}K`

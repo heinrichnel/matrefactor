@@ -118,9 +118,9 @@ const ReceivePartsPage: React.FC = () => {
           });
 
           // Determine overall order status
-          const allReceived = updatedParts.every((part) => part.status === "RECEIVED");
+          const allReceived = updatedParts.every((part: OrderPart) => part.status === "RECEIVED");
           const anyReceived = updatedParts.some(
-            (part) => part.status === "RECEIVED" || part.status === "PARTIALLY_RECEIVED"
+            (part: OrderPart) => part.status === "RECEIVED" || part.status === "PARTIALLY_RECEIVED"
           );
 
           let orderStatus = orderData.status;

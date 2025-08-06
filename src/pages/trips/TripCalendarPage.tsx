@@ -1,7 +1,7 @@
 import Button from "@/components/ui/Button";
-import "../styles/calendar.css";
 import Card from "@/components/ui/Card";
 import CardContent from "@/components/ui/CardContent";
+import { db } from "@/firebase";
 import { addWeeks, endOfWeek, format, isValid, parseISO, startOfWeek, subWeeks } from "date-fns";
 import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import {
@@ -23,7 +23,7 @@ import Timeline, {
   TimelineMarkers,
 } from "react-calendar-timeline";
 import "react-calendar-timeline/dist/style.css";
-import { db } from "../firebase";
+import "../../styles/calendar.css";
 
 interface Vehicle {
   id: string;
@@ -440,8 +440,7 @@ const TripTimelinePage: React.FC = () => {
                   <span className="text-gray-500">Status:</span>{" "}
                   <span
                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                    ${
-                      selectedTrip.status === "completed"
+                    ${selectedTrip.status === "completed"
                         ? "bg-green-100 text-green-800"
                         : selectedTrip.status === "in_progress" || selectedTrip.status === "active"
                           ? "bg-blue-100 text-blue-800"
@@ -454,7 +453,7 @@ const TripTimelinePage: React.FC = () => {
                                 : selectedTrip.status === "paid"
                                   ? "bg-indigo-100 text-indigo-800"
                                   : "bg-indigo-100 text-indigo-800"
-                    }`}
+                      }`}
                   >
                     {selectedTrip.status || "Planned"}
                   </span>

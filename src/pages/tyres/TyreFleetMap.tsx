@@ -1,9 +1,9 @@
 import { AlertCircle, CheckCircle, Circle, MapPin, Search, Truck } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Button } from "../components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
-import { Badge } from "../components/ui/badge";
-import { buildVehicleTyreStore, mappingData, TyreMappingRow } from "../data/tyreMappingData";
+import { Button } from "../../components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
+import { Badge } from "../../components/ui/badge";
+import { buildVehicleTyreStore, mappingData, TyreMappingRow } from "../../data/tyreMappingData";
 
 interface VehicleView {
   registrationNo: string;
@@ -110,9 +110,8 @@ const TyreFleetMap: React.FC = () => {
           return (
             <div
               key={index}
-              className={`p-3 rounded-lg border-2 transition-all hover:shadow-md ${
-                status === "mounted" ? "border-green-300 bg-green-50" : "border-red-300 bg-red-50"
-              }`}
+              className={`p-3 rounded-lg border-2 transition-all hover:shadow-md ${status === "mounted" ? "border-green-300 bg-green-50" : "border-red-300 bg-red-50"
+                }`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-gray-600">{tyre.TyrePosDescription}</span>
@@ -297,11 +296,10 @@ const TyreFleetMap: React.FC = () => {
                     {vehicle.tyres.slice(0, 12).map((tyre, index) => (
                       <div
                         key={index}
-                        className={`h-6 w-6 rounded border-2 ${
-                          getTyreStatus(tyre.TyreCode) === "mounted"
+                        className={`h-6 w-6 rounded border-2 ${getTyreStatus(tyre.TyreCode) === "mounted"
                             ? "bg-green-200 border-green-400"
                             : "bg-red-200 border-red-400"
-                        }`}
+                          }`}
                         title={`${tyre.TyrePosDescription}: ${tyre.TyreCode || "Empty"}`}
                       />
                     ))}

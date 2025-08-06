@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Input } from "@/components/ui";
+import { Button, Input, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui";
 import { Badge } from "@/components/ui/badge";
-import { Search, FileWarning } from "lucide-react";
-import { DefectItemModal } from "../components/Models/Workshop/DefectItemModal";
-import InspectionDetailsModal from "../components/Models/Workshop/InspectionDetailsModal";
 import { parseInspectionDefects } from "@/utils/inspectionUtils";
+import { FileWarning, Search } from "lucide-react";
+import { useState } from "react";
+import { DefectItemModal } from "../../components/Models/Workshop/DefectItemModal";
+import InspectionDetailsModal from "../../components/Models/Workshop/InspectionDetailsModal";
 
 // Define the inspection data type
 interface Inspection {
@@ -97,9 +97,9 @@ const InspectionHistory = () => {
   // Filter inspections based on search term
   const filteredInspections = searchTerm
     ? inspections.filter(inspection =>
-        inspection.report.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inspection.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inspection.notes.toLowerCase().includes(searchTerm.toLowerCase()))
+      inspection.report.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inspection.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inspection.notes.toLowerCase().includes(searchTerm.toLowerCase()))
     : inspections;
 
   return (
