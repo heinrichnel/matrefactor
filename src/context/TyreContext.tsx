@@ -1,28 +1,27 @@
 import React, {
   createContext,
+  ReactNode,
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from 'react';
 import {
-  saveTyre,
-  getTyres,
-  getTyreById,
+  addTyreInspection as addTyreInspectionToFirebase,
   deleteTyre,
-  addTyreInspection as addTyreInspectionToFirebase, // Renamed to avoid conflict
-  getTyreInspections as getTyreInspectionsFromFirebase, // Renamed to avoid conflict
+  getTyreById, // Renamed to avoid conflict
+  getTyreInspections as getTyreInspectionsFromFirebase,
+  getTyres, // Renamed to avoid conflict
   getTyresByVehicle,
-  listenToTyres,
-} from '../firebase';
+  saveTyre,
+} from '../firebase/tyreStores';
+import { listenToTyres } from '../firebase/tyres';
 import type {
   Tyre,
-  TyreInspection, // This is the simpler type used within Tyre.maintenanceHistory
-  TyreRotation,
-  TyreRepair, // Ensure TyreRepair is imported
-  TyrePosition, // Import TyrePosition
-  TyreInspectionRecord, // Import the new TyreInspectionRecord
-} from '../types/tyre';
+  TyreInspection, // Import TyrePosition
+  TyreInspectionRecord, // Ensure TyreRepair is imported
+  TyrePosition, // Import the new TyreInspectionRecord
+  TyreStoreLocation
+} from '../types/tyre'; // All types should now come from here
 
 interface TyreContextType {
   tyres: Tyre[];
@@ -70,23 +69,25 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         maintenanceHistory: {
           ...tyre.maintenanceHistory,
           // Map rotations to ensure 'id' is present and positions are TyrePosition
-          rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
+          rotations: tyre.maintenanceHistory?.rotations?.map((r: any, i) => ({ // Cast 'r' to 'any' for initial access
             ...r,
             id: r.id || `rotation-${tyre.id}-${i}`, // Provide a fallback ID
             fromPosition: r.fromPosition as TyrePosition,
             toPosition: r.toPosition as TyrePosition,
           })) || [],
           // Map repairs to ensure 'id' is present
-          repairs: tyre.maintenanceHistory?.repairs?.map((r, i) => ({
+          repairs: tyre.maintenanceHistory?.repairs?.map((r: any, i) => ({ // Cast 'r' to 'any' for initial access
             ...r,
             id: r.id || `repair-${tyre.id}-${i}`, // Provide a fallback ID
           })) || [],
           // Map inspections to ensure 'id' is present
-          inspections: tyre.maintenanceHistory?.inspections?.map((i, idx) => ({
+          inspections: tyre.maintenanceHistory?.inspections?.map((i: any, idx) => ({ // Cast 'i' to 'any' for initial access
             ...i,
             id: i.id || `inspection-${tyre.id}-${idx}`, // Provide a fallback ID
           })) || [],
         },
+        // Ensure location is correctly typed as TyreStoreLocation
+        location: tyre.location as TyreStoreLocation,
       }));
       setTyres(mappedTyres);
       setLoading(false);
@@ -117,21 +118,22 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } : undefined,
         maintenanceHistory: {
           ...result.maintenanceHistory,
-          rotations: result.maintenanceHistory?.rotations?.map((r, i) => ({
+          rotations: result.maintenanceHistory?.rotations?.map((r: any, i) => ({
             ...r,
             id: r.id || `rotation-${result.id}-${i}`,
             fromPosition: r.fromPosition as TyrePosition,
             toPosition: r.toPosition as TyrePosition,
           })) || [],
-          repairs: result.maintenanceHistory?.repairs?.map((r, i) => ({
+          repairs: result.maintenanceHistory?.repairs?.map((r: any, i) => ({
             ...r,
             id: r.id || `repair-${result.id}-${i}`,
           })) || [],
-          inspections: result.maintenanceHistory?.inspections?.map((i, idx) => ({
+          inspections: result.maintenanceHistory?.inspections?.map((i: any, idx) => ({
             ...i,
             id: i.id || `inspection-${result.id}-${idx}`,
           })) || [],
         },
+        location: result.location as TyreStoreLocation,
       };
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error getting tyre'));
@@ -146,7 +148,7 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setError(err instanceof Error ? err : new Error('Unknown error deleting tyre'));
       throw err;
     }
-  };
+  }
 
   // handleAddInspection now takes a TyreInspectionRecord
   const handleAddInspection = async (
@@ -167,7 +169,7 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       // Firebase function returns TyreInspectionRecord[], map it to TyreInspection[]
       const records = await getTyreInspectionsFromFirebase(tyreId);
-      return records.map((r, i) => ({
+      return records.map((r: any, i) => ({ // Cast 'r' to 'any' for initial access
         id: r.id || `inspection-${tyreId}-${i}`, // Ensure ID is present
         date: r.date,
         inspector: r.inspectorName, // Map inspectorName from record to inspector in TyreInspection
@@ -196,21 +198,22 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } : undefined,
         maintenanceHistory: {
           ...tyre.maintenanceHistory,
-          rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
+          rotations: tyre.maintenanceHistory?.rotations?.map((r: any, i) => ({
             ...r,
             id: r.id || `rotation-${tyre.id}-${i}`,
             fromPosition: r.fromPosition as TyrePosition,
             toPosition: r.toPosition as TyrePosition,
           })) || [],
-          repairs: tyre.maintenanceHistory?.repairs?.map((r, i) => ({
+          repairs: tyre.maintenanceHistory?.repairs?.map((r: any, i) => ({
             ...r,
             id: r.id || `repair-${tyre.id}-${i}`,
           })) || [],
-          inspections: tyre.maintenanceHistory?.inspections?.map((i, idx) => ({
+          inspections: tyre.maintenanceHistory?.inspections?.map((i: any, idx) => ({
             ...i,
             id: i.id || `inspection-${tyre.id}-${idx}`,
           })) || [],
         },
+        location: tyre.location as TyreStoreLocation,
       }));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error getting vehicle tyres'));
@@ -239,21 +242,22 @@ export const TyreProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } : undefined,
         maintenanceHistory: {
           ...tyre.maintenanceHistory,
-          rotations: tyre.maintenanceHistory?.rotations?.map((r, i) => ({
+          rotations: tyre.maintenanceHistory?.rotations?.map((r: any, i) => ({
             ...r,
             id: r.id || `rotation-${tyre.id}-${i}`,
             fromPosition: r.fromPosition as TyrePosition,
             toPosition: r.toPosition as TyrePosition,
           })) || [],
-          repairs: tyre.maintenanceHistory?.repairs?.map((r, i) => ({
+          repairs: tyre.maintenanceHistory?.repairs?.map((r: any, i) => ({
             ...r,
             id: r.id || `repair-${tyre.id}-${i}`,
           })) || [],
-          inspections: tyre.maintenanceHistory?.inspections?.map((i, idx) => ({
+          inspections: tyre.maintenanceHistory?.inspections?.map((i: any, idx) => ({
             ...i,
             id: i.id || `inspection-${tyre.id}-${idx}`,
           })) || [],
         },
+        location: tyre.location as TyreStoreLocation,
       }));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error filtering tyres'));
