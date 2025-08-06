@@ -1,10 +1,29 @@
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { defineConfig } from "vite";
+import { nodePolyfills } from 'vite-plugin-node-polyfills'; // Import the plugin
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    nodePolyfills({
+      // To disable specific polyfills, add them here.
+      // For example, to disable 'fs' polyfill:
+      // include: ['util', 'buffer'],
+      // exclude: ['fs'],
+      //
+      // globals: {
+      //   Buffer: true,
+      // },
+      // protocols: {
+      //   'http:': true,
+      //   'https:': true,
+      // },
+      // Removed 'perf_hooks' and 'v8' from exclude as they are not valid options
+      // and are causing TypeScript errors. The core issue is jiti bundling.
+    }),
+  ],
   server: {
     host: true,
     port: 5173,
@@ -20,7 +39,7 @@ export default defineConfig({
     alias: {
       "@": resolve(__dirname, "src"),
       // Add specific aliases to handle case sensitivity issues
-      "@/components/TyreManagement": resolve(__dirname, "src/components/Tyremanagement"),
+      "~/components/TyreManagement": resolve(__dirname, "src/components/Tyremanagement"),
     },
   },
   optimizeDeps: {
@@ -49,6 +68,9 @@ export default defineConfig({
       external: [
         // Add the TyreReports file to handle the casing issue
         "/src/components/TyreManagement/TyreReports",
+        // Explicitly externalize 'jiti' as it's a Node.js runtime tool
+        // and should not be bundled for the browser.
+        "jiti",
       ],
       output: {
         // Create more granular chunks to optimize loading

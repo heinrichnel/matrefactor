@@ -275,7 +275,7 @@ const IndirectCostBreakdown: React.FC = () => {
                       <td className="px-4 py-2 text-center">{category.percentage}%</td>
                       <td className="px-4 py-2 text-center">{getTrendIcon(category.trend)}</td>
                       <td className="px-4 py-2 text-right">
-                        <Button variant="outline" className="text-sm" onClick={onClick}>
+                        <Button variant="outline" className="text-sm" onClick={() => handleCategoryClick(category)}>
                           View Details
                         </Button>
                       </td>
@@ -304,7 +304,7 @@ const IndirectCostBreakdown: React.FC = () => {
               <h3 className="text-lg font-medium">
                 {selectedCategory.name} - {formatCurrency(selectedCategory.amount)}
               </h3>
-              <Button variant="outline" onClick={onClick}>
+              <Button variant="outline" onClick={() => setSelectedCategory(null)}>
                 Close
               </Button>
             </div>

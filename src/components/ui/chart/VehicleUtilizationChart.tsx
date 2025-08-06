@@ -49,23 +49,28 @@ const chartData = [
   { date: "2025-01-30", idleTime: 454, activeTime: 380 },
 ];
 
+// Chart configuration with colors
 const chartConfig = {
   utilization: {
     label: "Vehicle Utilization",
     color: "#1a5a9d", // Further darkened for better contrast
-    bgColor: "#e6f0fa", // Light background color for text
   },
   idleTime: {
     label: "Idle Time (hours)",
     color: "#4030a0", // Further darkened for better contrast
-    bgColor: "#eceafe", // Light background color for text
   },
   activeTime: {
     label: "Active Time (hours)",
     color: "#157540", // Further darkened for better contrast
-    bgColor: "#e6f5ee", // Light background color for text
   },
 } satisfies ChartConfig;
+
+// Background colors for styling (separate from chart config)
+const bgColors = {
+  utilization: "#e6f0fa",
+  idleTime: "#eceafe",
+  activeTime: "#e6f5ee",
+};
 
 export function VehicleUtilizationChart() {
   const [activeChart, setActiveChart] = React.useState<keyof typeof chartConfig>("idleTime");
@@ -104,7 +109,7 @@ export function VehicleUtilizationChart() {
                   className="text-lg leading-none font-bold sm:text-3xl px-2 py-1 rounded-md"
                   style={{
                     color: chartConfig[chart].color,
-                    backgroundColor: chartConfig[chart].bgColor,
+                    backgroundColor: bgColors[chart as keyof typeof bgColors],
                   }}
                 >
                   {total[key as keyof typeof total].toLocaleString()} hrs
@@ -138,21 +143,9 @@ export function VehicleUtilizationChart() {
                 });
               }}
             />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  className="w-[150px]"
-                  nameKey="utilization"
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    });
-                  }}
-                />
-              }
-            />
+            <ChartTooltip>
+              <ChartTooltipContent nameKey="utilization" />
+            </ChartTooltip>
             <Line
               dataKey={activeChart}
               type="monotone"
