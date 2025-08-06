@@ -1,6 +1,6 @@
 // ─── React & Context ─────────────────────────────────────  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
+
   // Handler for downloading template
   const handleDownloadTemplate = () => {
     // Template download logic would go here
@@ -102,7 +102,7 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
         setPreviewData([]);
       } else {
         setError('');
-        
+
         // Generate preview
         try {
           const text = await selectedFile.text();
@@ -122,7 +122,7 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
     const lines = text.split('\n');
     const headers = lines[0].split(',').map(h => h.trim());
     const data: any[] = [];
-    
+
     for (let i = 1; i < lines.length; i++) {
       if (lines[i].trim()) {
         const values = lines[i].split(',').map(v => v.trim());
@@ -133,13 +133,13 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
         data.push(row);
       }
     }
-    
+
     return data;
   };
 
   const handleUpload = async () => {
     if (!file) return;
-    
+
     setIsProcessing(true);
     setError('');
     setSuccess('');
@@ -147,11 +147,11 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
     try {
       const text = await file.text();
       const data = parseCSV(text);
-      
+
       // Convert to diesel records
       const dieselRecords: ImportedDieselRecord[] = data.map((row: any) => {
         const isReeferUnit = row.isReeferUnit === 'true' || row.isReeferUnit === true || ['4F', '5F', '6F', '7F', '8F'].includes(row.fleetNumber);
-        
+
         return {
           id: `diesel-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
           fleetNumber: row.fleetNumber || '',
@@ -179,16 +179,16 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
           if (record.previousKmReading !== undefined && record.kmReading) {
             record.distanceTravelled = record.kmReading - record.previousKmReading;
           }
-          
+
           if (record.distanceTravelled && record.litresFilled) {
             record.kmPerLitre = record.distanceTravelled / record.litresFilled;
           }
         }
-        
+
         if (!record.costPerLitre && record.totalCost && record.litresFilled) {
           record.costPerLitre = record.totalCost / record.litresFilled;
         }
-        
+
         if (record.probeReading !== undefined) {
           record.probeDiscrepancy = record.litresFilled - record.probeReading;
         }
@@ -197,7 +197,7 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
       // Create FormData for upload
       const formData = new FormData();
       formData.append('records', JSON.stringify(dieselRecords));
-      
+
       // TODO: The `importDieselRecords` function from AppContext was removed.
       // You need to implement the actual upload logic here, for example,
       // by calling a Firebase Function with the `formData`.
@@ -207,7 +207,7 @@ const DieselImportModal: React.FC<DieselImportModalProps> = ({
       setSuccess(`Successfully imported ${dieselRecords.length} diesel records.`);
       setFile(null);
       setPreviewData([]);
-      
+
       // Close modal after a short delay
       setTimeout(() => {
         onClose();

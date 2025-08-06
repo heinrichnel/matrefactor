@@ -1,14 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import {
   Activity,
   AlertTriangle,
-  ArrowLeft,
   CheckCircle,
   Clock,
   Download,
   Eye,
-  Filter,
   Globe,
   MapPin,
   PackageCheck,
@@ -19,22 +15,18 @@ import {
   Trash2,
   Truck as TruckIcon,
   Upload,
-  WifiOff,
-  X,
+  X
 } from 'lucide-react';
-import { saveAs } from 'file-saver';
-import { useAppContext } from '../../context/AppContext';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import AddTripModal from '../../components/Models/Trips/AddTripModal';
+import { useAppContext } from '../../context/AppContext';
 import {
-  Attachment,
   CostBreakdown,
-  CostEntry,
+  DriverFormData,
   ImportSource,
   SupportedCurrency,
-  UITrip,
-  TripEditRecord,
-  TripDeletionRecord,
-  DriverFormData,
+  UITrip
 } from '../../types/index'; // Assuming these types are correctly imported
 
 // Mock data and helper functions
