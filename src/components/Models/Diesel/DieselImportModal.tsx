@@ -1,39 +1,28 @@
 // ─── React & Context ─────────────────────────────────────  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Handler for downloading template
-  const handleDownloadTemplate = () => {
-    // Template download logic would go here
-    console.log('Download template clicked');
-  };
-
-  // Handler for file upload and import
-  const handleImport = () => {
-    if (!file) return;
-    // Import logic would go here
-    console.log('Import file:', file.name);
-  };──────
+// ─── React & Context ─────────────────────────────────────────────
 import React, { useState } from 'react';
 import { useAppContext } from '../../../context/AppContext';
 
 // ─── UI Components ───────────────────────────────────────────────
-import Modal from '../../ui/Modal';
 import Button from '../../ui/Button';
+import Modal from '../../ui/Modal';
 
 // ─── Icons ───────────────────────────────────────────────────────
 import {
-  Upload,
-  X,
-  FileSpreadsheet,
   AlertTriangle,
   CheckCircle,
   Download,
+  FileSpreadsheet,
+  Upload,
   Wifi,
-  WifiOff
+  WifiOff,
+  X
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────
-import { FLEETS_WITH_PROBES, DieselConsumptionRecord } from '../../../types';
+import { DieselConsumptionRecord, FLEETS_WITH_PROBES } from '../../../types';
 
 
 interface DieselImportModalProps {

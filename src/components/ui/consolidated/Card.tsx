@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "../../../utils/cn";
 
 /**
  * Card
@@ -237,13 +237,9 @@ CardGrid.displayName = "CardGrid";
 
 // Export all card components
 export {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  CardGrid,
+  Card, CardContent, CardDescription, CardFooter,
+  CardGrid, CardHeader,
+  CardTitle
 };
 
 // Export default for backward compatibility
