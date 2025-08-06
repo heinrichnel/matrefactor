@@ -10,9 +10,38 @@ import {
 } from "firebase/firestore";
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import PartsReceivingForm from "../components/forms/workshop/PartsReceivingForm";
-import PageWrapper from "../components/ui/PageWrapper";
-import { db } from "../firebase";
+import PartsReceivingForm from "../../components/forms/workshop/PartsReceivingForm";
+import PageWrapper from "../../components/ui/PageWrapper";
+import { db } from "../../firebase";
+import { POItem } from "../../types/inventory";
+
+// Interface for parts being received
+interface PartToReceive {
+  id: string;
+  sku: string;
+  description: string;
+  orderQuantity: number;
+  receivingQuantity: number;
+  unitPrice?: number;
+  manufacturer?: string;
+  supplier?: string;
+  serialNumber?: string;
+  isSerial: boolean;
+  notes?: string;
+  poNumber?: string;
+  status: "pending" | "received" | "partial" | "damaged";
+}
+
+// Interface for purchase order parts (matching the data structure used in the component)
+interface OrderPart {
+  id: string;
+  sku: string;
+  description: string;
+  quantityOrdered: number;
+  quantityReceived: number;
+  unitPrice: number;
+  status: "PENDING" | "ORDERED" | "RECEIVED" | "PARTIALLY_RECEIVED" | "CANCELLED";
+}
 
 /**
  * Receive Parts Page
@@ -24,7 +53,7 @@ const ReceivePartsPage: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleReceiveParts = async (receivedParts: any[]) => {
+  const handleReceiveParts = async (receivedParts: PartToReceive[]) => {
     try {
       setIsLoading(true);
       console.log("Parts received:", receivedParts);
@@ -72,7 +101,7 @@ const ReceivePartsPage: React.FC = () => {
           const orderData = orderDoc.data();
 
           // Update parts status
-          const updatedParts = orderData.parts.map((orderPart) => {
+          const updatedParts = orderData.parts.map((orderPart: OrderPart) => {
             const receivedPart = receivedParts.find((rp) => rp.sku === orderPart.sku);
 
             if (receivedPart) {

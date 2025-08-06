@@ -331,7 +331,7 @@ const PartsReceivingForm: React.FC<PartsReceivingFormProps> = ({
 
           <div className="flex justify-end space-x-3">
             {onCancel && (
-              <Button type="button" variant="outline" onClick={onClick}>
+              <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
             )}
