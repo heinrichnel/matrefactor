@@ -149,7 +149,7 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
   });
 
   // Combine all trips with filtering
-  const allTrips = useMemo(() => {
+  const filteredTrips = useMemo(() => {
     let combinedTrips: Trip[] = [];
 
     // Add formatted fetchedTrips (real-time)
@@ -197,10 +197,48 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
     return combinedTrips;
   }, [fetchedTrips, webBookTrips, activeTrips, webhookTrips, filterWebBookOnly, statusFilter]);
 
-  const webBookTripsCount = allTrips.filter(trip => trip.source === 'web_book').length;
-  const manualAndOtherTripsCount = allTrips.filter(trip => trip.source !== 'web_book').length;
+  // For display purposes, also maintain allTrips (unfiltered)
+  const allTrips = useMemo(() => {
+    let combinedTrips: Trip[] = [];
 
-  // Mock function to fetch webhook trips - replace with actual API call
+    // Add formatted fetchedTrips (real-time)
+    if (fetchedTrips && fetchedTrips.length > 0) {
+      const formattedTrips = fetchedTrips.map((trip) => ({
+        id: trip.id,
+        tripNumber: trip.loadRef || `TR-${trip.id.substring(0, 8)}`,
+        origin: trip.origin || "Unknown",
+        destination: trip.destination || "Unknown",
+        startDate: trip.startTime || new Date().toISOString(),
+        endDate: trip.endTime || new Date().toISOString(),
+        status: trip.status as "active" | "completed" | "scheduled",
+        driver: trip.driver || "Unassigned",
+        vehicle: trip.vehicle || "Unassigned",
+        distance: trip.distance || 0,
+        cost: trip.totalCost || 0,
+        costBreakdown: trip.costBreakdown || {},
+        source: "internal" as const,
+        lastUpdated: trip.updatedAt || new Date().toISOString(),
+      }));
+      combinedTrips = [...combinedTrips, ...formattedTrips];
+    }
+
+    // Add web book trips
+    if (webBookTrips && webBookTrips.length > 0) {
+      const normalizedWebBookTrips = webBookTrips.map(normalizeWebBookTrip);
+      combinedTrips = [...combinedTrips, ...normalizedWebBookTrips];
+    }
+
+    // Add manual trips
+    combinedTrips = [...combinedTrips, ...activeTrips];
+
+    // Add webhook trips
+    combinedTrips = [...combinedTrips, ...webhookTrips];
+
+    return combinedTrips;
+  }, [fetchedTrips, webBookTrips, activeTrips, webhookTrips]);
+
+  const webBookTripsCount = allTrips.filter(trip => trip.source === 'web_book').length;
+  const manualAndOtherTripsCount = allTrips.filter(trip => trip.source !== 'web_book').length;  // Mock function to fetch webhook trips - replace with actual API call
   const fetchWebhookTrips = async () => {
     try {
       setIsLoading(true);
@@ -964,10 +1002,10 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                     <div className="mt-1">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${trip.source === 'web_book'
-                            ? 'bg-blue-100 text-blue-800'
-                            : trip.source === 'webhook'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
+                          ? 'bg-blue-100 text-blue-800'
+                          : trip.source === 'webhook'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
                           }`}
                       >
                         {trip.source === 'web_book' ? 'Web Book' :
@@ -980,34 +1018,34 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex flex-col">
-                      <span className="font-medium">From: {trip.pickup || trip.origin}</span>
+                      <span className="font-medium">From: {trip.origin}</span>
                       <span>To: {trip.destination}</span>
                       <span className="text-xs text-gray-400">{trip.distance || 'N/A'} miles</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex flex-col">
-                      <span className="font-medium">{trip.driverName || trip.driver || 'N/A'}</span>
-                      <span className="text-xs">{trip.vehicleId || trip.vehicle || 'N/A'}</span>
+                      <span className="font-medium">{trip.driver || 'N/A'}</span>
+                      <span className="text-xs">{trip.vehicle || 'N/A'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {trip.startDate ? new Date(trip.startDate).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {(trip.expectedCompletionDate || trip.endDate)
-                      ? new Date(trip.expectedCompletionDate || trip.endDate).toLocaleDateString()
+                    {trip.endDate
+                      ? new Date(trip.endDate).toLocaleDateString()
                       : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${trip.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : trip.status === 'completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : trip.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-gray-100 text-gray-800'
+                        ? 'bg-green-100 text-green-800'
+                        : trip.status === 'completed'
+                          ? 'bg-blue-100 text-blue-800'
+                          : trip.status === 'scheduled'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
                         }`}
                     >
                       {trip.status ? trip.status.charAt(0).toUpperCase() + trip.status.slice(1) : 'In Progress'}
