@@ -2,12 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { TyreProvider } from "./context/TyreContext";
 import { TyreStoresProvider } from "./context/TyreStoresContext";
 import "./index.css";
 import { getEnvVar, initBrowserEnv } from "./utils/envUtils";
 import { initializeConnectionMonitoring } from "./utils/firebaseConnectionHandler";
-import ErrorBoundary from "./components/ErrorBoundary";
 
 // Initialize global environment variables for safer access
 // This prevents "import.meta" errors in non-module contexts
@@ -67,12 +67,15 @@ const renderApp = (isDev: boolean) => {
   );
 };
 
-// Initialize Firebase and check emulator status
+// Initialize the application with better error handling
 const initializeApp = async () => {
   const isDev = getEnvVar("MODE", "") === "development" || process.env.NODE_ENV === "development";
 
   try {
-    // Import Firebase after ensuring proper initialization
+    // Always render the app first to show something
+    renderApp(isDev);
+
+    // Then initialize services in the background
     try {
       await import("./firebase");
       console.log("🔥 Firebase initialized successfully");
@@ -86,6 +89,7 @@ const initializeApp = async () => {
       }
     } catch (firebaseError) {
       console.error("❌ Failed to initialize Firebase:", firebaseError);
+      // Don't block the app if Firebase fails
     }
 
     // Validate environment variables
@@ -121,8 +125,7 @@ const initializeApp = async () => {
     }
   } catch (error) {
     console.error("❌ Failed to initialize application:", error);
-  } finally {
-    // Always render the application, even if initialization fails
+    // Still render the app even if initialization fails
     renderApp(isDev);
   }
 };

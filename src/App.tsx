@@ -13,6 +13,7 @@ import { WialonProvider } from "./context/WialonProvider";
 import { WorkshopProvider } from "./context/WorkshopContext";
 
 // Error Handling
+import DeploymentFallback from "./components/DeploymentFallback";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FirestoreConnectionError from "./components/ui/FirestoreConnectionError";
 import OfflineBanner from "./components/ui/OfflineBanner";
@@ -31,43 +32,99 @@ import { syncOfflineOperations } from "./utils/offlineOperations";
 
 const App: React.FC = () => {
   const [connectionError, setConnectionError] = useState<Error | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    const unregisterErrorHandler = registerErrorHandler((error) => {
-      if (error.severity === ErrorSeverity.FATAL) setConnectionError(error.originalError);
-    });
-
-    initializeConnectionMonitoring().catch((error) =>
-      setConnectionError(new Error(`Failed to initialize Firebase connection: ${error.message}`))
-    );
-    handleError(async () => await initOfflineCache(), {
-      category: ErrorCategory.DATABASE,
-      context: { component: "App", operation: "initOfflineCache" },
-      maxRetries: 3,
-    }).catch((error) =>
-      setConnectionError(new Error(`Failed to initialize offline cache: ${error.message}`))
-    );
-
-    startNetworkMonitoring(30000);
-    const handleOnline = async () => {
+    const initializeServices = async () => {
       try {
-        await handleError(async () => await syncOfflineOperations(), {
-          category: ErrorCategory.NETWORK,
-          context: { component: "App", operation: "syncOfflineOperations" },
-          maxRetries: 3,
+        // Check if we're in a development environment with debugging enabled
+        const isDev = import.meta.env.DEV;
+        const debugMode = import.meta.env.VITE_DEBUG_DEPLOYMENT;
+
+        if (debugMode) {
+          console.log('🐛 Debug mode enabled - showing fallback');
+          setHasError(true);
+          setIsInitialized(true);
+          return;
+        }
+
+        const unregisterErrorHandler = registerErrorHandler((error) => {
+          console.error('Error handler triggered:', error);
+          if (error.severity === ErrorSeverity.FATAL) {
+            setConnectionError(error.originalError);
+            setHasError(true);
+          }
         });
-      } catch {
-        // Error is already handled by handleError utility
-        // This empty catch prevents unhandled promise rejections
+
+        // Wrap initialization in try-catch to prevent blocking
+        try {
+          await initializeConnectionMonitoring();
+        } catch (error) {
+          console.warn("Failed to initialize Firebase connection:", error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          setConnectionError(new Error(`Failed to initialize Firebase connection: ${errorMessage}`));
+        }
+
+        try {
+          await handleError(async () => await initOfflineCache(), {
+            category: ErrorCategory.DATABASE,
+            context: { component: "App", operation: "initOfflineCache" },
+            maxRetries: 3,
+          });
+        } catch (error) {
+          console.warn("Failed to initialize offline cache:", error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          setConnectionError(new Error(`Failed to initialize offline cache: ${errorMessage}`));
+        }
+
+        startNetworkMonitoring(30000);
+        const handleOnline = async () => {
+          try {
+            await handleError(async () => await syncOfflineOperations(), {
+              category: ErrorCategory.NETWORK,
+              context: { component: "App", operation: "syncOfflineOperations" },
+              maxRetries: 3,
+            });
+          } catch {
+            // Error is already handled by handleError utility
+            // This empty catch prevents unhandled promise rejections
+          }
+        };
+        window.addEventListener("online", handleOnline);
+
+        setIsInitialized(true);
+
+        return () => {
+          window.removeEventListener("online", handleOnline);
+          unregisterErrorHandler();
+        };
+      } catch (error) {
+        console.error("Failed to initialize services:", error);
+        setHasError(true);
+        setIsInitialized(true); // Still mark as initialized to show the app
       }
     };
-    window.addEventListener("online", handleOnline);
 
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      unregisterErrorHandler();
-    };
+    initializeServices();
   }, []);
+
+  // Show loading state until initialization is complete
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Initializing application...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show fallback for debugging or critical errors
+  if (hasError || import.meta.env.VITE_SHOW_FALLBACK) {
+    return <DeploymentFallback />;
+  }
 
   return (
     <ErrorBoundary>
