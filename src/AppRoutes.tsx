@@ -23,10 +23,8 @@ const ComplianceDashboard = lazy(() => import("./pages/qc/ComplianceDashboard"))
 /* -----------------------------
  * Trips
  * ----------------------------- */
+const TripManager = lazy(() => import("./pages/trips/TripManager")); // New consolidated component
 const TripDashboardPage = lazy(() => import("./pages/trips/TripDashboardPage"));
-const TripManagementPage = lazy(() => import("./pages/trips/TripManagementPage"));
-const ActiveTripsPage = lazy(() => import("./pages/trips/ActiveTripsPageEnhanced"));
-const CompletedTrips = lazy(() => import("./pages/trips/CompletedTrips"));
 const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage"));
 const SystemCostGenerator = lazy(() => import("./pages/trips/SystemCostGenerator"));
 const PaymentTrackingPanel = lazy(() => import("./pages/trips/PaymentTrackingPanel"));
@@ -35,14 +33,12 @@ const LoadPlanningPage = lazy(() => import("./pages/Inventory/LoadPlanningPage")
 const LoadPlanningComponentPage = lazy(() => import("./pages/trips/LoadPlanningComponentPage"));
 const RoutePlanningPage = lazy(() => import("./pages/trips/RoutePlanningPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/trips/RouteOptimizationPage"));
-const TripCalendarPage = lazy(() => import("./pages/trips/TripCalendarPage"));
 const TripTimelinePage = lazy(() => import("./pages/trips/TripTimelinePage"));
 const TripReportPage = lazy(() => import("./pages/trips/TripReportPage"));
 const TripInvoicingPanel = lazy(() => import("./pages/trips/TripInvoicingPanel"));
 const TripCompletionPanel = lazy(() => import("./pages/trips/TripCompletionPanel"));
 const FlagInvestigationPanel = lazy(() => import("./pages/trips/FlagInvestigationPanel"));
 const FlagsInvestigationsPage = lazy(() => import("./pages/trips/FlagsInvestigationsPage"));
-const MissedLoadsTracker = lazy(() => import("./pages/trips/MissedLoadsTracker"));
 const CostEntryForm = lazy(() => import("./pages/trips/CostEntryForm"));
 const CreateLoadConfirmationPage = lazy(() => import("./pages/trips/CreateLoadConfirmationPage"));
 const MainTripWorkflow = lazy(() => import("./pages/trips/MainTripWorkflow"));
@@ -229,34 +225,26 @@ export const AppRoutes: React.FC = () => {
         <Route path="dashboard/consolidated" element={withSuspense(ConsolidatedDashboard)} />
         <Route path="dashboard/wrapper" element={withSuspense(DashboardWrapper)} />
 
-        {/* Trips */}
+        {/* Trips - Consolidated with TripManager */}
         <Route path="trips">
-          <Route index element={withSuspense(TripDashboardPage)} />
+          <Route index element={withSuspense(TripManager)} />
           <Route path="dashboard" element={withSuspense(TripDashboardPage)} />
-          <Route path="manage" element={withSuspense(TripManagementPage)} />
-          <Route path="active" element={withSuspense(ActiveTripsPage)} />
-          <Route path="completed" element={withSuspense(CompletedTrips)} />
+          <Route path="manage" element={withSuspense(TripManager)} />
+          <Route path="active" element={withSuspense(TripManager)} />
+          <Route path="completed" element={withSuspense(TripManager)} />
           <Route path="system-costs/:tripId" element={withSuspense(SystemCostGenerator)} />
           <Route path="payments/:tripId" element={withSuspense(PaymentTrackingPanel)} />
           <Route path="reports/:tripId" element={withSuspense(ReportingPanel)} />
           <Route path="load-planning" element={withSuspense(LoadPlanningPage)} />
           <Route path="load-planning/component" element={withSuspense(LoadPlanningComponentPage)} />
-          <Route path="calendar" element={withSuspense(TripCalendarPage)} />
+          <Route path="calendar" element={withSuspense(TripManager)} />
           <Route path="timeline" element={withSuspense(TripTimelinePage)} />
           <Route path="report" element={withSuspense(TripReportPage)} />
           <Route path=":tripId" element={withSuspense(TripDetailsPage)} />
           <Route path="invoicing/:tripId" element={withSuspense(TripInvoicingPanel)} />
           <Route path="completion/:tripId" element={withSuspense(TripCompletionPanel)} />
           <Route path="flags/:tripId" element={withSuspense(FlagInvestigationPanel)} />
-          <Route
-            path="missed-loads"
-            element={withSuspense(MissedLoadsTracker, {
-              missedLoads: [],
-              onAddMissedLoad: (load: any) => console.log("Add missed load", load),
-              onUpdateMissedLoad: (load: any) => console.log("Update missed load", load),
-              onDeleteMissedLoad: (id: string) => console.log("Delete missed load", id),
-            })}
-          />
+          <Route path="missed-loads" element={withSuspense(TripManager)} />
           <Route path="cost-entry" element={withSuspense(CostEntryForm)} />
           <Route
             path="create-load-confirmation"
@@ -436,7 +424,7 @@ export const AppRoutes: React.FC = () => {
         {/* Misc / other routes that might be top-level or need specific handling */}
         <Route path="route-planning" element={withSuspense(RoutePlanningPage)} />
         <Route path="route-optimization" element={withSuspense(RouteOptimizationPage)} />
-        <Route path="trip-calendar" element={withSuspense(TripCalendarPage)} />
+        <Route path="trip-calendar" element={withSuspense(TripManager)} />
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />
