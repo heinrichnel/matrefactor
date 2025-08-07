@@ -1049,13 +1049,124 @@ export async function getTyreStats(): Promise<{
 // These functions provide a way to dynamically load specific services
 // This helps with code splitting and reduces initial bundle size
 
+/**
+ * Listen to tyre stores collection in real-time
+ * @param callback Function to call when tyre stores data changes
+ * @param onError Optional function to call on error
+ * @returns Unsubscribe function to stop listening
+ */
+export function listenToTyreStores(
+  callback: (stores: any[]) => void,
+  onError?: (error: Error) => void
+): () => void {
+  const tyreStoresCollection = collection(firestore, "tyreStores");
+  const q = query(tyreStoresCollection, orderBy("updatedAt", "desc"));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const stores = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        // Convert Firestore Timestamps to standard dates
+        if (data.createdAt) {
+          data.createdAt = data.createdAt.toDate
+            ? data.createdAt.toDate().toISOString()
+            : data.createdAt;
+        }
+        if (data.updatedAt) {
+          data.updatedAt = data.updatedAt.toDate
+            ? data.updatedAt.toDate().toISOString()
+            : data.updatedAt;
+        }
+        return { id: doc.id, ...data };
+      });
+      console.log(`🔄 Real-time tyre stores update: ${stores.length} stores loaded`);
+      callback(stores);
+    },
+    (error) => {
+      console.error("❌ Real-time tyre stores listener error:", error);
+      if (onError) onError(error);
+      handleFirestoreError(error);
+    }
+  );
+}
+
+export const addTyreStore = async (store: any) => {
+  try {
+    const storeWithTimestamp = cleanUndefinedValues({
+      ...store,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    const storeRef = store.id
+      ? doc(firestore, "tyreStores", store.id)
+      : doc(collection(firestore, "tyreStores"));
+
+    const storeId = store.id || storeRef.id;
+
+    await setDoc(storeRef, {
+      ...storeWithTimestamp,
+      id: storeId,
+    });
+
+    console.log("✅ Tyre store added with ID:", storeId);
+    await logActivity("tyre_store_created", storeId, "tyre_store", store);
+
+    return storeId;
+  } catch (error) {
+    console.error("Error adding tyre store:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+};
+
+export const updateTyreStoreEntry = async (storeId: string, entry: any) => {
+  try {
+    const storeRef = doc(firestore, "tyreStores", storeId);
+    const storeSnap = await getDoc(storeRef);
+
+    if (!storeSnap.exists()) {
+      throw new Error(`Store ${storeId} not found`);
+    }
+
+    const storeData = storeSnap.data();
+    const entries = storeData.entries || [];
+
+    // Find if entry with this tyreId already exists
+    const existingIndex = entries.findIndex((e: any) => e.tyreId === entry.tyreId);
+
+    if (existingIndex >= 0) {
+      // Update existing entry
+      entries[existingIndex] = { ...entries[existingIndex], ...entry };
+    } else {
+      // Add new entry
+      entries.push(entry);
+    }
+
+    await updateDoc(storeRef, {
+      entries,
+      updatedAt: serverTimestamp(),
+    });
+
+    console.log(`✅ Entry for tyre ${entry.tyreId} updated in store ${storeId}`);
+    await logActivity("tyre_store_entry_updated", storeId, "tyre_store_entry", entry);
+
+    return entry.tyreId;
+  } catch (error) {
+    console.error("Error updating tyre store entry:", error);
+    await handleFirestoreError(error);
+    throw error;
+  }
+};
+
 export const loadTyreServices = () => import("./types/tyreStores");
 export const loadTyreDataServices = () => import("./types/tyres");
 export const loadTripServices = () => import("./types/trip");
-export const loadDieselServices = () => import("./types/diesel");
+export const loadDieselServices = () => import("./types/trip"); // Fallback to trip types temporarily
 // Fix path to match actual file location - corrected from DriverBehavior to match casing/structure
 export const loadDriverBehavior = () => import("./types/trip"); // Fallback to trip types temporarily
-export const loadAuditServices = () => import("./types/audit");
+export const loadAuditServices = () => import("./types/trip"); // Fallback to trip types temporarily until audit types are created
 
 // =============================================================================
 // RE-EXPORTS FOR BACKWARD COMPATIBILITY

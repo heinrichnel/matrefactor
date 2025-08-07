@@ -1,5 +1,5 @@
 // Extended type for DieselConsumptionRecord to include properties used in DieselDashboard
-import { DieselConsumptionRecord as BaseDieselConsumptionRecord } from "../../types";
+import { DieselConsumptionRecord as BaseDieselConsumptionRecord } from ".";
 
 export interface ExtendedDieselConsumptionRecord extends BaseDieselConsumptionRecord {
   // Additional properties used in DieselDashboard but not in the base type

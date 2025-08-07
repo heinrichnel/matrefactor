@@ -27,8 +27,8 @@ import SyncIndicator from "../../components/ui/SyncIndicator";
 import { useAppContext } from "../../context/AppContext";
 import { useSyncContext } from "../../context/SyncContext";
 import { DieselConsumptionRecord as BaseDieselConsumptionRecord } from "../../types";
+import { ExtendedDieselConsumptionRecord } from "../../types/types";
 import { formatCurrency, formatDate } from "../../utils/helpers";
-import { ExtendedDieselConsumptionRecord } from "./types";
 
 interface DieselDashboardProps {
   className?: string;

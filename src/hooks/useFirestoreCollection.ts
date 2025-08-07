@@ -1,6 +1,6 @@
 import { collection, getDocs, orderBy, query, QueryConstraint } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { db } from "../firebase/config";
+import { db } from "../firebase";
 
 /**
  * Hook to fetch data from a Firestore collection

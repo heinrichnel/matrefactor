@@ -14,7 +14,7 @@ interface FlagsInvestigationsProps {
 }
 
 const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
-  const { updateCostEntry } = useAppContext();
+  const { completeTrip } = useAppContext();
   const { resolveFlaggedCost } = useFlagsContext();
   const [selectedCost, setSelectedCost] = useState<FlaggedCost | null>(null);
   const [showResolutionModal, setShowResolutionModal] = useState(false);
@@ -39,6 +39,16 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
       alert(
         `Flag resolved successfully!\n\nResolution: ${resolutionComment}\n\nThe cost entry has been updated and marked as resolved. If this was the last unresolved flag for the trip, it will be automatically moved to Completed Trips.`
       );
+
+      // Check if all flags for the trip are resolved - if yes, mark trip as completed
+      const unresolvedFlagsForTrip = flaggedCosts.filter(
+        (c) => c.tripId === updatedCost.tripId && c.investigationStatus !== "resolved"
+      );
+
+      if (unresolvedFlagsForTrip.length === 0) {
+        completeTrip(updatedCost.tripId);
+        alert(`All flags for Trip ${updatedCost.tripId} are resolved. Trip marked as completed.`);
+      }
     } catch (error) {
       alert(`Error resolving flag: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
@@ -76,13 +86,14 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
   };
 
   const statusCounts = {
-    pending: flaggedCosts.filter((c) => c.investigationStatus === "pending").length,
-    "in-progress": flaggedCosts.filter((c) => c.investigationStatus === "in-progress").length,
-    resolved: flaggedCosts.filter((c) => c.investigationStatus === "resolved").length,
+    pending: flaggedCosts.filter((c: FlaggedCost) => c.investigationStatus === "pending").length,
+    "in-progress": flaggedCosts.filter((c: FlaggedCost) => c.investigationStatus === "in-progress")
+      .length,
+    resolved: flaggedCosts.filter((c: FlaggedCost) => c.investigationStatus === "resolved").length,
     total: flaggedCosts.length,
   };
 
-  const uniqueDrivers = [...new Set(trips.map((trip) => trip.driverName))];
+  const uniqueDrivers = [...new Set(trips.map((trip: Trip) => trip.driverName))];
 
   return (
     <div className="space-y-6">
@@ -216,8 +227,15 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                         <div>
                           <p className="text-sm text-gray-500">Trip</p>
-                          <p className="font-medium">Fleet {cost.tripFleetNumber}</p>
-                          <p className="text-sm text-gray-600">{cost.tripRoute}</p>
+                          <p className="font-medium">
+                            Fleet{" "}
+                            {(cost as FlaggedCost).tripFleetNumber ||
+                              trip?.fleetNumber ||
+                              cost.tripId}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {(cost as FlaggedCost).tripRoute || trip?.route || "-"}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-500">Driver</p>

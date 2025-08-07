@@ -1,6 +1,6 @@
 import { collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { db } from "../firebase/config";
+import { db } from "../firebase";
 
 interface LicenseCategory {
   id: string;

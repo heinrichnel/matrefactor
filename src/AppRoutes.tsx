@@ -25,9 +25,6 @@ const ComplianceDashboard = lazy(() => import("./pages/qc/ComplianceDashboard"))
  * ----------------------------- */
 const TripDashboardPage = lazy(() => import("./pages/trips/TripDashboardPage"));
 const TripManagementPage = lazy(() => import("./pages/trips/TripManagementPage"));
-const TripManagementPageIntegrated = lazy(
-  () => import("./pages/trips/TripManagementPageIntegrated")
-);
 const ActiveTripsPage = lazy(() => import("./pages/trips/ActiveTripsPageEnhanced"));
 const CompletedTrips = lazy(() => import("./pages/trips/CompletedTrips"));
 const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage"));
