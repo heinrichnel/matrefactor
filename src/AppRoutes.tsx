@@ -25,7 +25,9 @@ const ComplianceDashboard = lazy(() => import("./pages/qc/ComplianceDashboard"))
  * ----------------------------- */
 const TripDashboardPage = lazy(() => import("./pages/trips/TripDashboardPage"));
 const TripManagementPage = lazy(() => import("./pages/trips/TripManagementPage"));
-const TripManagementPageIntegrated = lazy(() => import("./pages/trips/TripManagementPageIntegrated"));
+const TripManagementPageIntegrated = lazy(
+  () => import("./pages/trips/TripManagementPageIntegrated")
+);
 const ActiveTripsPage = lazy(() => import("./pages/trips/ActiveTripsPageEnhanced"));
 const CompletedTrips = lazy(() => import("./pages/trips/CompletedTrips"));
 const TripDetailsPage = lazy(() => import("./pages/trips/TripDetailsPage"));
@@ -46,7 +48,6 @@ const FlagsInvestigationsPage = lazy(() => import("./pages/trips/FlagsInvestigat
 const MissedLoadsTracker = lazy(() => import("./pages/trips/MissedLoadsTracker"));
 const CostEntryForm = lazy(() => import("./pages/trips/CostEntryForm"));
 const CreateLoadConfirmationPage = lazy(() => import("./pages/trips/CreateLoadConfirmationPage"));
-const FlagResolutionModal = lazy(() => import("./pages/trips/FlagResolutionModal"));
 const MainTripWorkflow = lazy(() => import("./pages/trips/MainTripWorkflow"));
 const IndirectCostBreakdown = lazy(() => import("./pages/trips/IndirectCostBreakdown"));
 
@@ -191,7 +192,6 @@ const WialonMapComponent = lazy(() => import("./pages/wialon/WialonMapComponent"
 const WialonMapDashboard = lazy(() => import("./pages/wialon/WialonMapDashboard"));
 const WialonMapPage = lazy(() => import("./pages/wialon/WialonMapPage"));
 
-
 /* -----------------------------
  * 404
  * ----------------------------- */
@@ -251,15 +251,20 @@ export const AppRoutes: React.FC = () => {
           <Route path="invoicing/:tripId" element={withSuspense(TripInvoicingPanel)} />
           <Route path="completion/:tripId" element={withSuspense(TripCompletionPanel)} />
           <Route path="flags/:tripId" element={withSuspense(FlagInvestigationPanel)} />
-          <Route path="missed-loads" element={withSuspense(MissedLoadsTracker, {
-            missedLoads: [],
-            onAddMissedLoad: (load: any) => console.log('Add missed load', load),
-            onUpdateMissedLoad: (load: any) => console.log('Update missed load', load),
-            onDeleteMissedLoad: (id: string) => console.log('Delete missed load', id)
-          })} />
+          <Route
+            path="missed-loads"
+            element={withSuspense(MissedLoadsTracker, {
+              missedLoads: [],
+              onAddMissedLoad: (load: any) => console.log("Add missed load", load),
+              onUpdateMissedLoad: (load: any) => console.log("Update missed load", load),
+              onDeleteMissedLoad: (id: string) => console.log("Delete missed load", id),
+            })}
+          />
           <Route path="cost-entry" element={withSuspense(CostEntryForm)} />
-          <Route path="create-load-confirmation" element={withSuspense(CreateLoadConfirmationPage)} />
-          <Route path="flag-resolution-modal" element={withSuspense(FlagResolutionModal)} />
+          <Route
+            path="create-load-confirmation"
+            element={withSuspense(CreateLoadConfirmationPage)}
+          />
           <Route path="workflow" element={withSuspense(MainTripWorkflow)} />
         </Route>
 
@@ -281,7 +286,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="stations" element={withSuspense(FuelStations)} />
           <Route path="add-fuel" element={withSuspense(AddFuelEntryPage)} />
           <Route path="add-fuel-wrapper" element={withSuspense(AddFuelEntryPageWrapper)} />
-          <Route path="component-dashboard" element={withSuspense(DieselDashboardComponent)} /> {/* Added */}
+          <Route path="component-dashboard" element={withSuspense(DieselDashboardComponent)} />{" "}
+          {/* Added */}
         </Route>
 
         {/* Drivers */}
@@ -304,8 +310,10 @@ export const AppRoutes: React.FC = () => {
           <Route path="add" element={withSuspense(AddEditDriverPage)} />
           <Route path="edit/:id" element={withSuspense(AddEditDriverPage)} />
           <Route path="add-new" element={withSuspense(AddNewDriver)} />
-          <Route path="details-view/:id" element={withSuspense(DriverDetailsComponent)} /> {/* Added */}
-          <Route path="management-wrapper" element={withSuspense(DriverManagementWrapper)} /> {/* Added */}
+          <Route path="details-view/:id" element={withSuspense(DriverDetailsComponent)} />{" "}
+          {/* Added */}
+          <Route path="management-wrapper" element={withSuspense(DriverManagementWrapper)} />{" "}
+          {/* Added */}
           <Route path="edit-driver-page/:id" element={withSuspense(EditDriverPage)} /> {/* Added */}
         </Route>
 
@@ -321,7 +329,11 @@ export const AppRoutes: React.FC = () => {
           <Route path="retention" element={withSuspense(RetentionMetrics)} />
           <Route path="add" element={withSuspense(AddNewCustomer)} />
           <Route path="network-map" element={withSuspense(ClientNetworkMap)} />
-          <Route path="management-original" element={withSuspense(ClientManagementPageOriginal)} /> {/* Added */}
+          <Route
+            path="management-original"
+            element={withSuspense(ClientManagementPageOriginal)}
+          />{" "}
+          {/* Added */}
         </Route>
 
         {/* Forms Testing */}
@@ -342,8 +354,16 @@ export const AppRoutes: React.FC = () => {
           <Route path="templates" element={withSuspense(InvoiceTemplatesPage)} />
           <Route path="tax-export" element={withSuspense(TaxReportExport)} />
           <Route path="approval-flow" element={withSuspense(InvoiceApprovalFlow)} />
-          <Route path="paid-invoices-component" element={withSuspense(PaidInvoicesComponent)} /> {/* Added */}
-          <Route path="pending-invoices-component" element={withSuspense(PendingInvoicesComponent)} /> {/* Added */}
+          <Route
+            path="paid-invoices-component"
+            element={withSuspense(PaidInvoicesComponent)}
+          />{" "}
+          {/* Added */}
+          <Route
+            path="pending-invoices-component"
+            element={withSuspense(PendingInvoicesComponent)}
+          />{" "}
+          {/* Added */}
         </Route>
 
         {/* Workshop / Inventory */}

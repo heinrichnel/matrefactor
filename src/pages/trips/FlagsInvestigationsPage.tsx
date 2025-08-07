@@ -1,13 +1,13 @@
-import { AlertTriangle, CheckCircle, Clock, Edit, Flag, Play, Upload } from 'lucide-react';
-import React, { useState } from 'react';
-import Button from '../../components/ui/Button';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import { Select } from '../../components/ui/FormElements';
-import { useAppContext } from '../../context/AppContext';
-import { useFlagsContext } from '../../context/FlagsContext';
-import { CostEntry, FlaggedCost, Trip } from '../../types';
-import { formatCurrency, formatDate, getAllFlaggedCosts } from '../../utils/helpers';
-import FlagResolutionModal from './FlagResolutionModal';
+import { AlertTriangle, CheckCircle, Clock, Edit, Flag, Play, Upload } from "lucide-react";
+import React, { useState } from "react";
+import FlagResolutionModal from "../../components/Models/Flags/FlagResolutionModal";
+import Button from "../../components/ui/Button";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import { Select } from "../../components/ui/FormElements";
+import { useAppContext } from "../../context/AppContext";
+import { useFlagsContext } from "../../context/FlagsContext";
+import { CostEntry, FlaggedCost, Trip } from "../../types";
+import { formatCurrency, formatDate, getAllFlaggedCosts } from "../../utils/helpers";
 
 interface FlagsInvestigationsProps {
   trips: Trip[];
@@ -18,14 +18,15 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
   const { resolveFlaggedCost } = useFlagsContext();
   const [selectedCost, setSelectedCost] = useState<FlaggedCost | null>(null);
   const [showResolutionModal, setShowResolutionModal] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [driverFilter, setDriverFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [driverFilter, setDriverFilter] = useState<string>("");
 
   const flaggedCosts = getAllFlaggedCosts(trips);
 
-  const filteredCosts = flaggedCosts.filter(cost => {
+  const filteredCosts = flaggedCosts.filter((cost) => {
     if (statusFilter && cost.investigationStatus !== statusFilter) return false;
-    if (driverFilter && !trips.find(t => t.id === cost.tripId)?.driverName.includes(driverFilter)) return false;
+    if (driverFilter && !trips.find((t) => t.id === cost.tripId)?.driverName.includes(driverFilter))
+      return false;
     return true;
   });
 
@@ -35,9 +36,11 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
       setShowResolutionModal(false);
       setSelectedCost(null);
 
-      alert(`Flag resolved successfully!\n\nResolution: ${resolutionComment}\n\nThe cost entry has been updated and marked as resolved. If this was the last unresolved flag for the trip, it will be automatically moved to Completed Trips.`);
+      alert(
+        `Flag resolved successfully!\n\nResolution: ${resolutionComment}\n\nThe cost entry has been updated and marked as resolved. If this was the last unresolved flag for the trip, it will be automatically moved to Completed Trips.`
+      );
     } catch (error) {
-      alert(`Error resolving flag: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(`Error resolving flag: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
@@ -48,11 +51,11 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
 
   const getStatusIcon = (status?: string) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'in-progress':
+      case "in-progress":
         return <Play className="w-4 h-4 text-blue-500" />;
-      case 'resolved':
+      case "resolved":
         return <CheckCircle className="w-4 h-4 text-green-500" />;
       default:
         return <AlertTriangle className="w-4 h-4 text-red-500" />;
@@ -61,25 +64,25 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-50 text-yellow-800 border-yellow-200';
-      case 'in-progress':
-        return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'resolved':
-        return 'bg-green-50 text-green-800 border-green-200';
+      case "pending":
+        return "bg-yellow-50 text-yellow-800 border-yellow-200";
+      case "in-progress":
+        return "bg-blue-50 text-blue-800 border-blue-200";
+      case "resolved":
+        return "bg-green-50 text-green-800 border-green-200";
       default:
-        return 'bg-red-50 text-red-800 border-red-200';
+        return "bg-red-50 text-red-800 border-red-200";
     }
   };
 
   const statusCounts = {
-    pending: flaggedCosts.filter(c => c.investigationStatus === 'pending').length,
-    'in-progress': flaggedCosts.filter(c => c.investigationStatus === 'in-progress').length,
-    resolved: flaggedCosts.filter(c => c.investigationStatus === 'resolved').length,
-    total: flaggedCosts.length
+    pending: flaggedCosts.filter((c) => c.investigationStatus === "pending").length,
+    "in-progress": flaggedCosts.filter((c) => c.investigationStatus === "in-progress").length,
+    resolved: flaggedCosts.filter((c) => c.investigationStatus === "resolved").length,
+    total: flaggedCosts.length,
   };
 
-  const uniqueDrivers = [...new Set(trips.map(trip => trip.driverName))];
+  const uniqueDrivers = [...new Set(trips.map((trip) => trip.driverName))];
 
   return (
     <div className="space-y-6">
@@ -112,7 +115,7 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">In Progress</p>
-                <p className="text-2xl font-bold text-blue-600">{statusCounts['in-progress']}</p>
+                <p className="text-2xl font-bold text-blue-600">{statusCounts["in-progress"]}</p>
               </div>
               <Play className="w-8 h-8 text-blue-500" />
             </div>
@@ -154,10 +157,10 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               options={[
-                { label: 'All Statuses', value: '' },
-                { label: 'Pending', value: 'pending' },
-                { label: 'In Progress', value: 'in-progress' },
-                { label: 'Resolved', value: 'resolved' }
+                { label: "All Statuses", value: "" },
+                { label: "Pending", value: "pending" },
+                { label: "In Progress", value: "in-progress" },
+                { label: "Resolved", value: "resolved" },
               ]}
             />
             <Select
@@ -165,8 +168,8 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
               value={driverFilter}
               onChange={(e) => setDriverFilter(e.target.value)}
               options={[
-                { label: 'All Drivers', value: '' },
-                ...uniqueDrivers.map(d => ({ label: d, value: d }))
+                { label: "All Drivers", value: "" },
+                ...uniqueDrivers.map((d) => ({ label: d, value: d })),
               ]}
             />
           </div>
@@ -179,14 +182,16 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
           <Flag className="mx-auto h-10 w-10 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No flagged items</h3>
           <p className="mt-1 text-sm text-gray-500">
-            {statusFilter || driverFilter ? 'No items match your current filters.' : 'All cost entries are properly documented.'}
+            {statusFilter || driverFilter
+              ? "No items match your current filters."
+              : "All cost entries are properly documented."}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           {filteredCosts.map((cost) => {
-            const trip = trips.find(t => t.id === cost.tripId);
-            const canResolve = cost.investigationStatus !== 'resolved';
+            const trip = trips.find((t) => t.id === cost.tripId);
+            const canResolve = cost.investigationStatus !== "resolved";
 
             return (
               <Card key={cost.id} className="hover:shadow-md transition-shadow">
@@ -196,10 +201,12 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
                       <div className="flex items-center space-x-3 mb-2">
                         {getStatusIcon(cost.investigationStatus)}
                         <h4 className="font-medium text-gray-900">{cost.category}</h4>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(cost.investigationStatus)}`}>
-                          {cost.investigationStatus || 'pending'}
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(cost.investigationStatus)}`}
+                        >
+                          {cost.investigationStatus || "pending"}
                         </span>
-                        {cost.investigationStatus === 'resolved' && (
+                        {cost.investigationStatus === "resolved" && (
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
                             ✓ RESOLVED
                           </span>
@@ -218,7 +225,9 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
                         </div>
                         <div>
                           <p className="text-sm text-gray-500">Amount</p>
-                          <p className="font-medium">{formatCurrency(cost.amount, cost.currency)}</p>
+                          <p className="font-medium">
+                            {formatCurrency(cost.amount, cost.currency)}
+                          </p>
                           <p className="text-sm text-gray-600">{formatDate(cost.date)}</p>
                         </div>
                         <div>
@@ -236,7 +245,9 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
 
                       {cost.noDocumentReason && (
                         <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded">
-                          <p className="text-sm font-medium text-amber-800">Missing Document Reason:</p>
+                          <p className="text-sm font-medium text-amber-800">
+                            Missing Document Reason:
+                          </p>
                           <p className="text-sm text-amber-700">{cost.noDocumentReason}</p>
                         </div>
                       )}
@@ -280,7 +291,10 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
                         ) : (
                           <div className="flex items-center space-x-2 text-sm text-green-600">
                             <CheckCircle className="w-4 h-4" />
-                            <span>Resolved on {cost.resolvedAt ? formatDate(cost.resolvedAt) : 'Unknown'}</span>
+                            <span>
+                              Resolved on{" "}
+                              {cost.resolvedAt ? formatDate(cost.resolvedAt) : "Unknown"}
+                            </span>
                             {cost.resolvedBy && <span>by {cost.resolvedBy}</span>}
                           </div>
                         )}
