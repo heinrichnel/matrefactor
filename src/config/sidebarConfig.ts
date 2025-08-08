@@ -82,7 +82,7 @@ export const sidebarConfig: SidebarItem[] = [
         id: "trip-timeline",
         label: "Trip Timeline",
         path: "/trips/timeline",
-  component: "pages/trips/TripTimelinePage",
+        component: "pages/trips/TripTimelinePage",
       },
       {
         id: "add-trip",
