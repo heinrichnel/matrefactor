@@ -7,25 +7,25 @@ import { Select } from "../../components/ui/FormElements";
 import { useAppContext } from "../../context/AppContext";
 import { useFlagsContext } from "../../context/FlagsContext";
 import { CostEntry, FlaggedCost, Trip } from "../../types";
-import { formatCurrency, formatDate, getAllFlaggedCosts } from "../../utils/helpers";
+import { formatCurrency, formatDate } from "../../utils/helpers";
 
-interface FlagsInvestigationsProps {
-  trips: Trip[];
-}
-
-const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
-  const { completeTrip } = useAppContext();
-  const { resolveFlaggedCost } = useFlagsContext();
+// Converted to self-contained page: trips now sourced from AppContext instead of props
+const FlagsInvestigations: React.FC = () => {
+  const { completeTrip, trips } = useAppContext();
+  const { resolveFlaggedCost, flaggedCosts } = useFlagsContext();
   const [selectedCost, setSelectedCost] = useState<FlaggedCost | null>(null);
   const [showResolutionModal, setShowResolutionModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [driverFilter, setDriverFilter] = useState<string>("");
-
-  const flaggedCosts = getAllFlaggedCosts(trips);
+  // Defensive: ensure arrays
+  const allTrips: Trip[] = Array.isArray(trips) ? trips : [];
 
   const filteredCosts = flaggedCosts.filter((cost) => {
     if (statusFilter && cost.investigationStatus !== statusFilter) return false;
-    if (driverFilter && !trips.find((t) => t.id === cost.tripId)?.driverName.includes(driverFilter))
+    if (
+      driverFilter &&
+      !allTrips.find((t) => t.id === cost.tripId)?.driverName?.includes(driverFilter)
+    )
       return false;
     return true;
   });
@@ -93,7 +93,7 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
     total: flaggedCosts.length,
   };
 
-  const uniqueDrivers = [...new Set(trips.map((trip: Trip) => trip.driverName))];
+  const uniqueDrivers = [...new Set(allTrips.map((trip: Trip) => trip.driverName).filter(Boolean))];
 
   return (
     <div className="space-y-6">
@@ -201,7 +201,7 @@ const FlagsInvestigations: React.FC<FlagsInvestigationsProps> = ({ trips }) => {
       ) : (
         <div className="space-y-4">
           {filteredCosts.map((cost) => {
-            const trip = trips.find((t) => t.id === cost.tripId);
+            const trip = allTrips.find((t) => t.id === cost.tripId);
             const canResolve = cost.investigationStatus !== "resolved";
 
             return (
