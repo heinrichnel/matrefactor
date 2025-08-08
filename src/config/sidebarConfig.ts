@@ -847,7 +847,7 @@ export const sidebarConfig: SidebarItem[] = [
     id: "flags",
     label: "Flags & Investigations",
     path: "/flags",
-    component: "pages/FlagsInvestigationsPage",
+  component: "pages/trips/FlagsInvestigationsPage",
     icon: "flag",
   },
 
