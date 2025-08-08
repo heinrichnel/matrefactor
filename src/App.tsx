@@ -4,6 +4,7 @@ import AppRoutes from "./AppRoutes";
 // Context Providers
 import { AppProvider } from "./context/AppContext";
 import { DriverBehaviorProvider } from "./context/DriverBehaviorContext";
+import { FlagsProvider } from "./context/FlagsContext";
 import { FleetAnalyticsProvider } from "./context/FleetAnalyticsContext";
 import { SyncProvider } from "./context/SyncContext";
 import { TripProvider } from "./context/TripContext";
@@ -43,14 +44,14 @@ const App: React.FC = () => {
         const debugMode = import.meta.env.VITE_DEBUG_DEPLOYMENT;
 
         if (debugMode) {
-          console.log('🐛 Debug mode enabled - showing fallback');
+          console.log("🐛 Debug mode enabled - showing fallback");
           setHasError(true);
           setIsInitialized(true);
           return;
         }
 
         const unregisterErrorHandler = registerErrorHandler((error) => {
-          console.error('Error handler triggered:', error);
+          console.error("Error handler triggered:", error);
           if (error.severity === ErrorSeverity.FATAL) {
             setConnectionError(error.originalError);
             setHasError(true);
@@ -63,7 +64,9 @@ const App: React.FC = () => {
         } catch (error) {
           console.warn("Failed to initialize Firebase connection:", error);
           const errorMessage = error instanceof Error ? error.message : String(error);
-          setConnectionError(new Error(`Failed to initialize Firebase connection: ${errorMessage}`));
+          setConnectionError(
+            new Error(`Failed to initialize Firebase connection: ${errorMessage}`)
+          );
         }
 
         try {
@@ -136,20 +139,24 @@ const App: React.FC = () => {
                 <DriverBehaviorProvider>
                   <WorkshopProvider>
                     <FleetAnalyticsProvider>
-                      <TyreReferenceDataProvider>
-                        {/* Application alerts and notifications */}
-                        <div className="fixed top-0 left-0 right-0 z-50 p-4">
-                          <FirestoreConnectionError />
-                          {connectionError && <FirestoreConnectionError error={connectionError} />}
-                        </div>
+                      <FlagsProvider>
+                        <TyreReferenceDataProvider>
+                          {/* Application alerts and notifications */}
+                          <div className="fixed top-0 left-0 right-0 z-50 p-4">
+                            <FirestoreConnectionError />
+                            {connectionError && (
+                              <FirestoreConnectionError error={connectionError} />
+                            )}
+                          </div>
 
-                        <OfflineBanner />
+                          <OfflineBanner />
 
-                        {/* Main application routes and layout */}
-                        <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex flex-col">
-                          <AppRoutes />
-                        </div>
-                      </TyreReferenceDataProvider>
+                          {/* Main application routes and layout */}
+                          <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex flex-col">
+                            <AppRoutes />
+                          </div>
+                        </TyreReferenceDataProvider>
+                      </FlagsProvider>
                     </FleetAnalyticsProvider>
                   </WorkshopProvider>
                 </DriverBehaviorProvider>
