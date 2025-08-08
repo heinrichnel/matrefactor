@@ -76,7 +76,8 @@ function getTripColor(type: string) {
   return TYPE_COLORS[type] || "#64748b";
 }
 
-const TripTimelinePage: React.FC = () => {
+// NOTE: This file is the TripCalendarPage; rename component accordingly to avoid confusion with TripTimelinePage
+const TripCalendarPage: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [startDate, setStartDate] = useState<Date>(startOfWeek(new Date()));
@@ -440,7 +441,8 @@ const TripTimelinePage: React.FC = () => {
                   <span className="text-gray-500">Status:</span>{" "}
                   <span
                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                    ${selectedTrip.status === "completed"
+                    ${
+                      selectedTrip.status === "completed"
                         ? "bg-green-100 text-green-800"
                         : selectedTrip.status === "in_progress" || selectedTrip.status === "active"
                           ? "bg-blue-100 text-blue-800"
@@ -453,7 +455,7 @@ const TripTimelinePage: React.FC = () => {
                                 : selectedTrip.status === "paid"
                                   ? "bg-indigo-100 text-indigo-800"
                                   : "bg-indigo-100 text-indigo-800"
-                      }`}
+                    }`}
                   >
                     {selectedTrip.status || "Planned"}
                   </span>
@@ -539,4 +541,4 @@ const TripTimelinePage: React.FC = () => {
   );
 };
 
-export default TripTimelinePage;
+export default TripCalendarPage;
