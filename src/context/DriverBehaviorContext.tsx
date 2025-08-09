@@ -1,24 +1,35 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getFirestore, collection, onSnapshot, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import { firebaseApp } from '../firebaseConfig';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { DriverBehaviorEvent as DBEvent } from "../api/driverBehaviorService";
+import { useDriverBehavior as useDriverBehaviorHook } from "../hooks/useDriverBehavior";
 
-// Define Driver Behavior Event interface
-export interface DriverBehaviorEvent {
-  id: string;
-  fleetNumber?: string;
-  eventDate: string | Date;
-  eventType: string;
-  severity: string;
-  importSource?: string;    // <--- Add this field for clarity
-  [key: string]: any;       // Allow other fields
-}
+// Re-export the DriverBehaviorEvent interface from the service
+export type DriverBehaviorEvent = DBEvent;
 
 // Create context type
 interface DriverBehaviorContextType {
   events: DriverBehaviorEvent[];
   loading: boolean;
   error: Error | null;
-  webBookEvents: DriverBehaviorEvent[];   // <--- Added here
+  webBookEvents: DriverBehaviorEvent[];
+  selectedEvent: DriverBehaviorEvent | null;
+  setSelectedEvent: (event: DriverBehaviorEvent | null) => void;
+  filterEvents: (filters: {
+    driverName?: string;
+    fleetNumber?: string;
+    eventType?: string;
+    startDate?: string;
+    endDate?: string;
+    severity?: string;
+    status?: string;
+  }) => DriverBehaviorEvent[];
+  addEvent: (eventData: Omit<DriverBehaviorEvent, "id">) => Promise<string>;
+  updateEvent: (
+    eventId: string,
+    data: Partial<DriverBehaviorEvent>,
+    eventPath?: string
+  ) => Promise<void>;
+  subscribeToDriver: (driverName: string) => void;
+  refreshData: () => void;
 }
 
 // Create context with default values
@@ -26,81 +37,83 @@ const DriverBehaviorContext = createContext<DriverBehaviorContextType>({
   events: [],
   loading: true,
   error: null,
-  webBookEvents: []
+  webBookEvents: [],
+  selectedEvent: null,
+  setSelectedEvent: () => {},
+  filterEvents: () => [],
+  addEvent: async () => "",
+  updateEvent: async () => {},
+  subscribeToDriver: () => {},
+  refreshData: () => {},
 });
 
 // Provider props interface
 interface DriverBehaviorProviderProps {
   children: ReactNode;
+  initialDriver?: string;
 }
 
 // Driver Behavior Provider component
-export const DriverBehaviorProvider: React.FC<DriverBehaviorProviderProps> = ({ children }) => {
-  const [events, setEvents] = useState<DriverBehaviorEvent[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
+export const DriverBehaviorProvider: React.FC<DriverBehaviorProviderProps> = ({
+  children,
+  initialDriver,
+}) => {
+  const [selectedEvent, setSelectedEvent] = useState<DriverBehaviorEvent | null>(null);
 
-  useEffect(() => {
-    setLoading(true);
-
-    // Initialize Firestore
-    const db = getFirestore(firebaseApp);
-
-    try {
-      // Set up real-time listener to driverBehaviorEvents collection
-      const unsubscribe = onSnapshot(
-        collection(db, 'driverBehaviorEvents'),
-        (snapshot) => {
-          const eventsData: DriverBehaviorEvent[] = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              fleetNumber: data.fleetNumber || '',
-              eventDate: data.eventDate || new Date(),
-              eventType: data.eventType || 'unknown',
-              severity: data.severity || 'medium',
-              importSource: data.importSource || undefined,
-              ...data
-            };
-          });
-
-          setEvents(eventsData);
-          setLoading(false);
-        },
-        (err) => {
-          console.error("Error fetching driver behavior events:", err);
-          setError(err);
-          setLoading(false);
-        }
-      );
-
-      // Clean up subscription on unmount
-      return () => unsubscribe();
-    } catch (err: any) {
-      console.error("Error setting up driver behavior listener:", err);
-      setError(err);
-      setLoading(false);
-      return () => {}; // Return empty function for consistency
-    }
-  }, []);
-
-  // --- Add webBookEvents filtering ---
-  const webBookEvents = events.filter(e => e.importSource === "web_book");
-
-  // Value to provide to context consumers
-  const value = {
+  // Use our custom hook that connects to the driverBehaviorService
+  const {
     events,
     loading,
     error,
-    webBookEvents   // Now available in all consumers
+    filterEvents,
+    addEvent,
+    updateEvent,
+    subscribeToDriver,
+    subscribeToAll,
+  } = useDriverBehaviorHook({
+    autoSubscribe: true,
+    driver: initialDriver,
+  });
+
+  // Filter web book events
+  const webBookEvents = events.filter((e: DriverBehaviorEvent) => e.importSource === "web_book");
+
+  // Function to refresh data
+  const refreshData = () => {
+    if (initialDriver) {
+      subscribeToDriver(initialDriver);
+    } else {
+      subscribeToAll();
+    }
   };
 
-  return (
-    <DriverBehaviorContext.Provider value={value}>
-      {children}
-    </DriverBehaviorContext.Provider>
-  );
+  // If the selected event is updated in the events list, update the selectedEvent
+  useEffect(() => {
+    if (selectedEvent) {
+      const updatedEvent = events.find((e: DriverBehaviorEvent) => e.id === selectedEvent.id);
+      if (updatedEvent && JSON.stringify(updatedEvent) !== JSON.stringify(selectedEvent)) {
+        setSelectedEvent(updatedEvent);
+      }
+    }
+  }, [events, selectedEvent]);
+
+  // Value to provide to context consumers
+  const value: DriverBehaviorContextType = {
+    events,
+    loading,
+    error,
+    webBookEvents,
+    selectedEvent,
+    setSelectedEvent,
+    filterEvents,
+    addEvent,
+    updateEvent,
+    subscribeToDriver,
+    refreshData,
+  };
+
+  return <DriverBehaviorContext.Provider value={value}>{children}</DriverBehaviorContext.Provider>;
 };
 
 // Custom hook for using the driver behavior context
-export const useDriverBehavior = () => useContext(DriverBehaviorContext);
+export const useDriverBehaviorContext = () => useContext(DriverBehaviorContext);

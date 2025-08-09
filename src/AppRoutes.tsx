@@ -472,6 +472,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="wialon/config" element={withSuspense(WialonConfigPage)} />
           <Route path="wialon/units" element={withSuspense(WialonUnitsPage)} />
           <Route path="wialon/suite" element={withSuspense(WialonSuitePage)} />
+          <Route path="wialon/tracking" element={withSuspense(WialonTracking)} />
           <Route path="wialon/component" element={withSuspense(WialonMapComponent)} />
           <Route path="wialon/map-dashboard" element={withSuspense(WialonMapDashboard)} />
           <Route path="wialon/map-page" element={withSuspense(WialonMapPage)} />

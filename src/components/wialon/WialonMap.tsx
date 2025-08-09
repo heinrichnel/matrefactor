@@ -2,8 +2,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import React, { useEffect, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import { useWialonContext } from "../context/WialonContext";
-import { ExtendedWialonUnit } from "../hooks/useWialon";
+import { useWialonContext } from "../../context/WialonContext";
+import { ExtendedWialonUnit } from "../../hooks/useWialon";
 
 // Fix for default marker icons in Leaflet with webpack/vite
 // You'll need to add these icon files to your public folder
@@ -87,9 +87,7 @@ const WialonMap: React.FC<WialonMapProps> = ({
         center={mapCenter}
         zoom={zoom}
         style={{ height: "100%", width: "100%" }}
-        whenCreated={(map) => {
-          mapRef.current = map;
-        }}
+        ref={mapRef}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

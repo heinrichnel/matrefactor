@@ -5,9 +5,9 @@ import { ErrorCategory, ErrorSeverity, logError } from "../utils/errorHandling";
 import "../types/wialon-sdk.d.ts";
 
 // Wialon SDK is exposed on the window object
+// Note: The Window interface for wialon is already declared in wialon-sdk.d.ts
 declare global {
   interface Window {
-    wialon: any;
     W: typeof W;
   }
 }
