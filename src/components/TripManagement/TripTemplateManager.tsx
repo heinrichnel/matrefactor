@@ -174,7 +174,11 @@ const TripTemplateManager: React.FC = () => {
                 {filteredTemplates.map((template) => (
                   <tr key={template.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm font-medium text-blue-600">{template.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500">{template.origin} → {template.destination}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{template.vehicleType}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{template.loadType}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{template.estimatedDistance} km</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{template.useCount}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       <div className="flex space-x-2">
                         <button className="text-blue-600 hover:text-blue-800" onClick={() => handleTemplateAction('copy', template.id)}>
@@ -182,12 +186,6 @@ const TripTemplateManager: React.FC = () => {
                         </button>
                         <button className="text-gray-600 hover:text-gray-800" onClick={() => handleTemplateAction('edit', template.id)}>
                           <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-800" onClick={() => handleTemplateAction('delete', template.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
                         </button>
                         <button className="text-red-600 hover:text-red-800" onClick={() => handleTemplateAction('delete', template.id)}>
                           <Trash2 className="h-4 w-4" />

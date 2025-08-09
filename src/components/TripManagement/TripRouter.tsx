@@ -1,10 +1,10 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import TripManagement from "../../pages/TripManagement/TripManagement";
-import ActiveTrips from "../../pages/TripManagement/ActiveTrips";
-import CompletedTrips from "../pages/TripManagement/CompletedTrips";
-import TripForm from "../components/forms/trip/TripForm";
-import { WialonMapComponent } from " ../components/maps/WialonMapComponent";
+import TripManagement from "../../pages/trips/TripManagementPage";
+import ActiveTrips from "../../pages/trips/ActiveTripsPageEnhanced";
+import CompletedTrips from "../../pages/trips/CompletedTrips";
+import TripForm from "../forms/trips/TripForm";
+import { WialonMapComponent } from "../../pages/wialon/WialonMapComponent";
 import { SupportedCurrency } from "../../lib/currency";
 
 const TripRouter: React.FC = () => {

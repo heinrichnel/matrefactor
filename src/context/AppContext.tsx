@@ -1024,9 +1024,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           costs: [...trip.costs, costEntry],
         };
 
-        // Adapt the trip to the format expected by firebase.ts
-        const adaptedTrip = adaptTripForFirebase(updatedTrip);
-        await updateTripInFirebase(trip.id, adaptedTrip as any);
+        // Use the adapter wrapper function
+        await updateTripWithAdapter(trip.id, updatedTrip);
       }
     }
 
@@ -1965,7 +1964,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const originalRecord = dieselRecords.find((r) => r.id === record.id);
 
         // Update the record in Firestore
-        await updateTripInFirebase(record.id, record);
+        await updateTripWithAdapter(record.id, record);
 
         // If this record is linked to a trip, update the corresponding cost entry
         if (record.tripId) {
@@ -1990,9 +1989,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               };
 
               // Use helper to map costs with description property before updating
-              const costsWithDescription = updatedCosts.map(cost => ({
+              const costsWithDescription = updatedCosts.map((cost) => ({
                 ...cost,
-                description: cost.notes || cost.category || `${cost.category} - ${cost.amount}`
+                description: cost.notes || cost.category || `${cost.category} - ${cost.amount}`,
               }));
 
               await updateTripWithAdapter(trip.id, {
@@ -2046,7 +2045,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
             if (updatedCosts.length !== trip.costs.length) {
               // Only update if we actually removed a cost
-              await updateTripInFirebase(trip.id, {
+              await updateTripWithAdapter(trip.id, {
                 ...trip,
                 costs: updatedCosts,
               });
@@ -2194,7 +2193,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
 
         // Update the record
-        await updateTripInFirebase(recordId, updatedRecord);
+        await updateTripWithAdapter(recordId, updatedRecord);
 
         // Log debrief for audit trail
         await addAuditLogToFirebase({
@@ -2249,7 +2248,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
             // Only update if we actually removed a cost
             if (updatedCosts.length !== oldTrip.costs.length) {
-              await updateTripInFirebase(oldTrip.id, {
+              await updateTripWithAdapter(oldTrip.id, {
                 ...oldTrip,
                 costs: updatedCosts,
               });
@@ -2337,7 +2336,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             ...record,
             tripId: undefined,
           };
-          await updateTripInFirebase(dieselId, updatedRecord);
+          await updateTripWithAdapter(dieselId, updatedRecord);
           console.log(`✅ Diesel record ${dieselId} unlinked (trip ${record.tripId} not found)`);
           return;
         }
@@ -2352,7 +2351,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Update the trip without the cost entry
         if (updatedCosts.length !== trip.costs.length) {
           // Only update if we actually removed a cost
-          await updateTripInFirebase(trip.id, {
+          await updateTripWithAdapter(trip.id, {
             ...trip,
             costs: updatedCosts,
           });
@@ -2365,7 +2364,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           updatedAt: new Date().toISOString(),
         };
 
-        await updateTripInFirebase(dieselId, updatedRecord);
+        await updateTripWithAdapter(dieselId, updatedRecord);
 
         // Log removal for audit trail
         await addAuditLogToFirebase({
