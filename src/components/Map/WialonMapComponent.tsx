@@ -102,9 +102,10 @@ const WialonMapComponent: React.FC = () => {
 
     const sess = window.wialon.core.Session.getInstance();
     const flags =
-      window.wialon.item.Item.dataFlag.base | 
+      window.wialon.item.Item.dataFlag.base |
       // @ts-expect-error: Wialon SDK typing issue
-      window.wialon.item.Resource.dataFlag.zones;    sess.loadLibrary("resourceZones");
+      window.wialon.item.Resource.dataFlag.zones;
+    sess.loadLibrary("resourceZones");
     sess.updateDataFlags(
       [{ type: "type", data: "avl_resource", flags: flags, mode: 0 }],
       function (code: number) {
@@ -375,7 +376,6 @@ const WialonMapComponent: React.FC = () => {
     msg(`🏁 Geofence "${geofence.getName()}" displayed on map`);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const loadUnitSensors = (unitId: string) => {
     if (!window.wialon || !unitId) return;
 
@@ -410,7 +410,6 @@ const WialonMapComponent: React.FC = () => {
     msg(`✅ ${sensorsWithValues.length} sensors loaded for ${unit.getName()}`);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case "checking":
@@ -424,7 +423,6 @@ const WialonMapComponent: React.FC = () => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getUnitStatusColor = (status: string) => {
     switch (status) {
       case "active":
