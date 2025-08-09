@@ -1,19 +1,19 @@
+import { Globe2, Info, Map, RefreshCw, Satellite, Truck } from "lucide-react";
 import React, { lazy, Suspense, useMemo, useState } from "react";
-import { Map, Truck, Globe2, Satellite, Info, RefreshCw } from "lucide-react";
 
 /**
  * Expected component locations (adjust if your paths differ):
- *  - "@/components/maps/FleetMapComponent"
- *  - "@/components/maps/WialonMapComponent"
- *  - "@/components/maps/MapsView"
+ *  - "@/components/Map/FleetMapComponent"
+ *  - "@/components/Map/WialonMapComponent"
+ *  - "@/components/Map/MapsView"
  *
  * FleetMapComponent must support:
  *   onVehicleSelect?: (vehicleId: string, properties: any) => void
  */
 
-const FleetMapComponent = lazy(() => import("@/components/maps/FleetMapComponent"));
-const WialonMapComponent = lazy(() => import("@/components/maps/WialonMapComponent"));
-const MapsView = lazy(() => import("@/components/maps/MapsView"));
+const FleetMapComponent = lazy(() => import("@/components/Map/FleetMapComponent"));
+const WialonMapComponent = lazy(() => import("@/components/Map/WialonMapComponent"));
+const MapsView = lazy(() => import("@/components/Map/MapsView"));
 
 type TabId = "fleet" | "wialonLive" | "wialonWeb";
 

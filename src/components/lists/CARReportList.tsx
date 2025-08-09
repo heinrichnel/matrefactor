@@ -12,8 +12,8 @@ import Button from "../ui/Button";
 import Card, { CardContent, CardHeader } from "../ui/Card";
 import { Input, Select } from "../ui/FormElements";
 
-// ─── Custom Components ───────────────────────────────────────────
-import CARReportDetails from "../AdminManagement/CARReportDetails";
+// ─── Custom Components ───────────────────────────────────────────────
+import CARReportDetails from "../Adminmangement/CARReportDetails";
 import CARReportForm from "../forms/qc/CARReportForm";
 
 // ─── Icons ───────────────────────────────────────────────────────
@@ -62,7 +62,8 @@ const CARReportList: React.FC = () => {
 
   // Sort reports: newest first
   const sortedReports = [...filteredReports].sort(
-    (a, b) => new Date(b.createdAt || b.dateDue).getTime() - new Date(a.createdAt || a.dateDue).getTime()
+    (a, b) =>
+      new Date(b.createdAt || b.dateDue).getTime() - new Date(a.createdAt || a.dateDue).getTime()
   );
 
   // Handle filter changes

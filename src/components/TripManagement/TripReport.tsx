@@ -1,6 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
-import { Trip, DelayReason } from "../../types";
+import { DelayReason, Trip } from "../../types";
 
 interface TripReportProps {
   trip: Trip;
@@ -190,8 +190,6 @@ const TripReport: React.FC<TripReportProps> = ({ trip, onAddDelay, onDrillDownDe
     </div>
   );
 };
-
-export default TripReport;
 
 // ---- Timeline Component ----
 
