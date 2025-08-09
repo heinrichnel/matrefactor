@@ -1,4 +1,4 @@
-import type { WialonPosition, WialonSensor, WialonUnit } from "../types/wialon-types";
+import type { WialonSensor, WialonUnit } from "../types/wialon-types";
 import { ErrorCategory, ErrorSeverity, logError } from "../utils/errorHandling";
 
 // Import the Wialon SDK type definitions
@@ -293,7 +293,7 @@ export function getUnitDetails(unitId: number) {
   if (!unit) return null;
 
   try {
-    const pos: WialonPosition | null = unit.getPosition?.() ?? null;
+    const pos: any = unit.getPosition?.() ?? null;
     const baseDetails = {
       id: unitId,
       name: unit.getName?.() || `Unit ${unitId}`,

@@ -78,22 +78,32 @@ function adaptTripForFirebase(trip: Trip | Partial<Trip>): Partial<TripFromTripT
   const tripAny = trip as any;
   const updatedCosts = tripAny.updatedCosts;
 
+  // Create a safe copy of the trip object without followUpHistory
+  const { followUpHistory, ...tripWithoutFollowUp } = trip as any;
+
+  // Process followUpHistory if it exists
+  const processedFollowUpHistory = followUpHistory
+    ? followUpHistory.map((record: any) =>
+        typeof record === "string" ? record : JSON.stringify(record)
+      )
+    : undefined;
+
   // Map our Trip type to firebase's Trip type
   return {
-    ...trip,
+    ...tripWithoutFollowUp,
     // Map required properties
-    title: trip.loadRef || trip.description || `Trip ${trip.id || 'new'}`,
+    title: trip.loadRef || trip.description || `Trip ${trip.id || "new"}`,
     loadDate: trip.startDate || new Date().toISOString(),
     pickupDate: trip.startDate || new Date().toISOString(),
     deliveryDate: trip.endDate || new Date().toISOString(),
     // Map status using statusMap
-    status: trip.status ? statusMap[trip.status] : undefined,
+    status: trip.status ? statusMap[trip.status as string] : undefined,
     // Map payment status
     paymentStatus: trip.paymentStatus ? paymentStatusMap[trip.paymentStatus] : undefined,
     // Ensure costs have description property
-    costs: updatedCosts 
-      ? updatedCosts.map(adaptCostEntry)
-      : trip.costs?.map(adaptCostEntry),
+    costs: updatedCosts ? updatedCosts.map(adaptCostEntry) : trip.costs?.map(adaptCostEntry),
+    // Add back processed followUpHistory if it exists
+    ...(processedFollowUpHistory ? { followUpHistory: processedFollowUpHistory } : {}),
   };
 }
 
@@ -1979,9 +1989,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 // Removed updatedAt property as it doesn't exist in CostEntry type
               };
 
-              await updateTripInFirebase(trip.id, {
+              // Use helper to map costs with description property before updating
+              const costsWithDescription = updatedCosts.map(cost => ({
+                ...cost,
+                description: cost.notes || cost.category || `${cost.category} - ${cost.amount}`
+              }));
+
+              await updateTripWithAdapter(trip.id, {
                 ...trip,
-                costs: updatedCosts,
+                costs: costsWithDescription as any,
               });
             }
           }
