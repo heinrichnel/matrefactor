@@ -24,6 +24,12 @@ const TripTemplateManager: React.FC = () => {
   const { isLoading } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Event handlers
+  const handleTemplateAction = (actionType: string, templateId: string) => {
+    // In a real implementation, these would perform the actual operations
+    console.log(`${actionType} template with ID: ${templateId}`);
+  };
+
   // Mock data - would be fetched from Firestore in real implementation
   const tripTemplates: TripTemplate[] = [
     {
@@ -96,7 +102,7 @@ const TripTemplateManager: React.FC = () => {
   ];
 
   const filteredTemplates = searchTerm
-    ? tripTemplates.filter(template => 
+    ? tripTemplates.filter(template =>
         template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         template.origin.toLowerCase().includes(searchTerm.toLowerCase()) ||
         template.destination.toLowerCase().includes(searchTerm.toLowerCase())
@@ -112,13 +118,13 @@ const TripTemplateManager: React.FC = () => {
         </div>
         <div className="flex space-x-2 items-center">
           <SyncIndicator />
-          <Button 
+          <Button
             variant="outline"
             icon={<Search className="w-4 h-4" />}
           >
             Import Templates
           </Button>
-          <Button 
+          <Button
             icon={<Plus className="w-4 h-4" />}
             disabled={isLoading?.trips}
           >
@@ -169,21 +175,21 @@ const TripTemplateManager: React.FC = () => {
                   <tr key={template.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm font-medium text-blue-600">{template.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {template.origin} → {template.destination}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{template.vehicleType}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{template.loadType}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{template.estimatedDistance} km</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{template.useCount}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-800" onClick={onClick}>
+                        <button className="text-blue-600 hover:text-blue-800" onClick={() => handleTemplateAction('copy', template.id)}>
                           <Copy className="h-4 w-4" />
                         </button>
-                        <button className="text-gray-600 hover:text-gray-800" onClick={onClick}>
+                        <button className="text-gray-600 hover:text-gray-800" onClick={() => handleTemplateAction('edit', template.id)}>
                           <Edit className="h-4 w-4" />
                         </button>
-                        <button className="text-red-600 hover:text-red-800" onClick={onClick}>
+                        <button className="text-red-600 hover:text-red-800" onClick={() => handleTemplateAction('delete', template.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                        </button>
+                        <button className="text-red-600 hover:text-red-800" onClick={() => handleTemplateAction('delete', template.id)}>
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>

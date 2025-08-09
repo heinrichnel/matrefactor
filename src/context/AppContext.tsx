@@ -19,6 +19,7 @@ import {
 } from "../types";
 import { AuditLog as AuditLogType } from "../types/audit";
 import { Client } from "../types/client";
+import { Trip as TripFromTripTs, TripStatus } from "../types/trip";
 import { VehicleInspection } from "../types/vehicle";
 import { JobCard as JobCardType } from "../types/workshop-job-card";
 import { loadGoogleMapsScript } from "../utils/googleMapsLoader";
@@ -42,6 +43,68 @@ import {
 import { generateTripId } from "../utils/helpers";
 import syncService from "../utils/syncService";
 import { sendDriverBehaviorEvent, sendTripEvent } from "../utils/webhookSenders";
+
+// Helper function to adapt our Trip type to the one expected by firebase.ts
+function adaptTripForFirebase(trip: Trip | Partial<Trip>): Partial<TripFromTripTs> {
+  // Map status values between the two types
+  const statusMap: Record<string, TripStatus> = {
+    active: "active",
+    completed: "completed",
+    invoiced: "active", // Map 'invoiced' to 'active' since it doesn't exist in TripStatus
+    paid: "active", // Map 'paid' to 'active' since it doesn't exist in TripStatus
+    shipped: "shipped",
+    delivered: "delivered",
+  };
+
+  // Handle payment status mapping
+  const paymentStatusMap: Record<string, "paid" | "unpaid" | undefined> = {
+    paid: "paid",
+    unpaid: "unpaid",
+    partial: "unpaid", // Map 'partial' to 'unpaid' since it doesn't exist in TripFromTripTs
+  };
+
+  // Helper to adapt cost entry
+  const adaptCostEntry = (cost: any): any => {
+    return {
+      ...cost,
+      // Ensure description property exists
+      description: cost.notes || cost.category || `${cost.category} - ${cost.amount}`,
+      // Ensure category is a valid string for TripFromTripTs.CostEntry
+      category: cost.category as any,
+    };
+  };
+
+  // Get any updatedCosts that might be in the object
+  const tripAny = trip as any;
+  const updatedCosts = tripAny.updatedCosts;
+
+  // Map our Trip type to firebase's Trip type
+  return {
+    ...trip,
+    // Map required properties
+    title: trip.loadRef || trip.description || `Trip ${trip.id || 'new'}`,
+    loadDate: trip.startDate || new Date().toISOString(),
+    pickupDate: trip.startDate || new Date().toISOString(),
+    deliveryDate: trip.endDate || new Date().toISOString(),
+    // Map status using statusMap
+    status: trip.status ? statusMap[trip.status] : undefined,
+    // Map payment status
+    paymentStatus: trip.paymentStatus ? paymentStatusMap[trip.paymentStatus] : undefined,
+    // Ensure costs have description property
+    costs: updatedCosts 
+      ? updatedCosts.map(adaptCostEntry)
+      : trip.costs?.map(adaptCostEntry),
+  };
+}
+
+// Wrapper function for updateTripInFirebase to handle type conversion
+async function updateTripWithAdapter(
+  tripId: string,
+  tripData: Trip | Partial<Trip>
+): Promise<string> {
+  const adaptedTrip = adaptTripForFirebase(tripData);
+  return updateTripInFirebase(tripId, adaptedTrip as any);
+}
 
 interface AppContextType {
   // Connection status
@@ -757,7 +820,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         costs: [],
         status: "active" as const,
       };
-      return await addTripToFirebase(newTrip as Trip);
+
+      // Adapt our Trip type to the one expected by firebase.ts
+      const adaptedTrip = adaptTripForFirebase(newTrip);
+
+      // Return the trip ID
+      return await addTripToFirebase(adaptedTrip as any);
     } catch (error) {
       console.error("Error adding trip:", error);
       throw error;
@@ -772,7 +840,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Get the original trip for audit logging
       const originalTrip = trips.find((t) => t.id === trip.id);
 
-      await updateTripInFirebase(trip.id, trip);
+      await updateTripWithAdapter(trip.id, trip);
 
       // Log trip update for audit trail
       if (originalTrip) {
@@ -897,7 +965,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         completedAt: new Date().toISOString(),
         completedBy: "Current User", // In a real app, use the logged-in user
       };
-      await updateTripInFirebase(updatedTrip.id, updatedTrip);
+      await updateTripWithAdapter(updatedTrip.id, updatedTrip);
     }
   };
 
@@ -946,7 +1014,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           costs: [...trip.costs, costEntry],
         };
 
-        await updateTripInFirebase(trip.id, updatedTrip);
+        // Adapt the trip to the format expected by firebase.ts
+        const adaptedTrip = adaptTripForFirebase(updatedTrip);
+        await updateTripInFirebase(trip.id, adaptedTrip as any);
       }
     }
 
@@ -1813,7 +1883,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           lastUpdated: new Date().toISOString(),
         };
 
-        await updateTripInFirebase(tripId, updatedTrip);
+        await updateTripWithAdapter(tripId, updatedTrip);
 
         // Update local state
         setTrips((prev) => prev.map((t) => (t.id === tripId ? updatedTrip : t)));
@@ -2202,8 +2272,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
 
         // Save both updates
-        await updateTripInFirebase(tripId, updatedTrip);
-        await updateTripInFirebase(dieselId, updatedRecord);
+        await updateTripWithAdapter(tripId, updatedTrip);
+        await updateTripWithAdapter(dieselId, updatedRecord);
 
         // Log allocation for audit trail
         await addAuditLogToFirebase({
@@ -2379,7 +2449,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           statusNotes: notes || trip.statusNotes,
         };
 
-        await updateTripInFirebase(tripId, updatedTrip);
+        await updateTripWithAdapter(tripId, updatedTrip);
         console.log(`✅ Trip ${tripId} status updated to ${status}`);
       } catch (error) {
         console.error(`❌ Error updating trip status to ${status}:`, error);

@@ -1,14 +1,18 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import TripManagement from "./TripManagement";
-import ActiveTrips from "./ActiveTrips";
-import CompletedTrips from "./CompletedTrips";
-import TripForm from "@components/forms/trip/TripForm";
-import WialonMapComponent from "../../components/maps/WialonMapComponent";
+import TripManagement from "../../pages/TripManagement/TripManagement";
+import ActiveTrips from "../../pages/TripManagement/ActiveTrips";
+import CompletedTrips from "../pages/TripManagement/CompletedTrips";
+import TripForm from "../components/forms/trip/TripForm";
+import { WialonMapComponent } from " ../components/maps/WialonMapComponent";
 import { SupportedCurrency } from "../../lib/currency";
 
 const TripRouter: React.FC = () => {
   const defaultCurrency: SupportedCurrency = "USD";
+
+  const onClick = () => {
+    console.log("Button clicked");
+  };
 
   return (
     <Routes>
