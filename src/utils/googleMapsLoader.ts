@@ -66,6 +66,14 @@ const setupAuthFailureHandler = (): void => {
  * Check if the Maps service proxy is available
  */
 export const checkMapsServiceAvailability = async (): Promise<boolean> => {
+  // Always use direct API in development environment
+  if (import.meta.env.DEV) {
+    console.log("[Maps Loader] Development environment detected, using direct Google Maps API");
+    useDirectApi = true;
+    serviceCheckAttempted = true;
+    return false;
+  }
+
   if (!MAPS_SERVICE_URL) return false;
 
   try {

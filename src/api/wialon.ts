@@ -13,8 +13,11 @@ declare global {
 }
 
 // Configuration
-const TOKEN = "c1099bc37c906fd0832d8e783b60ae0dD9D1A721B294486AC08F8AA3ACAC2D2FD45FF053";
-const WIALON_API_URL = "https://hst-api.wialon.com";
+const TOKEN =
+  import.meta.env.VITE_WIALON_TOKEN ||
+  "c1099bc37c906fd0832d8e783b60ae0dD9D1A721B294486AC08F8AA3ACAC2D2FD45FF053";
+// Fix for spaces in the URL from environment variables
+const WIALON_API_URL = import.meta.env.VITE_WIALON_API_URL?.trim() || "https://hst-api.wialon.com";
 const WIALON_SDK_URL = "https://hst-api.wialon.com/wsdk/script/wialon.js";
 
 // State management
@@ -84,6 +87,13 @@ function log(message: string, isError: boolean = false): void {
  * @returns A promise that resolves to `true` if initialization is successful, `false` otherwise.
  */
 export async function initializeWialon(): Promise<boolean> {
+  // In development mode with no Wialon integration, return success to avoid excessive errors
+  if (import.meta.env.DEV && import.meta.env.VITE_DISABLE_WIALON_INTEGRATION === "true") {
+    console.log("Wialon integration disabled in development mode");
+    wialonInitialized = true;
+    return true;
+  }
+
   if (wialonInitialized) {
     console.log("Wialon already initialized.");
     return true;

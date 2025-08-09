@@ -20,7 +20,11 @@ interface ImportMetaEnv {
   readonly VITE_MAPS_SERVICE_URL?: string;
   readonly VITE_WIALON_SESSION_TOKEN?: string;
   readonly VITE_WIALON_HOST_AUTOLOGIN_URL?: string;
-  
+  readonly VITE_WIALON_TOKEN?: string;
+  readonly VITE_WIALON_API_URL?: string;
+  readonly VITE_WIALON_LOGIN_URL?: string;
+  readonly VITE_DISABLE_WIALON_INTEGRATION?: string;
+
   // Vercel specific variables - these are automatically set by Vercel
   readonly VERCEL?: string;
   readonly VERCEL_ENV?: string;

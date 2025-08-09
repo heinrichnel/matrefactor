@@ -35,6 +35,13 @@ export const checkMapsServiceHealth = async (
   serviceUrl: string,
   force = false
 ): Promise<boolean> => {
+  // Skip health check in development environments - always assume it's unavailable
+  // This avoids unnecessary network requests and errors in dev
+  if (import.meta.env.DEV) {
+    console.log("[Maps Service] Development environment detected, skipping health check");
+    return false;
+  }
+
   // If we recently checked and it's not forced, return cached result
   const now = Date.now();
   if (!force && now - lastHealthCheck < HEALTH_CHECK_COOLDOWN) {

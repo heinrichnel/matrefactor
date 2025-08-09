@@ -23,6 +23,7 @@ const WialonDashboard = lazy(() => import("./pages/wialon/WialonDashboard"));
 const WialonConfigPage = lazy(() => import("./pages/wialon/WialonConfigPage"));
 const WialonUnitsPage = lazy(() => import("./pages/wialon/WialonUnitsPage"));
 const WialonSuitePage = lazy(() => import("./pages/wialon/WialonSuitePage"));
+const WialonTracking = lazy(() => import("./pages/WialonTrackingPage"));
 
 // Fleet map components
 const FleetManagementPage = lazy(() => import("./pages/trips/FleetManagementPage"));

@@ -1,12 +1,12 @@
 /**
  * Environment Variable Utilities
- * 
+ *
  * Provides safe access to environment variables in different contexts (browser, server, etc.)
  */
 
 /**
  * Get an environment variable safely across different contexts
- * 
+ *
  * @param key - Environment variable name (e.g., 'VITE_API_URL')
  * @param fallback - Default value if the variable is not found
  * @returns The environment variable value or fallback
@@ -16,18 +16,16 @@ export const getEnvVar = (key: string, fallback: string = ''): string => {
   if (typeof window !== 'undefined' && 'ENV_VARS' in window) {
     return (window as any).ENV_VARS[key] || fallback;
   }
-  
+
   // For Vite's import.meta.env context (modern ES modules)
   try {
-    // @ts-expect-error - import.meta might not be available in all contexts
     if (import.meta?.env) {
-      // @ts-expect-error import.meta.env may not be typed in all contexts
       return import.meta.env[key] || fallback;
     }
   } catch {
     // Silently fail if import.meta is not available
   }
-  
+
   // For Node.js process.env context
   try {
     if (typeof process !== 'undefined' && process.env) {
@@ -36,7 +34,7 @@ export const getEnvVar = (key: string, fallback: string = ''): string => {
   } catch {
     // Silently fail if process is not available
   }
-  
+
   // Return fallback if no environment system is available
   return fallback;
 };
@@ -44,7 +42,7 @@ export const getEnvVar = (key: string, fallback: string = ''): string => {
 /**
  * Initialize environment variables in the browser
  * Creates a global ENV_VARS object that can be used by getEnvVar
- * 
+ *
  * @param vars - Object containing environment variables
  */
 export const initBrowserEnv = (vars: Record<string, string>) => {

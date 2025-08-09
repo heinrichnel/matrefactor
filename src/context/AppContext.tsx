@@ -350,15 +350,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setGoogleMapsError(null);
 
     try {
-      await loadGoogleMapsScript();
-      setIsGoogleMapsLoaded(true);
-      console.log("✅ Google Maps API loaded via singleton utility.");
+      // In development mode, continue even if Maps fails to load
+      try {
+        await loadGoogleMapsScript();
+        setIsGoogleMapsLoaded(true);
+        console.log("✅ Google Maps API loaded via singleton utility.");
+      } catch (error) {
+        // In development, treat as non-fatal
+        if (import.meta.env.DEV) {
+          console.warn(
+            "Maps service unavailable in development mode - some features will be limited"
+          );
+          setIsGoogleMapsLoaded(true); // Still mark as loaded to prevent further attempts
+        } else {
+          // In production, propagate the error
+          throw error;
+        }
+      }
     } catch (error) {
       const errorMsg =
         "Failed to load Google Maps API script. Please check your network connection and API key.";
       setGoogleMapsError(errorMsg);
       console.error(errorMsg, error);
-      throw error;
+
+      // Don't throw in development - just log the error
+      if (!import.meta.env.DEV) {
+        throw error;
+      }
     } finally {
       setIsLoading((prev) => ({ ...prev, loadGoogleMaps: false }));
     }
