@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import WialonConfig from "../../components/Map/wialon/WialonConfig";
+import WialonConfig from "../../components/wialon/WialonConfig";
 
 interface Company {
   id: string;

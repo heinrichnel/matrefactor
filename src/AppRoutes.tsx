@@ -11,14 +11,59 @@ const withSuspense = (Comp: React.LazyExoticComponent<any>, props = {}) => (
 );
 
 /* -----------------------------
+ * Maps / Wialon
+ * ----------------------------- */
+// Main Map pages
+const Maps = lazy(() => import("./pages/maps/Maps"));
+const MapsSuitePage = lazy(() => import("./pages/maps/MapsSuitePage"));
+const MapsDashboardPage = lazy(() => import("./pages/maps/MapsDashboardPage"));
+
+// Wialon integration
+const WialonDashboard = lazy(() => import("./pages/wialon/WialonDashboard"));
+const WialonConfigPage = lazy(() => import("./pages/wialon/WialonConfigPage"));
+const WialonUnitsPage = lazy(() => import("./pages/wialon/WialonUnitsPage"));
+const WialonSuitePage = lazy(() => import("./pages/wialon/WialonSuitePage"));
+
+// Fleet map components
+const FleetManagementPage = lazy(() => import("./pages/trips/FleetManagementPage"));
+const FleetLocationMapPage = lazy(() => import("./pages/FleetLocationMapPage"));
+
+// Consolidated Wialon map components
+const WialonMapComponent = lazy(() => import("./pages/wialon/WialonMapComponent"));
+const WialonMapDashboard = lazy(() => import("./pages/wialon/WialonMapDashboard"));
+const WialonMapPage = lazy(() => import("./pages/wialon/WialonMapPage"));
+
+/* -----------------------------
  * Top-level / dashboard pages
  * ----------------------------- */
-const DashboardPage = lazy(() => import("./pages/Dashboard"));
-const YearToDateKPIs = lazy(() => import("./pages/analytics/YearToDateKPIs"));
-const FormsIntegrationPage = lazy(() => import("./pages/FormsIntegrationPage"));
-const ConsolidatedDashboard = lazy(() => import("./pages/dashboard/ConsolidatedDashboard"));
-const DashboardWrapper = lazy(() => import("./pages/dashboard/DashboardWrapper"));
-const ComplianceDashboard = lazy(() => import("./pages/qc/ComplianceDashboard"));
+// Enhanced dynamic import with error handling
+const DashboardPage = lazy(() =>
+  import("./pages/Dashboard.tsx").catch((error) => {
+    console.error("Error loading Dashboard component:", error);
+    // Return a fallback module that renders an error message
+    return {
+      default: () => {
+        console.log("Rendering fallback Dashboard due to import error");
+        return (
+          <div className="p-6 bg-red-100 border border-red-300 rounded-md">
+            <h2 className="text-xl font-bold text-red-700">Dashboard Import Error</h2>
+            <p className="text-red-600 mt-2">Failed to load the Dashboard component.</p>
+            <p className="text-red-600">Error: {error.message}</p>
+            <pre className="mt-4 p-2 bg-red-50 text-red-800 overflow-auto text-sm">
+              {error.stack}
+            </pre>
+          </div>
+        );
+      },
+    };
+  })
+);
+// Fix additional dashboard components with .tsx extension
+const YearToDateKPIs = lazy(() => import("./pages/analytics/YearToDateKPIs.tsx"));
+const FormsIntegrationPage = lazy(() => import("./pages/FormsIntegrationPage.tsx"));
+const ConsolidatedDashboard = lazy(() => import("./pages/dashboard/ConsolidatedDashboard.tsx"));
+const DashboardWrapper = lazy(() => import("./pages/dashboard/DashboardWrapper.tsx"));
+const ComplianceDashboard = lazy(() => import("./pages/qc/ComplianceDashboard.tsx"));
 
 /* -----------------------------
  * Trips
@@ -47,7 +92,28 @@ const IndirectCostBreakdown = lazy(() => import("./pages/trips/IndirectCostBreak
 /* -----------------------------
  * Diesel
  * ----------------------------- */
-const DieselDashboard = lazy(() => import("./pages/diesel/DieselDashboard"));
+// Enhanced dynamic import with error handling
+const DieselDashboard = lazy(() =>
+  import("./pages/diesel/DieselDashboard.tsx").catch((error) => {
+    console.error("Error loading DieselDashboard component:", error);
+    // Return a fallback module that renders an error message
+    return {
+      default: () => {
+        console.log("Rendering fallback DieselDashboard due to import error");
+        return (
+          <div className="p-6 bg-red-100 border border-red-300 rounded-md">
+            <h2 className="text-xl font-bold text-red-700">DieselDashboard Import Error</h2>
+            <p className="text-red-600 mt-2">Failed to load the DieselDashboard component.</p>
+            <p className="text-red-600">Error: {error.message}</p>
+            <pre className="mt-4 p-2 bg-red-50 text-red-800 overflow-auto text-sm">
+              {error.stack}
+            </pre>
+          </div>
+        );
+      },
+    };
+  })
+);
 const DieselAnalysis = lazy(() => import("./pages/diesel/DieselAnalysis"));
 const DieselIntegratedPage = lazy(() => import("./pages/diesel/DieselIntegratedPage"));
 const FuelLogs = lazy(() => import("./pages/diesel/FuelLogs"));
@@ -71,7 +137,8 @@ const DriverManagementPageIntegrated = lazy(
   () => import("./pages/drivers/DriverManagementPageIntegrated")
 );
 const DriverManagementPage = lazy(() => import("./pages/drivers/DriverManagementPage"));
-const DriverDashboard = lazy(() => import("./pages/drivers/DriverDashboard"));
+// Using DriverManagementPage as fallback since DriverDashboard is missing
+const DriverDashboard = lazy(() => import("./pages/drivers/DriverManagementPage"));
 const DriverDetailsPage = lazy(() => import("./pages/drivers/DriverDetailsPage"));
 const DriverBehaviorPage = lazy(() => import("./pages/drivers/DriverBehaviorPage"));
 const SafetyScores = lazy(() => import("./pages/drivers/SafetyScores"));
@@ -173,17 +240,7 @@ const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboa
 const AnalyticsDashboardPage = lazy(() => import("./pages/analytics/DashboardPage"));
 const FleetAnalyticsPage = lazy(() => import("./pages/analytics/FleetAnalyticsPage"));
 
-/* -----------------------------
- * Maps / Wialon
- * ----------------------------- */
-const WialonDashboard = lazy(() => import("./pages/wialon/WialonDashboard"));
-const WialonConfigPage = lazy(() => import("./pages/wialon/WialonConfigPage"));
-const WialonUnitsPage = lazy(() => import("./pages/wialon/WialonUnitsPage"));
-const FleetManagementPage = lazy(() => import("./pages/trips/FleetManagementPage"));
-const FleetLocationMapPage = lazy(() => import("./components/Map/pages/FleetLocationMapPage"));
-const WialonMapComponent = lazy(() => import("./pages/wialon/WialonMapComponent"));
-const WialonMapDashboard = lazy(() => import("./pages/wialon/WialonMapDashboard"));
-const WialonMapPage = lazy(() => import("./pages/wialon/WialonMapPage"));
+// Maps section moved to the top of the file
 
 /* -----------------------------
  * 404
@@ -404,15 +461,23 @@ export const AppRoutes: React.FC = () => {
 
         {/* Maps / Wialon */}
         <Route path="maps">
-          <Route index element={withSuspense(WialonDashboard)} />
+          {/* Main Maps Pages */}
+          <Route index element={withSuspense(Maps)} />
+          <Route path="dashboard" element={withSuspense(MapsDashboardPage)} />
+          <Route path="suite" element={withSuspense(MapsSuitePage)} />
+
+          {/* Wialon Integration */}
           <Route path="wialon" element={withSuspense(WialonDashboard)} />
           <Route path="wialon/config" element={withSuspense(WialonConfigPage)} />
           <Route path="wialon/units" element={withSuspense(WialonUnitsPage)} />
-          <Route path="fleet" element={withSuspense(FleetManagementPage)} />
-          <Route path="fleet-map" element={withSuspense(FleetLocationMapPage)} />
+          <Route path="wialon/suite" element={withSuspense(WialonSuitePage)} />
           <Route path="wialon/component" element={withSuspense(WialonMapComponent)} />
           <Route path="wialon/map-dashboard" element={withSuspense(WialonMapDashboard)} />
           <Route path="wialon/map-page" element={withSuspense(WialonMapPage)} />
+
+          {/* Fleet Maps */}
+          <Route path="fleet" element={withSuspense(FleetManagementPage)} />
+          <Route path="fleet-map" element={withSuspense(FleetLocationMapPage)} />
         </Route>
 
         {/* Flags / Investigations */}

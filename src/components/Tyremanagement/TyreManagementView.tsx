@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
 
 // Import type utilities from the tyreConstants file
 import MoveTyreModal from "@/components/Models/Tyre/MoveTyreModal";
-import TyreForm from "@/components/Models/Tyre/TyreForm";
+import TyreForm from "@/components/forms/tyre/TyreForm";
 import { useTyreStores } from "@/context/TyreStoresContext";
 import type { StockEntry } from "@/types/tyre";
 import { getUniqueTyreBrands } from "../../utils/tyreConstants";

@@ -10,6 +10,7 @@ build/
 # ───────── Environment Files (Secrets) ─────
 .env*
 !.env.example
+!.env.local.example
 
 # ───────── Firebase & GCP Local Artifacts ──
 .firebase/

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import WialonUnitsList from '../../components/Map/wialon/WialonUnitsList';
+import React, { useState } from "react";
+import WialonUnitsList from "../../components/wialon/WialonUnitsList";
 
 /**
  * WialonUnitsPage Component
@@ -21,7 +21,7 @@ const WialonUnitsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className={`lg:col-span-${selectedUnit ? '2' : '3'}`}>
+        <div className={`lg:col-span-${selectedUnit ? "2" : "3"}`}>
           <div className="bg-white p-4 rounded shadow">
             <h3 className="font-medium text-gray-900 mb-4">Available Units</h3>
             <WialonUnitsList onSelectUnit={handleSelectUnit} />
@@ -52,8 +52,10 @@ const WialonUnitsPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4 border-t border-gray-200 pt-4">
                   <div>
                     <p className="text-sm font-medium text-gray-500">Status</p>
-                    <p className={`text-sm font-medium ${selectedUnit.connection_state === 1 ? 'text-green-600' : 'text-red-600'}`}>
-                      {selectedUnit.connection_state === 1 ? 'Online' : 'Offline'}
+                    <p
+                      className={`text-sm font-medium ${selectedUnit.connection_state === 1 ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {selectedUnit.connection_state === 1 ? "Online" : "Offline"}
                     </p>
                   </div>
                   <div>
@@ -67,14 +69,16 @@ const WialonUnitsPage: React.FC = () => {
                     <p className="text-sm font-medium text-gray-500 mb-1">Last Position</p>
                     <div className="text-sm">
                       <p>
-                        <span className="font-medium">Latitude:</span> {selectedUnit.position.y.toFixed(6)}
+                        <span className="font-medium">Latitude:</span>{" "}
+                        {selectedUnit.position.y.toFixed(6)}
                       </p>
                       <p>
-                        <span className="font-medium">Longitude:</span> {selectedUnit.position.x.toFixed(6)}
+                        <span className="font-medium">Longitude:</span>{" "}
+                        {selectedUnit.position.x.toFixed(6)}
                       </p>
                       {selectedUnit.position.t && (
                         <p>
-                          <span className="font-medium">Time:</span>{' '}
+                          <span className="font-medium">Time:</span>{" "}
                           {new Date(selectedUnit.position.t * 1000).toLocaleString()}
                         </p>
                       )}
@@ -98,9 +102,7 @@ const WialonUnitsPage: React.FC = () => {
                     >
                       Track Unit
                     </a>
-                    <button
-                      className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200"
-                    >
+                    <button className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
                       View History
                     </button>
                   </div>
@@ -114,7 +116,7 @@ const WialonUnitsPage: React.FC = () => {
                         <li key={sensor.id} className="py-1">
                           <div className="flex justify-between">
                             <span className="font-medium">{sensor.name}</span>
-                            <span>{sensor.value !== undefined ? sensor.value : 'N/A'}</span>
+                            <span>{sensor.value !== undefined ? sensor.value : "N/A"}</span>
                           </div>
                         </li>
                       ))}
@@ -130,7 +132,8 @@ const WialonUnitsPage: React.FC = () => {
       <div className="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 text-sm">
         <h3 className="font-medium text-blue-700">Wialon Units Integration</h3>
         <p className="mt-1 text-blue-600">
-          This page displays all units/vehicles from your Wialon account. You can filter and select units to view detailed information.
+          This page displays all units/vehicles from your Wialon account. You can filter and select
+          units to view detailed information.
         </p>
       </div>
     </div>

@@ -1,6 +1,6 @@
-import React from 'react';
-import TyreReferenceManager from '../../components/tyres/TyreReferenceManager';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import React from "react";
+import TyreReferenceManager from "../../components/Tyremanagement/TyreReferenceManager";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
 
 /**
  * Page component for managing tyre reference data
@@ -11,11 +11,11 @@ const TyreReferenceManagerPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Tyre Reference Data Management</h1>
-      
+
       <div className="mb-6">
         <p className="text-gray-600">
-          Use this page to manage reference data for the tyre management system, including 
-          tyre brands, sizes, patterns, and vehicle positions.
+          Use this page to manage reference data for the tyre management system, including tyre
+          brands, sizes, patterns, and vehicle positions.
         </p>
       </div>
 

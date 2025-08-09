@@ -40,7 +40,6 @@ const App: React.FC = () => {
     const initializeServices = async () => {
       try {
         // Check if we're in a development environment with debugging enabled
-        const isDev = import.meta.env.DEV;
         const debugMode = import.meta.env.VITE_DEBUG_DEPLOYMENT;
 
         if (debugMode) {
@@ -129,43 +128,56 @@ const App: React.FC = () => {
     return <DeploymentFallback />;
   }
 
-  return (
+  // Group context providers for better organization and performance
+  const CoreProviders = ({ children }: { children: React.ReactNode }) => (
     <ErrorBoundary>
       <AppProvider>
-        <SyncProvider>
-          <WialonProvider>
-            <TyreStoresProvider>
-              <TripProvider>
-                <DriverBehaviorProvider>
-                  <WorkshopProvider>
-                    <FleetAnalyticsProvider>
-                      <FlagsProvider>
-                        <TyreReferenceDataProvider>
-                          {/* Application alerts and notifications */}
-                          <div className="fixed top-0 left-0 right-0 z-50 p-4">
-                            <FirestoreConnectionError />
-                            {connectionError && (
-                              <FirestoreConnectionError error={connectionError} />
-                            )}
-                          </div>
-
-                          <OfflineBanner />
-
-                          {/* Main application routes and layout */}
-                          <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex flex-col">
-                            <AppRoutes />
-                          </div>
-                        </TyreReferenceDataProvider>
-                      </FlagsProvider>
-                    </FleetAnalyticsProvider>
-                  </WorkshopProvider>
-                </DriverBehaviorProvider>
-              </TripProvider>
-            </TyreStoresProvider>
-          </WialonProvider>
-        </SyncProvider>
+        <SyncProvider>{children}</SyncProvider>
       </AppProvider>
     </ErrorBoundary>
+  );
+
+  // Group feature-specific providers
+  const FeatureProviders = ({ children }: { children: React.ReactNode }) => (
+    <WialonProvider>
+      <TripProvider>
+        <FleetAnalyticsProvider>
+          <FlagsProvider>{children}</FlagsProvider>
+        </FleetAnalyticsProvider>
+      </TripProvider>
+    </WialonProvider>
+  );
+
+  // Group data providers that might cause re-renders
+  const DataProviders = ({ children }: { children: React.ReactNode }) => (
+    <TyreStoresProvider>
+      <DriverBehaviorProvider>
+        <WorkshopProvider>
+          <TyreReferenceDataProvider>{children}</TyreReferenceDataProvider>
+        </WorkshopProvider>
+      </DriverBehaviorProvider>
+    </TyreStoresProvider>
+  );
+
+  return (
+    <CoreProviders>
+      <FeatureProviders>
+        <DataProviders>
+          {/* Application alerts and notifications */}
+          <div className="fixed top-0 left-0 right-0 z-50 p-4">
+            <FirestoreConnectionError />
+            {connectionError && <FirestoreConnectionError error={connectionError} />}
+          </div>
+
+          <OfflineBanner />
+
+          {/* Main application routes and layout */}
+          <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex flex-col">
+            <AppRoutes />
+          </div>
+        </DataProviders>
+      </FeatureProviders>
+    </CoreProviders>
   );
 };
 

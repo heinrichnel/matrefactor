@@ -281,3 +281,5 @@ const DelayAuditModal: React.FC<{ delay: DelayReason; onClose: () => void }> = (
     </div>
   );
 };
+
+export default TripReport;

@@ -28,7 +28,6 @@ const FleetMapComponent: React.FC<FleetMapProps> = ({
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
-  const [activeVehicleId, setActiveVehicleId] = useState<string | null>(null);
   const geoJsonLayer = useRef<google.maps.Data | null>(null);
 
   // Load fleet data onto the map
@@ -100,39 +99,48 @@ const FleetMapComponent: React.FC<FleetMapProps> = ({
 
       // Show info window with vehicle details
       if (infoWindow) {
+        // Create responsive info window content
+        const isMobile = window.innerWidth < 640;
+        const fontSize = isMobile ? "14px" : "16px";
+        const padding = isMobile ? "6px" : "8px";
+        const detailFontSize = isMobile ? "12px" : "14px";
+        const maxWidth = isMobile ? "200px" : "300px";
+
         const content = `
-          <div style="padding: 8px; max-width: 300px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px;">${properties.name}</h3>
-            ${
-              properties.brand && properties.model
-                ? `<p style="margin: 4px 0;"><strong>Vehicle:</strong> ${properties.brand} ${properties.model} ${properties.year || ""}</p>`
-                : ""
-            }
-            ${
-              properties.vehicleType
-                ? `<p style="margin: 4px 0;"><strong>Type:</strong> ${properties.vehicleType}</p>`
-                : ""
-            }
-            ${
-              properties.engineModel
-                ? `<p style="margin: 4px 0;"><strong>Engine:</strong> ${properties.engineModel}</p>`
-                : ""
-            }
-            ${
-              properties.fuelType
-                ? `<p style="margin: 4px 0;"><strong>Fuel:</strong> ${properties.fuelType}</p>`
-                : ""
-            }
-            ${
-              properties.cargoType
-                ? `<p style="margin: 4px 0;"><strong>Cargo:</strong> ${properties.cargoType}</p>`
-                : ""
-            }
-            ${
-              properties.phone
-                ? `<p style="margin: 4px 0;"><strong>Contact:</strong> ${properties.phone}</p>`
-                : ""
-            }
+          <div style="padding: ${padding}; max-width: ${maxWidth};">
+            <h3 style="margin: 0 0 ${padding} 0; font-size: ${fontSize};">${properties.name}</h3>
+            <div style="font-size: ${detailFontSize};">
+              ${
+                properties.brand && properties.model
+                  ? `<p style="margin: 2px 0;"><strong>Vehicle:</strong> ${properties.brand} ${properties.model} ${properties.year || ""}</p>`
+                  : ""
+              }
+              ${
+                properties.vehicleType
+                  ? `<p style="margin: 2px 0;"><strong>Type:</strong> ${properties.vehicleType}</p>`
+                  : ""
+              }
+              ${
+                !isMobile && properties.engineModel
+                  ? `<p style="margin: 2px 0;"><strong>Engine:</strong> ${properties.engineModel}</p>`
+                  : ""
+              }
+              ${
+                properties.fuelType
+                  ? `<p style="margin: 2px 0;"><strong>Fuel:</strong> ${properties.fuelType}</p>`
+                  : ""
+              }
+              ${
+                !isMobile && properties.cargoType
+                  ? `<p style="margin: 2px 0;"><strong>Cargo:</strong> ${properties.cargoType}</p>`
+                  : ""
+              }
+              ${
+                properties.phone
+                  ? `<p style="margin: 2px 0;"><strong>Contact:</strong> ${properties.phone}</p>`
+                  : ""
+              }
+            </div>
           </div>
         `;
 
@@ -140,9 +148,6 @@ const FleetMapComponent: React.FC<FleetMapProps> = ({
         infoWindow.setPosition(event.latLng);
         infoWindow.open(mapInstance);
       }
-
-      // Update active vehicle
-      setActiveVehicleId(vehicleId);
 
       // Call callback if provided
       if (onVehicleSelect) {

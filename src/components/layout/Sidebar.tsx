@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { ChevronDown, ChevronRight, Menu, X } from "lucide-react"; // Using Lucide icons
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, ChevronDown, ChevronRight, X } from "lucide-react"; // Using Lucide icons
 
 interface SidebarProps {
   currentView: string; // This prop is not directly used in this standalone component but kept for consistency
@@ -23,16 +23,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
   // This ensures the drawer closes after a link is clicked
   useEffect(() => {
     // Only close if the screen is small (mobile view)
-    if (window.innerWidth < 1024) { // Assuming 'lg' breakpoint is 1024px
+    if (window.innerWidth < 1024) {
+      // Assuming 'lg' breakpoint is 1024px
       setIsOpen(false);
     }
   }, [location.pathname]); // Re-run when the path changes
 
   const toggleGroup = (groupTitle: string) => {
     setCollapsedGroups((prev) =>
-      prev.includes(groupTitle)
-        ? prev.filter((g) => g !== groupTitle)
-        : [...prev, groupTitle]
+      prev.includes(groupTitle) ? prev.filter((g) => g !== groupTitle) : [...prev, groupTitle]
     );
   };
 
@@ -46,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Consolidated Dashboard", path: "/dashboard/consolidated" }, // Added
         { label: "Dashboard Wrapper", path: "/dashboard/wrapper" }, // Added
         { label: "Forms Integration", path: "/forms-integration" }, // Added
-      ]
+      ],
     },
     {
       title: "Trips",
@@ -80,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Flag Resolution Modal", path: "/trips/flag-resolution-modal" }, // Added
         { label: "Indirect Cost Breakdown", path: "/costs/indirect" }, // Moved to top-level
         { label: "Fleet Management", path: "/maps/fleet" }, // Moved to Maps section
-      ]
+      ],
     },
     {
       title: "Diesel",
@@ -103,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Add Fuel Entry", path: "/diesel/add-fuel" }, // Added
         { label: "Add Fuel Entry Wrapper", path: "/diesel/add-fuel-wrapper" }, // Added
         { label: "Diesel Component Dashboard", path: "/diesel/component-dashboard" }, // Added
-      ]
+      ],
     },
     {
       title: "Clients",
@@ -121,7 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Add New Customer", path: "/clients/add" }, // Added
         { label: "Client Management Original", path: "/clients/management-original" }, // Added
         { label: "Client Selection Example", path: "/examples/client-selection" }, // Added from examples
-      ]
+      ],
     },
     {
       title: "Drivers",
@@ -148,7 +147,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Driver Details View", path: "/drivers/details-view/:id" }, // Added
         { label: "Driver Management Wrapper", path: "/drivers/management-wrapper" }, // Added
         { label: "Edit Driver Page", path: "/drivers/edit-driver-page/:id" }, // Added
-      ]
+      ],
     },
     {
       title: "Invoices",
@@ -167,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Invoice Approval Flow", path: "/invoices/approval-flow" }, // Added
         { label: "Paid Invoices Component", path: "/invoices/paid-invoices-component" }, // Added
         { label: "Pending Invoices Component", path: "/invoices/pending-invoices-component" }, // Added
-      ]
+      ],
     },
     {
       title: "Workshop",
@@ -193,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Action Log (QC)", path: "/workshop/action-log" }, // Added
         { label: "QA Review Panel (QC)", path: "/workshop/qa" }, // Added
         { label: "QA Review Panel Container (QC)", path: "/workshop/qa-review-container" }, // Added
-      ]
+      ],
     },
     {
       title: "Tyres",
@@ -209,7 +208,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Vehicle Tyre View", path: "/tyres/vehicle-view" }, // Added
         { label: "Mobile Tyre Page", path: "/tyres/mobile" }, // Added
         { label: "Vehicle Tyre View A", path: "/tyres/vehicle-view-a" }, // Added
-      ]
+      ],
     },
     {
       title: "Inventory",
@@ -222,7 +221,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Parts Inventory", path: "/workshop/parts" }, // Added (under workshop as per AppRoutes)
         { label: "Parts Ordering", path: "/workshop/parts-ordering" }, // Added (under workshop as per AppRoutes)
         { label: "Receive Parts", path: "/workshop/parts-receive" }, // Added (under workshop as per AppRoutes)
-      ]
+      ],
     },
     {
       title: "Analytics",
@@ -236,21 +235,26 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Fleet Analytics", path: "/analytics/fleet" }, // Added
         { label: "Main Analytics Dashboard", path: "/analytics/main-dashboard" }, // Added
         { label: "Compliance Dashboard (QC)", path: "/compliance" }, // Moved to top-level
-      ]
+      ],
     },
     {
-      title: "Wialon & Maps",
+      title: "Maps & Tracking",
       icon: <Menu className="h-5 w-5" />,
-      basePath: "/maps", // Changed basePath to /maps for consistency
+      basePath: "/maps",
       items: [
-        { label: "Wialon Dashboard", path: "/maps/wialon" }, // Corrected path
-        { label: "Wialon Units", path: "/maps/wialon/units" }, // Corrected path
+        // Fleet Maps
+        { label: "Fleet Overview", path: "/maps" }, // Main Maps.tsx component
         { label: "Fleet Location Map", path: "/maps/fleet-map" },
-        { label: "Wialon Config", path: "/maps/wialon/config" }, // Added
-        { label: "Wialon Map Component", path: "/maps/wialon/component" }, // Added
-        { label: "Wialon Map Dashboard", path: "/maps/wialon/map-dashboard" }, // Added
-        { label: "Wialon Map Page", path: "/maps/wialon/map-page" }, // Added
-      ]
+        { label: "Maps Suite", path: "/maps/suite" }, // MapsSuitePage
+        // Wialon Integration - grouped together
+        { label: "Wialon Dashboard", path: "/maps/wialon" },
+        { label: "Wialon Units", path: "/maps/wialon/units" },
+        { label: "Wialon Config", path: "/maps/wialon/config" },
+        // Remove duplicate entries that should be consolidated
+        // { label: "Wialon Map Component", path: "/maps/wialon/component" }, // Duplicate - remove
+        // { label: "Wialon Map Dashboard", path: "/maps/wialon/map-dashboard" }, // Duplicate - remove
+        // { label: "Wialon Map Page", path: "/maps/wialon/map-page" }, // Duplicate - remove
+      ],
     },
     {
       title: "Forms Testing",
@@ -260,7 +264,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
         { label: "Forms Test Wrapper", path: "/forms-test" }, // Added
         { label: "Drivers Forms Test", path: "/forms-test/drivers" }, // Added
         { label: "Clients Forms Test", path: "/forms-test/clients" }, // Added
-      ]
+      ],
     },
   ];
 
@@ -287,7 +291,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
           {menuGroups.map((group) => {
             const isCollapsed = collapsedGroups.includes(group.title);
             // Check if any item in the group is active, or if the base path matches
-            const isActive = group.items.some(item => location.pathname.startsWith(item.path.split(':')[0])) || location.pathname.startsWith(group.basePath);
+            const isActive =
+              group.items.some((item) => location.pathname.startsWith(item.path.split(":")[0])) ||
+              location.pathname.startsWith(group.basePath);
 
             return (
               <div key={group.title} className="border-b border-gray-200">
@@ -312,10 +318,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate }) => {
                     {group.items.map((item) => (
                       <Link
                         key={item.path}
-                        to={item.path.includes(':') ? item.path.split(':')[0] : item.path} // Handle dynamic paths for navigation
+                        to={item.path.includes(":") ? item.path.split(":")[0] : item.path} // Handle dynamic paths for navigation
                         onClick={() => onNavigate(item.path)}
                         className={`block px-7 py-1.5 text-xs hover:bg-gray-100 transition-colors ${
-                          location.pathname === item.path || (item.path.includes(':') && location.pathname.startsWith(item.path.split(':')[0]))
+                          location.pathname === item.path ||
+                          (item.path.includes(":") &&
+                            location.pathname.startsWith(item.path.split(":")[0]))
                             ? "bg-gray-100 text-blue-700 font-medium"
                             : "text-gray-700"
                         }`}

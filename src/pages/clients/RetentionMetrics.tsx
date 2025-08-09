@@ -573,4 +573,4 @@ const ClientRelationships: React.FC<ClientRelationshipsProps> = ({
   return content;
 };
 
-export default ClientRelationships;
+export default RetentionMetrics;

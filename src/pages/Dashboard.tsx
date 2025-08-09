@@ -1,11 +1,14 @@
 // src/pages/Dashboard.tsx
-import React, { useEffect, useState } from "react";
 import { collection, getDocs, limit, query } from "firebase/firestore";
-import EnhancedMapComponent from "../components/maps/EnhancedMapComponent";
+import React, { useEffect, useState } from "react";
 import FormSelector from "../components/forms/FormSelector";
+import EnhancedMapComponent from "../components/Map/EnhancedMapComponent";
 import { useSyncContext } from "../context/SyncContext";
 import { db } from "../firebase";
 import { Location } from "../types/mapTypes";
+
+// Log when Dashboard component is loaded to help debug dynamic import issues
+console.log("Dashboard component file loaded successfully");
 
 const Dashboard: React.FC = () => {
   const syncContext = useSyncContext();
@@ -14,7 +17,10 @@ const Dashboard: React.FC = () => {
   const [fleetOptions, setFleetOptions] = useState<{ value: string; label: string }[]>([]);
   const [selectedFleet, setSelectedFleet] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: -33.8688, lng: 151.2093 });
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({
+    lat: -33.8688,
+    lng: 151.2093,
+  });
 
   useEffect(() => {
     const loadLocations = async () => {
@@ -90,7 +96,9 @@ const Dashboard: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-800">Fleet Dashboard</h1>
             <p className="text-gray-600">Monitor and manage your fleet operations</p>
           </div>
-          <div className={`px-4 py-2 rounded-full text-sm font-medium ${syncContext.isOnline ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+          <div
+            className={`px-4 py-2 rounded-full text-sm font-medium ${syncContext.isOnline ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+          >
             {syncContext.isOnline ? "System Online" : "System Offline"}
           </div>
         </div>
@@ -102,7 +110,11 @@ const Dashboard: React.FC = () => {
             <h3 className="text-sm font-medium text-gray-500">{stat.title}</h3>
             <div className="flex items-baseline mt-1">
               <p className="text-2xl font-semibold text-gray-800">{stat.value}</p>
-              <p className={`ml-2 text-sm font-medium ${stat.changeType === "positive" ? "text-green-600" : "text-red-600"}`}>{stat.change}</p>
+              <p
+                className={`ml-2 text-sm font-medium ${stat.changeType === "positive" ? "text-green-600" : "text-red-600"}`}
+              >
+                {stat.change}
+              </p>
             </div>
           </div>
         ))}
@@ -134,7 +146,9 @@ const Dashboard: React.FC = () => {
               >
                 <option value="">All Vehicles</option>
                 {fleetOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -180,7 +194,9 @@ const Dashboard: React.FC = () => {
             <div className="mt-6">
               <div className="border-t border-gray-200 pt-4">
                 <h3 className="text-lg font-medium">Vehicle Details</h3>
-                <p className="text-gray-600 italic">Vehicle data would display here based on selection</p>
+                <p className="text-gray-600 italic">
+                  Vehicle data would display here based on selection
+                </p>
               </div>
             </div>
           )}

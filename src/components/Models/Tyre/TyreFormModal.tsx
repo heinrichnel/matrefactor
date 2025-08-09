@@ -1,4 +1,4 @@
-import VehiclePositionDiagram from "@/components/tyres/VehiclePositionDiagram";
+import VehiclePositionDiagram from "@/components/Tyremanagement/VehiclePositionDiagram";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, TextArea } from "@/components/ui/FormElements";
 import Modal from "@/components/ui/Modal";
@@ -37,10 +37,9 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
   const { brands, sizes, getPositionsForVehicleType, getPatternsForBrand } = useTyreReferenceData();
 
   // Serialiseer init size na string (bv. "295/80R22.5") as daar initialData is
-  const initialSelectedSize =
-    initialData.size
-      ? `${initialData.size.width}/${initialData.size.aspectRatio}R${initialData.size.rimDiameter}`
-      : "";
+  const initialSelectedSize = initialData.size
+    ? `${initialData.size.width}/${initialData.size.aspectRatio}R${initialData.size.rimDiameter}`
+    : "";
 
   // Form state
   const [formData, setFormData] = useState<Partial<Tyre>>({
@@ -95,7 +94,9 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
   >("basic");
 
   const [availablePatterns, setAvailablePatterns] = useState<string[]>([]);
-  const [vehicleTypePositions, setVehicleTypePositions] = useState<{ id: string; name: string }[]>([]);
+  const [vehicleTypePositions, setVehicleTypePositions] = useState<{ id: string; name: string }[]>(
+    []
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string>(initialSelectedSize);
@@ -155,18 +156,26 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
     // Handle string to enum conversion for specific fields if necessary
     // This is important for Select components where the 'value' will be a string
     let parsedValue: any = value;
-    if (name === "condition.status" && Object.values(TyreConditionStatus).includes(value as TyreConditionStatus)) {
+    if (
+      name === "condition.status" &&
+      Object.values(TyreConditionStatus).includes(value as TyreConditionStatus)
+    ) {
       parsedValue = value as TyreConditionStatus;
     } else if (name === "status" && Object.values(TyreStatus).includes(value as TyreStatus)) {
       parsedValue = value as TyreStatus;
-    } else if (name === "mountStatus" && Object.values(TyreMountStatus).includes(value as TyreMountStatus)) {
+    } else if (
+      name === "mountStatus" &&
+      Object.values(TyreMountStatus).includes(value as TyreMountStatus)
+    ) {
       parsedValue = value as TyreMountStatus;
-    } else if (name === "location" && Object.values(TyreStoreLocation).includes(value as TyreStoreLocation)) {
+    } else if (
+      name === "location" &&
+      Object.values(TyreStoreLocation).includes(value as TyreStoreLocation)
+    ) {
       parsedValue = value as TyreStoreLocation;
     } else if (name === "type" && tyreTypes.includes(value as TyreType)) {
       parsedValue = value as TyreType;
     }
-
 
     if (name && name.includes(".")) {
       const [parent, child] = name.split(".");
@@ -216,7 +225,8 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
       newErrors["purchaseDetails.date"] = "Purchase date is required";
     if (formData.purchaseDetails?.cost === 0)
       newErrors["purchaseDetails.cost"] = "Cost is required";
-    if (formData.mountStatus === TyreMountStatus.MOUNTED) { // <-- Use enum member
+    if (formData.mountStatus === TyreMountStatus.MOUNTED) {
+      // <-- Use enum member
       if (!formData.installation?.vehicleId)
         newErrors["installation.vehicleId"] = "Vehicle ID is required for mounted tyres";
       if (!formData.installation?.position)
@@ -258,10 +268,11 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
           {["basic", "technical", "installation", "condition"].map((sec) => (
             <button
               key={sec}
-              className={`px-4 py-2 ${activeSection === sec
-                ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-                : "text-gray-500"
-                }`}
+              className={`px-4 py-2 ${
+                activeSection === sec
+                  ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                  : "text-gray-500"
+              }`}
               onClick={() => setActiveSection(sec as any)}
             >
               {sec.charAt(0).toUpperCase() + sec.slice(1)}
@@ -272,32 +283,75 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
         {activeSection === "basic" && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Serial Number / ID" name="serialNumber"
-                value={safeValue(formData.serialNumber)} onChange={handleChange}
-                error={errors.serialNumber} disabled={editMode} />
-              <Input label="DOT Code" name="dotCode" value={safeValue(formData.dotCode)} onChange={handleChange} error={errors.dotCode} />
+              <Input
+                label="Serial Number / ID"
+                name="serialNumber"
+                value={safeValue(formData.serialNumber)}
+                onChange={handleChange}
+                error={errors.serialNumber}
+                disabled={editMode}
+              />
+              <Input
+                label="DOT Code"
+                name="dotCode"
+                value={safeValue(formData.dotCode)}
+                onChange={handleChange}
+                error={errors.dotCode}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Manufacturing Date" name="manufacturingDate" type="date"
-                value={safeValue(formData.manufacturingDate)} onChange={handleChange}
-                error={errors.manufacturingDate} />
-              <Select label="Tyre Brand" name="brand" value={safeString(formData.brand)} // Added name prop
-                onChange={handleChange} error={errors.brand}
-                options={[{ label: "Select brand...", value: "" }, ...brands.map((b: any) => ({ label: b.name, value: b.name }))]} />
+              <Input
+                label="Manufacturing Date"
+                name="manufacturingDate"
+                type="date"
+                value={safeValue(formData.manufacturingDate)}
+                onChange={handleChange}
+                error={errors.manufacturingDate}
+              />
+              <Select
+                label="Tyre Brand"
+                name="brand"
+                value={safeString(formData.brand)} // Added name prop
+                onChange={handleChange}
+                error={errors.brand}
+                options={[
+                  { label: "Select brand...", value: "" },
+                  ...brands.map((b: any) => ({ label: b.name, value: b.name })),
+                ]}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select label="Tyre Size" name="size" value={safeString(selectedSize)} // Added name prop
+              <Select
+                label="Tyre Size"
+                name="size"
+                value={safeString(selectedSize)} // Added name prop
                 onChange={(e) => setSelectedSize(e.target.value)}
                 error={errors.size}
-                options={[{ label: "Select size...", value: "" }, ...sizes.map((s: any) => ({ label: s.size, value: s.size }))]} />
-              <Select label="Tyre Pattern" name="pattern" value={safeString(formData.pattern)} // Added name prop
-                onChange={handleChange} error={errors.pattern}
-                options={[{ label: "Select pattern...", value: "" }, ...availablePatterns.map((pattern) => ({ label: pattern, value: pattern }))]}
+                options={[
+                  { label: "Select size...", value: "" },
+                  ...sizes.map((s: any) => ({ label: s.size, value: s.size })),
+                ]}
+              />
+              <Select
+                label="Tyre Pattern"
+                name="pattern"
+                value={safeString(formData.pattern)} // Added name prop
+                onChange={handleChange}
+                error={errors.pattern}
+                options={[
+                  { label: "Select pattern...", value: "" },
+                  ...availablePatterns.map((pattern) => ({ label: pattern, value: pattern })),
+                ]}
                 disabled={!formData.brand}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Model" name="model" value={safeValue(formData.model)} onChange={handleChange} />
+              <Input
+                label="Model"
+                name="model"
+                value={safeValue(formData.model)}
+                onChange={handleChange}
+              />
               <Select
                 label="Type"
                 name="type" // Added name prop
@@ -319,7 +373,7 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
               onChange={handleChange}
               options={[
                 { label: "Select location...", value: "" },
-                ...Object.values(TyreStoreLocation).map(loc => ({ label: loc, value: loc }))
+                ...Object.values(TyreStoreLocation).map((loc) => ({ label: loc, value: loc })),
               ]}
             />
           </div>
@@ -328,30 +382,75 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
         {activeSection === "technical" && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Load Index" name="loadIndex" type="number" value={safeValue(formData.loadIndex)} onChange={handleNumberChange} />
-              <Input label="Speed Rating" name="speedRating" value={safeValue(formData.speedRating)} onChange={handleChange} />
+              <Input
+                label="Load Index"
+                name="loadIndex"
+                type="number"
+                value={safeValue(formData.loadIndex)}
+                onChange={handleNumberChange}
+              />
+              <Input
+                label="Speed Rating"
+                name="speedRating"
+                value={safeValue(formData.speedRating)}
+                onChange={handleChange}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Purchase Date" name="purchaseDetails.date" type="date"
-                value={safeValue(formData.purchaseDetails?.date)} onChange={handleChange} error={errors["purchaseDetails.date"]} />
-              <Input label="Purchase Cost" name="purchaseDetails.cost" type="number"
-                value={safeValue(formData.purchaseDetails?.cost)} onChange={handleNumberChange} error={errors["purchaseDetails.cost"]} />
+              <Input
+                label="Purchase Date"
+                name="purchaseDetails.date"
+                type="date"
+                value={safeValue(formData.purchaseDetails?.date)}
+                onChange={handleChange}
+                error={errors["purchaseDetails.date"]}
+              />
+              <Input
+                label="Purchase Cost"
+                name="purchaseDetails.cost"
+                type="number"
+                value={safeValue(formData.purchaseDetails?.cost)}
+                onChange={handleNumberChange}
+                error={errors["purchaseDetails.cost"]}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Supplier" name="purchaseDetails.supplier"
-                value={safeValue(formData.purchaseDetails?.supplier)} onChange={handleChange} />
-              <Input label="Invoice Number" name="purchaseDetails.invoiceNumber"
-                value={safeValue(formData.purchaseDetails?.invoiceNumber)} onChange={handleChange} />
+              <Input
+                label="Supplier"
+                name="purchaseDetails.supplier"
+                value={safeValue(formData.purchaseDetails?.supplier)}
+                onChange={handleChange}
+              />
+              <Input
+                label="Invoice Number"
+                name="purchaseDetails.invoiceNumber"
+                value={safeValue(formData.purchaseDetails?.invoiceNumber)}
+                onChange={handleChange}
+              />
             </div>
             <div className="grid grid-cols-1 gap-4">
-              <Input label="Warranty Information" name="purchaseDetails.warranty"
-                value={safeValue(formData.purchaseDetails?.warranty)} onChange={handleChange} />
+              <Input
+                label="Warranty Information"
+                name="purchaseDetails.warranty"
+                value={safeValue(formData.purchaseDetails?.warranty)}
+                onChange={handleChange}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Distance Run (km)" name="kmRun" type="number"
-                value={safeValue(formData.kmRun)} onChange={handleNumberChange} />
-              <Input label="Distance Limit (km)" name="kmRunLimit" type="number"
-                value={safeValue(formData.kmRunLimit)} onChange={handleNumberChange} />
+              <Input
+                label="Distance Run (km)"
+                name="kmRun"
+                type="number"
+                value={safeValue(formData.kmRun)}
+                onChange={handleNumberChange}
+              />
+              <Input
+                label="Distance Limit (km)"
+                name="kmRunLimit"
+                type="number"
+                value={safeValue(formData.kmRunLimit)}
+                onChange={handleNumberChange}
+              />
             </div>
           </div>
         )}
@@ -416,7 +515,9 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
                   onChange={handleChange}
                 />
                 <div className="mt-4 bg-gray-50 border border-gray-200 rounded-md p-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Vehicle Position Diagram</h3>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Vehicle Position Diagram
+                  </h3>
                   <VehiclePositionDiagram
                     vehicleType={formData.type as TyreType}
                     selectedPosition={safeString(formData.installation?.position as string)}
@@ -511,7 +612,12 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
         <div className="flex justify-between mt-6 pt-4 border-t border-gray-200">
           <div>{errors.submit && <p className="text-sm text-red-600">{errors.submit}</p>}</div>
           <div className="flex space-x-3">
-            <Button variant="outline" onClick={onClose} icon={<X className="w-4 h-4" />} disabled={isSubmitting}>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              icon={<X className="w-4 h-4" />}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
             {activeSection !== "condition" ? (
@@ -531,7 +637,11 @@ const TyreFormModal: React.FC<TyreFormModalProps> = ({
                 Next
               </Button>
             ) : (
-              <Button onClick={handleSubmit} isLoading={isSubmitting} icon={<Save className="w-4 h-4" />}>
+              <Button
+                onClick={handleSubmit}
+                isLoading={isSubmitting}
+                icon={<Save className="w-4 h-4" />}
+              >
                 {editMode ? "Update Tyre" : "Save Tyre"}
               </Button>
             )}
