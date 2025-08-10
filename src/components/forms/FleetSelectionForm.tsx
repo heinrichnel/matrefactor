@@ -14,7 +14,7 @@ import {
   useVehiclePositionOptions,
   validateForm,
 } from "../../utils/formIntegration";
-import FormSelector from "./FormSelector";
+// Removed FormSelector in favor of direct select elements to utilize loading & options state
 
 interface FleetSelectionFormProps {
   onComplete?: (data: FleetSelectionData) => void;
@@ -63,10 +63,15 @@ const FleetSelectionForm: React.FC<FleetSelectionFormProps> = ({ onComplete, ini
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get options from Firestore
-  const { options: fleetOptions, loading: loadingFleet } = useFleetOptions();
+  // Load fleet & position options (filtered by vehicle type)
+  const { options: fleetOptions, loading: loadingFleet } = useFleetOptions(
+    formData.vehicleType || undefined
+  );
   const { options: positionOptions, loading: loadingPositions } = useVehiclePositionOptions(
     formData.vehicleType || ""
   );
+
+  const isBusy = loadingFleet || loadingPositions;
 
   // Form submission handler
   const { submitForm, loading, error, success } = useFormSubmit("fleetAssignments");
@@ -235,37 +240,74 @@ const FleetSelectionForm: React.FC<FleetSelectionFormProps> = ({ onComplete, ini
         </div>
 
         {/* Fleet Selection */}
-        <FormSelector
-          label="Fleet Vehicle"
-          name="fleetId"
-          value={formData.fleetId || ""}
-          onChange={(value) => handleFleetSelection(value)}
-          collection="fleet"
-          labelField="registrationNumber"
-          valueField="id"
-          filterField="vehicleType"
-          filterValue={formData.vehicleType}
-          sortField="fleetNumber"
-          required
-          error={formErrors.fleetId}
-          disabled={!formData.vehicleType || isSubmitting || loading}
-        />
+        <div className="form-control w-full">
+          <label htmlFor="fleetId" className="label">
+            <span className="label-text font-medium">
+              Fleet Vehicle<span className="text-error ml-1">*</span>
+            </span>
+          </label>
+          <select
+            id="fleetId"
+            className={`select select-bordered w-full ${formErrors.fleetId ? "select-error" : ""}`}
+            value={formData.fleetId || ""}
+            onChange={(e) => handleFleetSelection(e.target.value)}
+            disabled={!formData.vehicleType || isSubmitting || loading || loadingFleet}
+            required
+          >
+            <option value="" disabled>
+              {loadingFleet ? "Loading fleets..." : "Select fleet vehicle"}
+            </option>
+            {!loadingFleet && formData.vehicleType && fleetOptions.length === 0 && (
+              <option disabled value="__no_fleets__">
+                No fleets available
+              </option>
+            )}
+            {!loadingFleet &&
+              fleetOptions.map((f) => (
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
+              ))}
+          </select>
+          {formErrors.fleetId && (
+            <div className="text-error text-xs mt-1">{formErrors.fleetId}</div>
+          )}
+        </div>
 
         {/* Vehicle Position */}
-        <FormSelector
-          label="Vehicle Position"
-          name="positionId"
-          value={formData.positionId || ""}
-          onChange={(value) => handleInputChange("positionId", value)}
-          collection="vehiclePositions"
-          labelField="name"
-          valueField="id"
-          filterField="vehicleType"
-          filterValue={formData.vehicleType}
-          required
-          error={formErrors.positionId}
-          disabled={!formData.vehicleType || isSubmitting || loading}
-        />
+        <div className="form-control w-full">
+          <label htmlFor="positionId" className="label">
+            <span className="label-text font-medium">
+              Vehicle Position<span className="text-error ml-1">*</span>
+            </span>
+          </label>
+          <select
+            id="positionId"
+            className={`select select-bordered w-full ${formErrors.positionId ? "select-error" : ""}`}
+            value={formData.positionId || ""}
+            onChange={(e) => handleInputChange("positionId", e.target.value)}
+            disabled={!formData.vehicleType || isSubmitting || loading || loadingPositions}
+            required
+          >
+            <option value="" disabled>
+              {loadingPositions ? "Loading positions..." : "Select position"}
+            </option>
+            {!loadingPositions && formData.vehicleType && positionOptions.length === 0 && (
+              <option disabled value="__no_positions__">
+                No positions available
+              </option>
+            )}
+            {!loadingPositions &&
+              positionOptions.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+          </select>
+          {formErrors.positionId && (
+            <div className="text-error text-xs mt-1">{formErrors.positionId}</div>
+          )}
+        </div>
 
         {/* Status */}
         <div className="form-control w-full">
@@ -309,6 +351,8 @@ const FleetSelectionForm: React.FC<FleetSelectionFormProps> = ({ onComplete, ini
           />
         </div>
       </div>
+
+      {isBusy && <div className="text-sm text-gray-500">Loading data, please wait...</div>}
 
       {/* Form Actions */}
       <div className="flex justify-end space-x-2 mt-6">

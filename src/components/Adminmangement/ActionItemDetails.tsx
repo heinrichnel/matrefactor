@@ -1,29 +1,17 @@
+import { AlertTriangle, Calendar, CheckCircle, Clock, FileUp, Send, User, X } from "lucide-react";
 import React, { useState } from "react";
 import { useAppContext } from "../../context/AppContext";
 import { ActionItem } from "../../types/index";
-import Modal from "../ui/Modal";
+import { formatDate, formatDateTime } from "../../utils/helpers";
 import Button from "../ui/Button";
 import { TextArea } from "../ui/FormElements";
-import {
-  CheckCircle,
-  Clock,
-  Calendar,
-  User,
-  Send,
-  FileUp,
-  AlertTriangle,
-  X,
-} from "lucide-react";
-import { formatDate, formatDateTime } from "../../utils/helpers";
+import Modal from "../ui/Modal";
 
 interface ActionItemDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   actionItem: ActionItem;
-  onStatusChange: (
-    item: ActionItem,
-    newStatus: "initiated" | "in_progress" | "completed",
-  ) => void;
+  onStatusChange: (item: ActionItem, newStatus: "initiated" | "in_progress" | "completed") => void;
   onAddOverdueReason: (item: ActionItem, reason: string) => void;
 }
 
@@ -42,14 +30,10 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
   const today = new Date();
   const dueDate = new Date(actionItem.dueDate);
   const isOverdue = today > dueDate && actionItem.status !== "completed";
-  const overdueBy = isOverdue
-    ? Math.floor((today.getTime() - dueDate.getTime()) / 86400000)
-    : 0;
+  const overdueBy = isOverdue ? Math.floor((today.getTime() - dueDate.getTime()) / 86400000) : 0;
   const isOverdueBy10 = overdueBy >= 10;
   const needsReason =
-    isOverdueBy10 &&
-    !actionItem.overdueReason &&
-    actionItem.status !== "completed";
+    isOverdueBy10 && !actionItem.overdueReason && actionItem.status !== "completed";
 
   // Handle adding a comment
   const handleAddComment = () => {
@@ -68,12 +52,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Action Item Details"
-      maxWidth="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Action Item Details" maxWidth="lg">
       <div className="space-y-6">
         {/* Header */}
         <div
@@ -89,9 +68,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
         >
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-lg font-medium text-gray-900">
-                {actionItem.title}
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900">{actionItem.title}</h3>
               <div className="flex items-center space-x-2 mt-1">
                 <span
                   className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -122,9 +99,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
                 onClick={() =>
                   onStatusChange(
                     actionItem,
-                    actionItem.status === "initiated"
-                      ? "in_progress"
-                      : "completed",
+                    actionItem.status === "initiated" ? "in_progress" : "completed"
                   )
                 }
                 icon={
@@ -164,9 +139,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
               <Calendar className="w-4 h-4 text-gray-400" />
               <div>
                 <p className="text-sm text-gray-500">Due Date</p>
-                <p
-                  className={`font-medium ${isOverdue ? "text-red-600" : "text-gray-900"}`}
-                >
+                <p className={`font-medium ${isOverdue ? "text-red-600" : "text-gray-900"}`}>
                   {formatDate(actionItem.dueDate)}
                 </p>
               </div>
@@ -176,9 +149,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
               <Clock className="w-4 h-4 text-gray-400" />
               <div>
                 <p className="text-sm text-gray-500">Start Date</p>
-                <p className="font-medium">
-                  {formatDate(actionItem.startDate)}
-                </p>
+                <p className="font-medium">{formatDate(actionItem.startDate)}</p>
               </div>
             </div>
 
@@ -187,12 +158,8 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <div>
                   <p className="text-sm text-gray-500">Completed</p>
-                  <p className="font-medium">
-                    {formatDateTime(actionItem.completedAt)}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    by {actionItem.completedBy}
-                  </p>
+                  <p className="font-medium">{formatDateTime(actionItem.completedAt)}</p>
+                  <p className="text-xs text-gray-500">by {actionItem.completedBy}</p>
                 </div>
               </div>
             )}
@@ -202,9 +169,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
         {/* Overdue Reason */}
         {actionItem.overdueReason && (
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
-            <h4 className="text-sm font-medium text-amber-800 mb-1">
-              Overdue Reason:
-            </h4>
+            <h4 className="text-sm font-medium text-amber-800 mb-1">Overdue Reason:</h4>
             <p className="text-sm text-amber-700">{actionItem.overdueReason}</p>
           </div>
         )}
@@ -215,12 +180,9 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
             <div className="flex items-start space-x-3 mb-3">
               <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-red-800">
-                  Overdue Explanation Required
-                </h4>
+                <h4 className="text-sm font-medium text-red-800">Overdue Explanation Required</h4>
                 <p className="text-sm text-red-700 mt-1">
-                  This action item is overdue by 10+ days and requires an
-                  explanation.
+                  This action item is overdue by 10+ days and requires an explanation.
                 </p>
               </div>
             </div>
@@ -237,10 +199,8 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
               <div className="flex justify-end">
                 <Button
                   size="sm"
-                  onClick={onClick}
-                  disabled={
-                    !overdueReason.trim() || connectionStatus !== "connected"
-                  }
+                  onClick={handleSubmitOverdueReason}
+                  disabled={!overdueReason.trim() || connectionStatus !== "connected"}
                 >
                   Save Reason
                 </Button>
@@ -263,14 +223,12 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
                 >
                   <div className="flex items-center space-x-2">
                     <FileUp className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm font-medium">
-                      {attachment.filename}
-                    </span>
+                    <span className="text-sm font-medium">{attachment.filename}</span>
                   </div>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={onClick}
+                    onClick={() => window.open(attachment.fileUrl, "_blank")}
                   >
                     View
                   </Button>
@@ -289,10 +247,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
           {actionItem.comments && actionItem.comments.length > 0 ? (
             <div className="space-y-3 max-h-60 overflow-y-auto mb-4">
               {actionItem.comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="p-3 bg-gray-50 rounded-md border border-gray-200"
-                >
+                <div key={comment.id} className="p-3 bg-gray-50 rounded-md border border-gray-200">
                   <p className="text-sm">{comment.comment}</p>
                   <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
                     <User className="w-3 h-3" />
@@ -317,7 +272,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
               className="flex-1"
             />
             <Button
-              onClick={onClick}
+              onClick={handleAddComment}
               disabled={!comment.trim() || connectionStatus !== "connected"}
               icon={<Send className="w-4 h-4" />}
               className="self-end"
@@ -329,11 +284,7 @@ const ActionItemDetails: React.FC<ActionItemDetailsProps> = ({
 
         {/* Actions */}
         <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={onClick}
-            icon={<X className="w-4 h-4" />}
-          >
+          <Button variant="outline" onClick={onClose} icon={<X className="w-4 h-4" />}>
             Close
           </Button>
         </div>

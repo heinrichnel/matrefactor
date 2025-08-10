@@ -1,41 +1,76 @@
-import React, { useState } from 'react';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import { BarChart, PieChart, TrendingDown, TrendingUp, Filter, Download } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import { useAppContext } from '../../context/AppContext';
-import { Select } from '../../components/ui/FormElements';
-import SyncIndicator from '../../components/ui/SyncIndicator';
+import Button from "@/components/ui/Button";
+import Card, { CardContent, CardHeader } from "@/components/ui/Card";
+import { Select } from "@/components/ui/FormElements";
+import SyncIndicator from "@/components/ui/SyncIndicator";
+import { BarChart, Download, Filter, PieChart, TrendingDown, TrendingUp } from "lucide-react";
+import React, { useState } from "react";
+import { useAppContext } from "../../context/AppContext";
 
 const CostAnalysisPage: React.FC = () => {
   const { isLoading } = useAppContext();
-  const [timeframe, setTimeframe] = useState<string>('month');
-  const [filterType, setFilterType] = useState<string>('all');
+  const [timeframe, setTimeframe] = useState<string>("month");
+  const [filterType, setFilterType] = useState<string>("all");
 
   // Mock cost data
   const costData = [
-    { category: 'Fuel', amount: 15425, percentage: 45 },
-    { category: 'Maintenance', amount: 8250, percentage: 24 },
-    { category: 'Driver Salary', amount: 6200, percentage: 18 },
-    { category: 'Tolls', amount: 1750, percentage: 5 },
-    { category: 'Insurance', amount: 1200, percentage: 4 },
-    { category: 'Miscellaneous', amount: 1375, percentage: 4 }
+    { category: "Fuel", amount: 15425, percentage: 45 },
+    { category: "Maintenance", amount: 8250, percentage: 24 },
+    { category: "Driver Salary", amount: 6200, percentage: 18 },
+    { category: "Tolls", amount: 1750, percentage: 5 },
+    { category: "Insurance", amount: 1200, percentage: 4 },
+    { category: "Miscellaneous", amount: 1375, percentage: 4 },
   ];
 
   // Mock trip cost data
   const tripCostData = [
-    { id: 'TR-2345', origin: 'Windhoek', destination: 'Walvis Bay', distance: 380, totalCost: 4250, costPerKm: 11.18 },
-    { id: 'TR-2346', origin: 'Windhoek', destination: 'Swakopmund', distance: 360, totalCost: 4100, costPerKm: 11.39 },
-    { id: 'TR-2347', origin: 'Windhoek', destination: 'Lüderitz', distance: 680, totalCost: 7500, costPerKm: 11.03 },
-    { id: 'TR-2348', origin: 'Windhoek', destination: 'Keetmanshoop', distance: 500, totalCost: 5600, costPerKm: 11.20 },
-    { id: 'TR-2349', origin: 'Windhoek', destination: 'Rundu', distance: 720, totalCost: 8200, costPerKm: 11.39 }
+    {
+      id: "TR-2345",
+      origin: "Windhoek",
+      destination: "Walvis Bay",
+      distance: 380,
+      totalCost: 4250,
+      costPerKm: 11.18,
+    },
+    {
+      id: "TR-2346",
+      origin: "Windhoek",
+      destination: "Swakopmund",
+      distance: 360,
+      totalCost: 4100,
+      costPerKm: 11.39,
+    },
+    {
+      id: "TR-2347",
+      origin: "Windhoek",
+      destination: "Lüderitz",
+      distance: 680,
+      totalCost: 7500,
+      costPerKm: 11.03,
+    },
+    {
+      id: "TR-2348",
+      origin: "Windhoek",
+      destination: "Keetmanshoop",
+      distance: 500,
+      totalCost: 5600,
+      costPerKm: 11.2,
+    },
+    {
+      id: "TR-2349",
+      origin: "Windhoek",
+      destination: "Rundu",
+      distance: 720,
+      totalCost: 8200,
+      costPerKm: 11.39,
+    },
   ];
 
   // Format currency
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-NA', {
-      style: 'currency',
-      currency: 'NAD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("en-NA", {
+      style: "currency",
+      currency: "NAD",
+      minimumFractionDigits: 2,
     }).format(value);
   };
 
@@ -53,20 +88,17 @@ const CostAnalysisPage: React.FC = () => {
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value)}
             options={[
-              { value: 'week', label: 'This Week' },
-              { value: 'month', label: 'This Month' },
-              { value: 'quarter', label: 'This Quarter' },
-              { value: 'year', label: 'This Year' }
+              { value: "week", label: "This Week" },
+              { value: "month", label: "This Month" },
+              { value: "quarter", label: "This Quarter" },
+              { value: "year", label: "This Year" },
             ]}
           />
-          <Button 
-            variant="outline" 
-            icon={<Filter className="w-4 h-4" />}
-          >
+          <Button variant="outline" icon={<Filter className="w-4 h-4" />}>
             More Filters
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             icon={<Download className="w-4 h-4" />}
             disabled={isLoading?.exportingData}
           >
@@ -146,14 +178,18 @@ const CostAnalysisPage: React.FC = () => {
                 {costData.map((item, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full mr-2 bg-${
-                        ['blue', 'green', 'yellow', 'purple', 'red', 'indigo'][index % 6]
-                      }-500`}></div>
+                      <div
+                        className={`w-3 h-3 rounded-full mr-2 bg-${
+                          ["blue", "green", "yellow", "purple", "red", "indigo"][index % 6]
+                        }-500`}
+                      ></div>
                       <span className="text-sm">{item.category}</span>
                     </div>
                     <div className="flex space-x-4">
                       <span className="text-sm font-medium">{formatCurrency(item.amount)}</span>
-                      <span className="text-sm text-gray-500 w-10 text-right">{item.percentage}%</span>
+                      <span className="text-sm text-gray-500 w-10 text-right">
+                        {item.percentage}%
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -184,10 +220,10 @@ const CostAnalysisPage: React.FC = () => {
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
               options={[
-                { value: 'all', label: 'All Routes' },
-                { value: 'coastal', label: 'Coastal Routes' },
-                { value: 'northern', label: 'Northern Routes' },
-                { value: 'southern', label: 'Southern Routes' }
+                { value: "all", label: "All Routes" },
+                { value: "coastal", label: "Coastal Routes" },
+                { value: "northern", label: "Northern Routes" },
+                { value: "southern", label: "Southern Routes" },
               ]}
               className="w-48"
             />
@@ -198,24 +234,48 @@ const CostAnalysisPage: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trip ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distance</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost/KM</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trip ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Route
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Distance
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total Cost
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cost/KM
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {tripCostData.map((trip, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{trip.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{trip.origin} to {trip.destination}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{trip.distance} km</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{formatCurrency(trip.totalCost)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">N$ {trip.costPerKm.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                      {trip.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {trip.origin} to {trip.destination}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {trip.distance} km
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                      {formatCurrency(trip.totalCost)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      N$ {trip.costPerKm.toFixed(2)}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Button size="sm" variant="outline">Details</Button>
+                      <Button size="sm" variant="outline">
+                        Details
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -236,7 +296,10 @@ const CostAnalysisPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">Optimize Fuel Consumption</h3>
-                <p className="text-sm text-gray-600 mt-1">Potential saving of N$ 2,450 per month by implementing eco-driving training and route optimization.</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Potential saving of N$ 2,450 per month by implementing eco-driving training and
+                  route optimization.
+                </p>
               </div>
             </div>
             <div className="flex items-start p-4 border rounded-lg">
@@ -245,7 +308,10 @@ const CostAnalysisPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">Preventive Maintenance</h3>
-                <p className="text-sm text-gray-600 mt-1">Potential saving of N$ 1,800 per month by implementing better preventive maintenance schedules.</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Potential saving of N$ 1,800 per month by implementing better preventive
+                  maintenance schedules.
+                </p>
               </div>
             </div>
             <div className="flex items-start p-4 border rounded-lg">
@@ -254,7 +320,10 @@ const CostAnalysisPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">Load Optimization</h3>
-                <p className="text-sm text-gray-600 mt-1">Potential saving of N$ 1,250 per month by improving load factors and reducing empty trips.</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Potential saving of N$ 1,250 per month by improving load factors and reducing
+                  empty trips.
+                </p>
               </div>
             </div>
           </div>

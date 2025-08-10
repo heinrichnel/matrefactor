@@ -4,32 +4,29 @@
  */
 
 // Re-export Button component
-export { default as Button } from './Button';
+export { default as Button } from "./Button";
 
 // Re-export Card components
-export { Card, CardContent, CardHeader, CardTitle } from './Card';
+export { Card, CardContent, CardHeader, CardTitle } from "./Card";
 
 // Re-export Input component
-export { default as Input } from './Input';
+export { default as Input } from "./Input";
 
 // Re-export Table components
-export {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from './table';
+export { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table";
 
 // Re-export GenericPlaceholderPage component
-export { default as GenericPlaceholderPage } from './GenericPlaceholderPage';
+export { default as GenericPlaceholderPage } from "./GenericPlaceholderPage";
 
 // Re-export ApplicantInfoCard component - temporarily commented due to missing file
-export { default as ApplicantInfoCard } from './ApplicantInfoCard';
+export { default as ApplicantInfoCard } from "./ApplicantInfoCard";
 
 // Re-export new UI components
-export { default as ProgressStepper } from './ProgressStepper';
-export { default as StatsCardGroup } from './StatsCardGroup';
-export { default as VerticalStepper } from './VerticalStepper';
+export { default as ProgressStepper } from "./ProgressStepper";
+export { default as StatsCardGroup } from "./StatsCardGroup";
+export { default as VerticalStepper } from "./VerticalStepper";
 
+// Additional commonly used components
+export { default as Modal } from "./Modal";
+export { default as SyncIndicator } from "./SyncIndicator";
+export { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";

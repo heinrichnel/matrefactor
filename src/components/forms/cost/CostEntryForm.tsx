@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Card } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
+// Fixed incorrect relative import paths to shared UI components
+import { Button } from "../../ui/Button";
+import { Card } from "../../ui/Card";
+import Input from "../../ui/Input";
 
 interface CostEntry {
   id: string;

@@ -1,9 +1,9 @@
+import FuelEntryForm, { FuelEntryData } from "@/components/forms/diesel/FuelEntryForm";
+import Button from "@/components/ui/Button";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { BarChart2, Droplet, Plus, Truck } from "lucide-react";
 import React, { useState } from "react";
-import FuelEntryForm, { FuelEntryData } from "../../components/forms/diesel/FuelEntryForm";
-import Button from "../../components/ui/Button";
-import { Card, CardContent, CardHeader } from "../../components/ui/Card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 
 const DieselPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("dashboard");

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useWialonUnits } from "../../../hooks/useWialonUnits";
 import { CLIENTS, DRIVERS, Trip } from "../../../types/index";
 import Button from "../../ui/Button";
-import { Input, Select, Textarea } from "../../ui/FormElements";
+import { Input, Select, TextArea } from "../../ui/FormElements";
 
 interface TripFormProps {
   trip?: Trip;
@@ -240,10 +240,10 @@ export const TripForm: React.FC<TripFormProps> = ({
         </div>
       </div>
 
-      <Textarea
+      <TextArea
         label="Description / Notes"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
         placeholder="Additional details about this trip"
         rows={3}
       />

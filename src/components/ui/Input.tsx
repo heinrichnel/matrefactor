@@ -1,9 +1,10 @@
 import React from "react";
 
-interface InputProps {
-  value: string;
+// Extended to allow number values and pass through native input props (e.g., required, min, step)
+interface InputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
+  value: string | number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
   className?: string;
   type?: string;
 }
@@ -12,8 +13,9 @@ const Input: React.FC<InputProps> = ({
   value,
   onChange,
   placeholder,
-  className,
+  className = "",
   type = "text",
+  ...rest
 }) => {
   return (
     <input
@@ -22,6 +24,7 @@ const Input: React.FC<InputProps> = ({
       onChange={onChange}
       placeholder={placeholder}
       className={className}
+      {...rest}
     />
   );
 };

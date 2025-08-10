@@ -1,11 +1,11 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
-import TripManagement from "../../pages/trips/TripManagementPage";
+import { Route, Routes } from "react-router-dom";
+import { SupportedCurrency } from "../../lib/currency";
 import ActiveTrips from "../../pages/trips/ActiveTripsPageEnhanced";
 import CompletedTrips from "../../pages/trips/CompletedTrips";
+import TripManagement from "../../pages/trips/TripManagementPage";
+import WialonMapComponent from "../../pages/wialon/WialonMapComponent";
 import TripForm from "../forms/trips/TripForm";
-import { WialonMapComponent } from "../../pages/wialon/WialonMapComponent";
-import { SupportedCurrency } from "../../lib/currency";
 
 const TripRouter: React.FC = () => {
   const defaultCurrency: SupportedCurrency = "USD";
@@ -17,7 +17,7 @@ const TripRouter: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<TripManagement />} />
-      <Route path="/active" element={<ActiveTrips displayCurrency={defaultCurrency} />} />
+      <Route path="/active" element={<ActiveTrips />} />
       <Route path="/completed" element={<CompletedTrips displayCurrency={defaultCurrency} />} />
       <Route
         path="/new"
@@ -25,7 +25,7 @@ const TripRouter: React.FC = () => {
           <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">Add New Trip</h1>
             <TripForm
-              onSubmit={async (data) => {
+              onSubmit={async (data: any) => {
                 console.log("Trip data submitted:", data);
                 // TODO: Connect to Firebase backend
               }}

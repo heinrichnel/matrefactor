@@ -1,8 +1,8 @@
-import { Filter, Search, TrendingDown, TrendingUp, User } from 'lucide-react';
-import React, { useState } from 'react';
-import Button from '../../components/ui/Button';
-import { Card, CardContent } from '../../components/ui/Card';
-import SyncIndicator from '../../components/ui/SyncIndicator';
+import Button from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Filter, Search, TrendingDown, TrendingUp, User } from "lucide-react";
+import React, { useState } from "react";
+import SyncIndicator from "../../components/ui/SyncIndicator";
 
 interface DriverFuelScore {
   id: string;
@@ -14,19 +14,19 @@ interface DriverFuelScore {
   fuelEfficiency: number;
   rpmRanking: number;
   brakeCount: number;
-  improvementTrend: 'improving' | 'declining' | 'stable';
+  improvementTrend: "improving" | "declining" | "stable";
 }
 
 const DriverFuelBehavior: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState('overallScore');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState("overallScore");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   // Mock data for demonstration
   const driverScores: DriverFuelScore[] = [
     {
-      id: 'driver-001',
-      driverName: 'John Smith',
+      id: "driver-001",
+      driverName: "John Smith",
       idlingScore: 85,
       accelerationScore: 92,
       speedScore: 78,
@@ -34,11 +34,11 @@ const DriverFuelBehavior: React.FC = () => {
       fuelEfficiency: 3.4,
       rpmRanking: 1,
       brakeCount: 15,
-      improvementTrend: 'improving'
+      improvementTrend: "improving",
     },
     {
-      id: 'driver-002',
-      driverName: 'Jane Doe',
+      id: "driver-002",
+      driverName: "Jane Doe",
       idlingScore: 76,
       accelerationScore: 68,
       speedScore: 84,
@@ -46,11 +46,11 @@ const DriverFuelBehavior: React.FC = () => {
       fuelEfficiency: 3.1,
       rpmRanking: 3,
       brakeCount: 22,
-      improvementTrend: 'stable'
+      improvementTrend: "stable",
     },
     {
-      id: 'driver-003',
-      driverName: 'Mike Johnson',
+      id: "driver-003",
+      driverName: "Mike Johnson",
       idlingScore: 92,
       accelerationScore: 88,
       speedScore: 90,
@@ -58,11 +58,11 @@ const DriverFuelBehavior: React.FC = () => {
       fuelEfficiency: 3.6,
       rpmRanking: 2,
       brakeCount: 12,
-      improvementTrend: 'improving'
+      improvementTrend: "improving",
     },
     {
-      id: 'driver-004',
-      driverName: 'Sarah Williams',
+      id: "driver-004",
+      driverName: "Sarah Williams",
       idlingScore: 64,
       accelerationScore: 72,
       speedScore: 68,
@@ -70,11 +70,11 @@ const DriverFuelBehavior: React.FC = () => {
       fuelEfficiency: 2.9,
       rpmRanking: 5,
       brakeCount: 28,
-      improvementTrend: 'declining'
+      improvementTrend: "declining",
     },
     {
-      id: 'driver-005',
-      driverName: 'Alex Brown',
+      id: "driver-005",
+      driverName: "Alex Brown",
       idlingScore: 82,
       accelerationScore: 75,
       speedScore: 80,
@@ -82,12 +82,12 @@ const DriverFuelBehavior: React.FC = () => {
       fuelEfficiency: 3.3,
       rpmRanking: 4,
       brakeCount: 18,
-      improvementTrend: 'stable'
-    }
+      improvementTrend: "stable",
+    },
   ];
 
   // Handle search filter
-  const filteredDrivers = driverScores.filter(driver =>
+  const filteredDrivers = driverScores.filter((driver) =>
     driver.driverName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -96,15 +96,13 @@ const DriverFuelBehavior: React.FC = () => {
     const fieldA = a[sortField as keyof DriverFuelScore];
     const fieldB = b[sortField as keyof DriverFuelScore];
 
-    if (typeof fieldA === 'number' && typeof fieldB === 'number') {
-      return sortOrder === 'asc' ? fieldA - fieldB : fieldB - fieldA;
+    if (typeof fieldA === "number" && typeof fieldB === "number") {
+      return sortOrder === "asc" ? fieldA - fieldB : fieldB - fieldA;
     }
 
     // For string fields
-    if (typeof fieldA === 'string' && typeof fieldB === 'string') {
-      return sortOrder === 'asc'
-        ? fieldA.localeCompare(fieldB)
-        : fieldB.localeCompare(fieldA);
+    if (typeof fieldA === "string" && typeof fieldB === "string") {
+      return sortOrder === "asc" ? fieldA.localeCompare(fieldB) : fieldB.localeCompare(fieldA);
     }
 
     return 0;
@@ -113,26 +111,26 @@ const DriverFuelBehavior: React.FC = () => {
   // Handle sort change
   const handleSort = (field: string) => {
     if (field === sortField) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortOrder('desc'); // Default to descending for new sort field
+      setSortOrder("desc"); // Default to descending for new sort field
     }
   };
 
   // Get score color class
   const getScoreColorClass = (score: number) => {
-    if (score >= 85) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 85) return "text-green-600";
+    if (score >= 70) return "text-yellow-600";
+    return "text-red-600";
   };
 
   // Get trend indicator
   const getTrendIndicator = (trend: string) => {
     switch (trend) {
-      case 'improving':
+      case "improving":
         return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'declining':
+      case "declining":
         return <TrendingDown className="h-4 w-4 text-red-500" />;
       default:
         return null;
@@ -217,49 +215,49 @@ const DriverFuelBehavior: React.FC = () => {
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('driverName')}
+                    onClick={() => handleSort("driverName")}
                   >
                     Driver Name
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('overallScore')}
+                    onClick={() => handleSort("overallScore")}
                   >
                     Overall Score
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('idlingScore')}
+                    onClick={() => handleSort("idlingScore")}
                   >
                     Idling
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('accelerationScore')}
+                    onClick={() => handleSort("accelerationScore")}
                   >
                     Acceleration
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('speedScore')}
+                    onClick={() => handleSort("speedScore")}
                   >
                     Speed
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('fuelEfficiencyScore')}
+                    onClick={() => handleSort("fuelEfficiencyScore")}
                   >
                     Fuel Efficiency
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('harshBrakingScore')}
+                    onClick={() => handleSort("harshBrakingScore")}
                   >
                     Harsh Braking
                   </th>
@@ -280,34 +278,59 @@ const DriverFuelBehavior: React.FC = () => {
                           <User className="h-5 w-5 text-gray-500" />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{driver.driverName}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {driver.driverName}
+                          </div>
                           <div className="text-xs text-gray-500">Rank: {driver.rpmRanking}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`text-sm font-bold ${getScoreColorClass(driver.overallScore)}`}>{driver.overallScore}</div>
+                      <div
+                        className={`text-sm font-bold ${getScoreColorClass(driver.overallScore)}`}
+                      >
+                        {driver.overallScore}
+                      </div>
                       <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                         <div
                           className={`h-1.5 rounded-full ${
-                            driver.overallScore >= 85 ? 'bg-green-500' :
-                            driver.overallScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                            driver.overallScore >= 85
+                              ? "bg-green-500"
+                              : driver.overallScore >= 70
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
                           }`}
                           style={{ width: `${driver.overallScore}%` }}
                         ></div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`text-sm font-medium ${getScoreColorClass(driver.idlingScore)}`}>{driver.idlingScore}</div>
+                      <div
+                        className={`text-sm font-medium ${getScoreColorClass(driver.idlingScore)}`}
+                      >
+                        {driver.idlingScore}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`text-sm font-medium ${getScoreColorClass(driver.accelerationScore)}`}>{driver.accelerationScore}</div>
+                      <div
+                        className={`text-sm font-medium ${getScoreColorClass(driver.accelerationScore)}`}
+                      >
+                        {driver.accelerationScore}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`text-sm font-medium ${getScoreColorClass(driver.speedScore)}`}>{driver.speedScore}</div>
+                      <div
+                        className={`text-sm font-medium ${getScoreColorClass(driver.speedScore)}`}
+                      >
+                        {driver.speedScore}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{driver.fuelEfficiency.toFixed(1)} km/L</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{driver.brakeCount}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {driver.fuelEfficiency.toFixed(1)} km/L
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {driver.brakeCount}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center">
                         {getTrendIndicator(driver.improvementTrend)}
@@ -330,32 +353,33 @@ const DriverFuelBehavior: React.FC = () => {
             <div>
               <h4 className="text-md font-medium">Idling Reduction</h4>
               <p className="text-sm text-gray-600">
-                Train drivers to minimize excessive idling by turning off engines during stops longer than 2 minutes.
-                This can reduce fuel consumption by up to 5%.
+                Train drivers to minimize excessive idling by turning off engines during stops
+                longer than 2 minutes. This can reduce fuel consumption by up to 5%.
               </p>
             </div>
 
             <div>
               <h4 className="text-md font-medium">Progressive Acceleration</h4>
               <p className="text-sm text-gray-600">
-                Encourage smooth, gradual acceleration rather than aggressive starts.
-                This technique can improve fuel efficiency by 10-15% in urban environments.
+                Encourage smooth, gradual acceleration rather than aggressive starts. This technique
+                can improve fuel efficiency by 10-15% in urban environments.
               </p>
             </div>
 
             <div>
               <h4 className="text-md font-medium">Optimal Speed Management</h4>
               <p className="text-sm text-gray-600">
-                Maintain consistent speeds and avoid exceeding optimal fuel efficiency range (typically 80-90 km/h for heavy vehicles).
-                Every 10 km/h above 90 km/h increases fuel consumption by approximately 10%.
+                Maintain consistent speeds and avoid exceeding optimal fuel efficiency range
+                (typically 80-90 km/h for heavy vehicles). Every 10 km/h above 90 km/h increases
+                fuel consumption by approximately 10%.
               </p>
             </div>
 
             <div>
               <h4 className="text-md font-medium">Anticipatory Driving</h4>
               <p className="text-sm text-gray-600">
-                Look ahead to anticipate traffic changes and avoid unnecessary braking.
-                This reduces fuel-consuming acceleration cycles.
+                Look ahead to anticipate traffic changes and avoid unnecessary braking. This reduces
+                fuel-consuming acceleration cycles.
               </p>
             </div>
 
