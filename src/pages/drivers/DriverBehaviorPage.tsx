@@ -161,16 +161,16 @@ const DriverBehaviorPage: React.FC = () => {
   };
 
   // Get unique event types for filtering
-  const getUniqueEventTypes = () => {
+  const getUniqueEventTypes = (): string[] => {
     const displayEvents = showWebBookOnly ? webBookEvents : events;
-    return [...new Set(displayEvents.map((event) => event.eventType))];
+    return [...new Set(displayEvents.map((ev: any) => ev.eventType).filter(Boolean))];
   };
 
   // Filter events based on search term and filters
-  const getFilteredEvents = () => {
-    const displayEvents = showWebBookOnly ? webBookEvents : driverBehaviorEvents;
+  const getFilteredEvents = (): any[] => {
+    const displayEvents: any[] = showWebBookOnly ? webBookEvents : (driverBehaviorEvents as any[]);
 
-    return displayEvents.filter((event) => {
+    return displayEvents.filter((event: any) => {
       // Search term filter
       const matchesSearch =
         !searchTerm ||
@@ -265,11 +265,11 @@ const DriverBehaviorPage: React.FC = () => {
             <span>CAR Reports</span>
           </TabsTrigger>
         </TabsList>
-
         {/* Driver Performance Overview Tab */}
         <TabsContent value="performance" className="mt-6">
           <DriverPerformanceOverview />
-        </TabsContent>        {/* Behavior Events Tab */}
+        </TabsContent>{" "}
+        {/* Behavior Events Tab */}
         <TabsContent value="events" className="mt-6">
           <div className="space-y-4">
             {/* Filters Section */}
@@ -478,7 +478,6 @@ const DriverBehaviorPage: React.FC = () => {
             </div>
           </div>
         </TabsContent>
-
         {/* CAR Reports Tab */}
         <TabsContent value="car-reports" className="mt-6">
           <div className="space-y-4">
@@ -500,7 +499,8 @@ const DriverBehaviorPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Corrective Action Reports are used to document and track driver behavior issues that require formal intervention.
+                  Corrective Action Reports are used to document and track driver behavior issues
+                  that require formal intervention.
                 </p>
               </CardContent>
             </Card>

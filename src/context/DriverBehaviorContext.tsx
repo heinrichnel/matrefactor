@@ -117,3 +117,5 @@ export const DriverBehaviorProvider: React.FC<DriverBehaviorProviderProps> = ({
 
 // Custom hook for using the driver behavior context
 export const useDriverBehaviorContext = () => useContext(DriverBehaviorContext);
+// Backward-compatible alias: pages expecting useDriverBehavior can import this directly.
+export const useDriverBehavior = () => useDriverBehaviorContext();
