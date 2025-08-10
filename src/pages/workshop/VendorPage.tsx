@@ -5,7 +5,15 @@ import React, { useEffect, useState } from "react";
 import { useWorkshop, Vendor } from "../../context/WorkshopContext";
 
 const VendorPage: React.FC = () => {
-  const { vendors, addVendor, updateVendor, deleteVendor, importVendorsFromCSV, isLoading, errors } = useWorkshop();
+  const {
+    vendors,
+    addVendor,
+    updateVendor,
+    deleteVendor,
+    importVendorsFromCSV,
+    isLoading,
+    errors,
+  } = useWorkshop();
 
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);

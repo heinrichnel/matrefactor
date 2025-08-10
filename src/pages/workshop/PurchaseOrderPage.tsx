@@ -60,7 +60,6 @@ const PurchaseOrderPage: React.FC = () => {
     }
   };
 
-
   const handleGeneratePDF = (id: string) => {
     console.log("Generating PDF for purchase order:", id);
     // In a real app, this would generate a PDF and either show it or download it
