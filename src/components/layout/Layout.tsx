@@ -1,9 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { Suspense, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 import { Trip } from "../../types";
 import Navigation from "./Navigation"; // Assuming this is the updated Navigation
-import Sidebar from "./Sidebar";     // Assuming this is the updated Sidebar with drawer logic
+import Sidebar from "./Sidebar"; // Assuming this is the updated Sidebar with drawer logic
+import { TripSelectionProvider, useTripSelection } from "../../context/TripSelectionContext";
+import SelectedTripBanner from "./SelectedTripBanner";
+import { ErrorBoundary } from "../common/ErrorBoundary";
 
 interface LayoutProps {
   setShowTripForm: (show: boolean) => void;
@@ -15,7 +18,7 @@ const Layout: React.FC<LayoutProps> = ({ setShowTripForm, setEditingTrip }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null); // legacy state for backward compat
   useAppContext();
 
   // Calculate current view from URL path
@@ -31,44 +34,49 @@ const Layout: React.FC<LayoutProps> = ({ setShowTripForm, setEditingTrip }) => {
   // Navigation handler
   const handleNavigate = (view: string) => {
     const hasQuery = view.includes("?");
-    navigate(hasQuery
-      ? `/${view.split("?")[0]}?${view.split("?")[1]}`
-      : `/${view.startsWith("/") ? view.substring(1) : view}`
+    navigate(
+      hasQuery
+        ? `/${view.split("?")[0]}?${view.split("?")[1]}`
+        : `/${view.startsWith("/") ? view.substring(1) : view}`
     );
   };
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar is now responsible for its own mobile toggle and drawer behavior */}
       <Sidebar currentView={currentView} onNavigate={handleNavigate} />
-      {/*
-        This div now has 'lg:ml-60'. On large screens (lg:), it adds a left margin
-        equal to the sidebar's width (60 units) to prevent content from being
-        hidden behind the fixed sidebar. On smaller screens, the sidebar is a drawer
-        and this margin is not applied, allowing the content to take full width.
-      */}
       <div className="flex flex-col flex-1 overflow-hidden lg:ml-60">
         <Navigation />
-        {selectedTrip && (
-          <div className="px-3 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-700 flex items-center justify-between">
-            <span>Viewing trip: <strong>{selectedTrip.fleetNumber}</strong> • {selectedTrip.clientName} • {selectedTrip.driverName}</span>
-            <button
-              className="text-blue-600 hover:underline"
-              onClick={() => setSelectedTrip(null)}
-            >Clear</button>
-          </div>
-        )}
-        {/* Changed padding from p-3 md:p-4 to p-2 md:p-3 for a more compact layout */}
-        <main className="flex-1 overflow-y-auto p-2 md:p-3">
-          <Outlet context={{
-            setSelectedTrip,
-            setEditingTrip,
-            setShowTripForm
-          }} />
-        </main>
+        <TripSelectionProvider>
+          {selectedTrip && (
+            <LegacyTripStateBridge trip={selectedTrip} clear={() => setSelectedTrip(null)} />
+          )}
+          <SelectedTripBanner />
+          <main className="flex-1 overflow-y-auto p-2 md:p-3" role="main">
+            <Suspense fallback={<div className="p-4 text-xs text-gray-500">Loading...</div>}>
+              <ErrorBoundary>
+                <Outlet
+                  context={{
+                    setSelectedTrip,
+                    setEditingTrip,
+                    setShowTripForm,
+                  }}
+                />
+              </ErrorBoundary>
+            </Suspense>
+          </main>
+        </TripSelectionProvider>
       </div>
     </div>
   );
+};
+
+// Bridge component to sync legacy selectedTrip state into new context without breaking existing pages.
+const LegacyTripStateBridge: React.FC<{ trip: Trip; clear: () => void }> = ({ trip }) => {
+  const { selectedTrip, setSelectedTrip } = useTripSelection();
+  if (!selectedTrip || selectedTrip.id !== trip.id) {
+    setSelectedTrip(trip);
+  }
+  return null;
 };
 
 export default Layout;
