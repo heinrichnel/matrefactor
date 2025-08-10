@@ -1,12 +1,12 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
-import { Trip } from "../../types";
-import Navigation from "./Navigation"; // Assuming this is the updated Navigation
-import Sidebar from "./Sidebar"; // Assuming this is the updated Sidebar with drawer logic
 import { TripSelectionProvider, useTripSelection } from "../../context/TripSelectionContext";
-import SelectedTripBanner from "./SelectedTripBanner";
+import { Trip } from "../../types";
 import { ErrorBoundary } from "../common/ErrorBoundary";
+import Navigation from "./Navigation"; // Assuming this is the updated Navigation
+import SelectedTripBanner from "./SelectedTripBanner";
+import Sidebar from "./Sidebar"; // Assuming this is the updated Sidebar with drawer logic
 
 interface LayoutProps {
   setShowTripForm: (show: boolean) => void;

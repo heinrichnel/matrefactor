@@ -1,6 +1,9 @@
 import React from "react";
 
-interface ErrorBoundaryState { hasError: boolean; error?: Error; }
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
 
 export class ErrorBoundary extends React.Component<React.PropsWithChildren, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false };
@@ -22,7 +25,9 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
           <button
             className="px-2 py-1 text-xs bg-red-600 text-white rounded"
             onClick={() => window.location.reload()}
-          >Reload</button>
+          >
+            Reload
+          </button>
         </div>
       );
     }

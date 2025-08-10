@@ -29,4 +29,5 @@ export { default as VerticalStepper } from "./VerticalStepper";
 // Additional commonly used components
 export { default as Modal } from "./Modal";
 export { default as SyncIndicator } from "./SyncIndicator";
+// Standardize on PascalCase Tabs implementation
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";

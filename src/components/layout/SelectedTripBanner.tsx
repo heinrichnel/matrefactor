@@ -10,7 +10,8 @@ const SelectedTripBanner: React.FC = () => {
       className="px-3 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-700 flex items-center justify-between"
     >
       <span>
-        Viewing trip: <strong>{selectedTrip.fleetNumber}</strong> • {selectedTrip.clientName} • {selectedTrip.driverName}
+        Viewing trip: <strong>{selectedTrip.fleetNumber}</strong> • {selectedTrip.clientName} •{" "}
+        {selectedTrip.driverName}
       </span>
       <button
         className="text-blue-600 hover:underline"

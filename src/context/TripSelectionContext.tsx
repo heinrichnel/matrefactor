@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useCallback, useState, ReactNode } from "react";
+import React, { createContext, ReactNode, useCallback, useContext, useState } from "react";
 import { Trip } from "../types";
 
 interface TripSelectionContextValue {
