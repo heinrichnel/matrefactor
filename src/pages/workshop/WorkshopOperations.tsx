@@ -1,3 +1,5 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import {
   AlertTriangle,
   CheckCircle,
@@ -8,8 +10,6 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 
 // Import all workshop components
 import FaultTracking from "../../components/WorkshopManagement/FaultTracking";

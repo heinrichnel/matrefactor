@@ -1,9 +1,9 @@
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import CardContent from "@/components/ui/CardContent";
+import CardHeader from "@/components/ui/CardHeader";
 import { AlertTriangle, BarChart, Clock, TrendingUp } from "lucide-react";
 import React from "react";
-import Button from "../../components/ui/Button";
-import Card from "../../components/ui/Card";
-import CardContent from "../../components/ui/CardContent";
-import CardHeader from "../../components/ui/CardHeader";
 import { useAppContext } from "../../context/AppContext";
 
 const RouteOptimizationPage: React.FC = () => {

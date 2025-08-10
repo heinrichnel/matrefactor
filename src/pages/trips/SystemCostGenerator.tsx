@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { defaultTripWorkflowConfig } from '../../config/tripWorkflowConfig';
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import React, { useEffect, useState } from "react";
+import { defaultTripWorkflowConfig } from "../../config/tripWorkflowConfig";
 
 interface Trip {
   id: string;
@@ -14,7 +14,7 @@ interface Trip {
 
 interface SystemCost {
   id: string;
-  type: 'repair' | 'tyre' | 'git' | 'fuel' | 'driver';
+  type: "repair" | "tyre" | "git" | "fuel" | "driver";
   description: string;
   amount: number;
   calculation: string;
@@ -27,28 +27,28 @@ interface SystemCostGeneratorProps {
   onGenerate: (costs: SystemCost[]) => void;
 }
 
-const SystemCostGenerator: React.FC<SystemCostGeneratorProps> = ({ 
-  trip, 
-  rates = defaultTripWorkflowConfig.systemRates, 
-  onGenerate 
+const SystemCostGenerator: React.FC<SystemCostGeneratorProps> = ({
+  trip,
+  rates = defaultTripWorkflowConfig.systemRates,
+  onGenerate,
 }) => {
   const [generatedCosts, setGeneratedCosts] = useState<SystemCost[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateSystemCosts = async () => {
     setIsGenerating(true);
-    
+
     // Simulate API call or complex calculation
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const costs: SystemCost[] = [];
 
     // Repair costs (per km)
     const repairCost = trip.distance * rates.perKmRepair;
     costs.push({
-      id: 'repair-' + Date.now(),
-      type: 'repair',
-      description: 'Vehicle repair allocation',
+      id: "repair-" + Date.now(),
+      type: "repair",
+      description: "Vehicle repair allocation",
       amount: repairCost,
       calculation: `${trip.distance}km × R${rates.perKmRepair}/km = R${repairCost.toFixed(2)}`,
       isSystemGenerated: true,
@@ -57,9 +57,9 @@ const SystemCostGenerator: React.FC<SystemCostGeneratorProps> = ({
     // Tyre costs (per km)
     const tyreCost = trip.distance * rates.perKmTyre;
     costs.push({
-      id: 'tyre-' + Date.now(),
-      type: 'tyre',
-      description: 'Tyre wear allocation',
+      id: "tyre-" + Date.now(),
+      type: "tyre",
+      description: "Tyre wear allocation",
       amount: tyreCost,
       calculation: `${trip.distance}km × R${rates.perKmTyre}/km = R${tyreCost.toFixed(2)}`,
       isSystemGenerated: true,
@@ -69,9 +69,9 @@ const SystemCostGenerator: React.FC<SystemCostGeneratorProps> = ({
     const days = Math.ceil(trip.duration / 24);
     const gitCost = days * rates.perDayGIT;
     costs.push({
-      id: 'git-' + Date.now(),
-      type: 'git',
-      description: 'General Insurance & Tax',
+      id: "git-" + Date.now(),
+      type: "git",
+      description: "General Insurance & Tax",
       amount: gitCost,
       calculation: `${days} day(s) × R${rates.perDayGIT}/day = R${gitCost.toFixed(2)}`,
       isSystemGenerated: true,
@@ -81,9 +81,9 @@ const SystemCostGenerator: React.FC<SystemCostGeneratorProps> = ({
     const estimatedFuelConsumption = trip.distance * 0.35; // 35L/100km average
     const fuelCost = estimatedFuelConsumption * rates.fuelRate;
     costs.push({
-      id: 'fuel-' + Date.now(),
-      type: 'fuel',
-      description: 'Estimated fuel cost',
+      id: "fuel-" + Date.now(),
+      type: "fuel",
+      description: "Estimated fuel cost",
       amount: fuelCost,
       calculation: `${trip.distance}km × 35L/100km × R${rates.fuelRate}/L = R${fuelCost.toFixed(2)}`,
       isSystemGenerated: true,
@@ -92,9 +92,9 @@ const SystemCostGenerator: React.FC<SystemCostGeneratorProps> = ({
     // Driver cost
     const driverCost = days * rates.driverRate;
     costs.push({
-      id: 'driver-' + Date.now(),
-      type: 'driver',
-      description: 'Driver compensation',
+      id: "driver-" + Date.now(),
+      type: "driver",
+      description: "Driver compensation",
       amount: driverCost,
       calculation: `${days} day(s) × R${rates.driverRate}/day = R${driverCost.toFixed(2)}`,
       isSystemGenerated: true,
@@ -133,7 +133,7 @@ const SystemCostGenerator: React.FC<SystemCostGeneratorProps> = ({
     <div className="space-y-6">
       <Card className="p-6">
         <h3 className="text-xl font-semibold mb-4">System Generated Costs</h3>
-        
+
         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
           <h4 className="font-medium mb-2">Trip Information</h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -163,18 +163,14 @@ const SystemCostGenerator: React.FC<SystemCostGeneratorProps> = ({
         <div className="border-t pt-4">
           <div className="flex justify-between items-center mb-4">
             <span className="text-lg font-semibold">Total System Costs:</span>
-            <span className="text-xl font-bold text-green-600">
-              R{totalSystemCosts.toFixed(2)}
-            </span>
+            <span className="text-xl font-bold text-green-600">R{totalSystemCosts.toFixed(2)}</span>
           </div>
-          
+
           <div className="flex justify-between">
             <Button variant="outline" onClick={handleRegenerateCosts}>
               Regenerate
             </Button>
-            <Button onClick={handleAcceptCosts}>
-              Accept & Continue
-            </Button>
+            <Button onClick={handleAcceptCosts}>Accept & Continue</Button>
           </div>
         </div>
       </Card>

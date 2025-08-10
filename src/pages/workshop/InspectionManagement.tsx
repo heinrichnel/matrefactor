@@ -1,9 +1,9 @@
+import Button from "@/components/ui/Button";
+import Card, { CardContent, CardHeader } from "@/components/ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Clipboard, ClipboardCheck, FileText, Plus, RefreshCw } from "lucide-react";
 import React, { useState } from "react";
 import InspectionList from "../../components/lists/InspectionList";
-import Button from "../../components/ui/Button";
-import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 
 interface InspectionManagementProps {
   status?: "active" | "completed" | "templates";

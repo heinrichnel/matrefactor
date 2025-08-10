@@ -1,107 +1,104 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useWorkshop } from '../../context/WorkshopContext';
 import {
-  Tool,
-  Truck,
-  ShoppingCart,
+  AlertTriangle,
   Clipboard,
   FileText,
-  AlertTriangle,
-  BarChart3,
+  Gauge,
   Package,
-  Calendar,
   Search,
+  ShoppingCart,
+  Truck,
   UserCheck,
-  Gauge
-} from 'lucide-react';
+} from "lucide-react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useWorkshop } from "../../context/WorkshopContext";
 
 // UI Components
-import { Card, CardContent } from '../../components/ui';
+import { Card, CardContent } from "@/components/ui";
 
 const WorkshopPage: React.FC = () => {
-  const { stockItems, vendors, purchaseOrders, isLoading, errors } = useWorkshop();
-  const [searchTerm, setSearchTerm] = useState('');
-  
+  const { stockItems, purchaseOrders, isLoading } = useWorkshop();
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Filter for low stock items
-  const lowStockItems = stockItems.filter(item => item.quantity <= item.reorderLevel);
-  
+  const lowStockItems = stockItems.filter((item) => item.quantity <= item.reorderLevel);
+
   // Calculate total inventory value
   const totalInventoryValue = stockItems.reduce(
-    (total, item) => total + item.quantity * item.cost, 
+    (total, item) => total + item.quantity * item.cost,
     0
   );
-  
+
   // Filter for recent purchase orders
   const recentPOs = purchaseOrders
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
-    
+
   // Workshop modules
   const modules = [
     {
-      title: 'Fleet Setup',
-      description: 'Manage your fleet inventory',
+      title: "Fleet Setup",
+      description: "Manage your fleet inventory",
       icon: Truck,
-      link: '/workshop/fleet-setup',
-      color: 'bg-blue-100 text-blue-600'
+      link: "/workshop/fleet-setup",
+      color: "bg-blue-100 text-blue-600",
     },
     {
-      title: 'Inspections',
-      description: 'Vehicle inspections and reports',
+      title: "Inspections",
+      description: "Vehicle inspections and reports",
       icon: Clipboard,
-      link: '/workshop/inspections',
-      color: 'bg-green-100 text-green-600'
+      link: "/workshop/inspections",
+      color: "bg-green-100 text-green-600",
     },
     {
-      title: 'Job Cards',
-      description: 'Manage maintenance job cards',
+      title: "Job Cards",
+      description: "Manage maintenance job cards",
       icon: FileText,
-      link: '/workshop/job-cards',
-      color: 'bg-purple-100 text-purple-600'
+      link: "/workshop/job-cards",
+      color: "bg-purple-100 text-purple-600",
     },
     {
-      title: 'Fault Tracking',
-      description: 'Track and manage vehicle faults',
+      title: "Fault Tracking",
+      description: "Track and manage vehicle faults",
       icon: AlertTriangle,
-      link: '/workshop/faults',
-      color: 'bg-orange-100 text-orange-600'
+      link: "/workshop/faults",
+      color: "bg-orange-100 text-orange-600",
     },
     {
-      title: 'Tyre Management',
-      description: 'Track tyre inventory and usage',
+      title: "Tyre Management",
+      description: "Track tyre inventory and usage",
       icon: Gauge,
-      link: '/workshop/tyres',
-      color: 'bg-red-100 text-red-600'
+      link: "/workshop/tyres",
+      color: "bg-red-100 text-red-600",
     },
     {
-      title: 'Purchase Orders',
-      description: 'Create and manage purchase orders',
+      title: "Purchase Orders",
+      description: "Create and manage purchase orders",
       icon: ShoppingCart,
-      link: '/workshop/purchase-orders',
-      color: 'bg-indigo-100 text-indigo-600'
+      link: "/workshop/purchase-orders",
+      color: "bg-indigo-100 text-indigo-600",
     },
     {
-      title: 'Vendors',
-      description: 'Manage supplier information',
+      title: "Vendors",
+      description: "Manage supplier information",
       icon: UserCheck,
-      link: '/workshop/vendors',
-      color: 'bg-pink-100 text-pink-600'
+      link: "/workshop/vendors",
+      color: "bg-pink-100 text-pink-600",
     },
     {
-      title: 'Stock Inventory',
-      description: 'Manage parts and inventory',
+      title: "Stock Inventory",
+      description: "Manage parts and inventory",
       icon: Package,
-      link: '/workshop/stock-inventory',
-      color: 'bg-yellow-100 text-yellow-600'
-    }
+      link: "/workshop/stock-inventory",
+      color: "bg-yellow-100 text-yellow-600",
+    },
   ];
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Workshop Management Dashboard</h1>
-        
+
         <div className="flex space-x-4">
           <div className="relative">
             <input
@@ -113,8 +110,8 @@ const WorkshopPage: React.FC = () => {
             />
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
-          
-          <Link 
+
+          <Link
             to="/workshop/vehicle-inspection"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center"
           >
@@ -134,12 +131,12 @@ const WorkshopPage: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Total Stock Items</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {isLoading.stockItems ? 'Loading...' : stockItems.length}
+                {isLoading.stockItems ? "Loading..." : stockItems.length}
               </p>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="flex items-center p-6">
             <div className="p-3 rounded-full bg-red-100 text-red-600 mr-4">
@@ -148,12 +145,12 @@ const WorkshopPage: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Low Stock Items</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {isLoading.stockItems ? 'Loading...' : lowStockItems.length}
+                {isLoading.stockItems ? "Loading..." : lowStockItems.length}
               </p>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="flex items-center p-6">
             <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
@@ -162,26 +159,27 @@ const WorkshopPage: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Inventory Value</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {isLoading.stockItems 
-                  ? 'Loading...' 
-                  : `$${totalInventoryValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-                }
+                {isLoading.stockItems
+                  ? "Loading..."
+                  : `$${totalInventoryValue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Workshop Modules */}
       <h2 className="text-xl font-semibold text-gray-800 mb-4">Workshop Modules</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {modules.map((module, index) => (
-          <Link 
-            key={index} 
+          <Link
+            key={index}
             to={module.link}
             className="border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors duration-200"
           >
-            <div className={`rounded-full p-3 w-12 h-12 flex items-center justify-center ${module.color} mb-4`}>
+            <div
+              className={`rounded-full p-3 w-12 h-12 flex items-center justify-center ${module.color} mb-4`}
+            >
               <module.icon className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-medium text-gray-900">{module.title}</h3>
@@ -189,19 +187,19 @@ const WorkshopPage: React.FC = () => {
           </Link>
         ))}
       </div>
-      
+
       {/* Recent Purchase Orders */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Recent Purchase Orders</h2>
-          <Link 
+          <Link
             to="/workshop/purchase-orders"
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
             View All
           </Link>
         </div>
-        
+
         <Card>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -250,17 +248,22 @@ const WorkshopPage: React.FC = () => {
                         {new Date(po.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          po.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                          po.status === 'Ordered' ? 'bg-blue-100 text-blue-800' :
-                          po.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            po.status === "Completed"
+                              ? "bg-green-100 text-green-800"
+                              : po.status === "Ordered"
+                                ? "bg-blue-100 text-blue-800"
+                                : po.status === "Pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
                           {po.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${po.grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        ${po.grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
                   ))
@@ -270,19 +273,19 @@ const WorkshopPage: React.FC = () => {
           </div>
         </Card>
       </div>
-      
+
       {/* Low Stock Items */}
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Low Stock Items</h2>
-          <Link 
+          <Link
             to="/workshop/parts-ordering"
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
             View All
           </Link>
         </div>
-        
+
         <Card>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -331,9 +334,13 @@ const WorkshopPage: React.FC = () => {
                         {item.category}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          item.quantity <= item.reorderLevel * 0.5 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            item.quantity <= item.reorderLevel * 0.5
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
                           {item.quantity} {item.unit}
                         </span>
                       </td>

@@ -1,7 +1,7 @@
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
 import React, { useState } from "react";
-import { Card } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
 
 interface TripCompletionPanelProps {
   canComplete: boolean;

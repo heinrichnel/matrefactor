@@ -1,3 +1,6 @@
+import Button from "@/components/ui/Button";
+import Card, { CardContent, CardHeader } from "@/components/ui/Card";
+import LoadingIndicator from "@/components/ui/LoadingIndicator";
 import { Autocomplete, DirectionsRenderer, GoogleMap, Libraries } from "@react-google-maps/api";
 import {
   ChevronDown,
@@ -12,9 +15,6 @@ import {
 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Button from "../../components/ui/Button";
-import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-import LoadingIndicator from "../../components/ui/LoadingIndicator";
 import { useAppContext } from "../../context/AppContext";
 import { isGoogleMapsAPILoaded, useLoadGoogleMaps } from "../../utils/googleMapsLoader";
 
@@ -37,7 +37,7 @@ const libraries: Libraries = ["places"];
 const RoutePlanningPage: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const { getTrip, updateTrip, planRoute, optimizeRoute, isLoading } = useAppContext();
+  const { getTrip, planRoute, optimizeRoute } = useAppContext();
 
   const [trip, setTrip] = useState<any>(null);
   const [origin, setOrigin] = useState<string>("");
@@ -97,7 +97,7 @@ const RoutePlanningPage: React.FC = () => {
   }, [mapsLoadError]);
 
   // Map load callback
-  const onMapLoad = useCallback((map: google.maps.Map) => {
+  const onMapLoad = useCallback(() => {
     // Map initialization code could go here if needed
   }, []);
 

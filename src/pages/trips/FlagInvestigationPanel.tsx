@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import React, { useState } from "react";
 
 interface FlaggedCost {
   id: string;
@@ -15,28 +15,28 @@ interface FlagInvestigationPanelProps {
   onResolve: (costId: string) => void;
 }
 
-const FlagInvestigationPanel: React.FC<FlagInvestigationPanelProps> = ({ 
-  flaggedCosts, 
-  onResolve 
+const FlagInvestigationPanel: React.FC<FlagInvestigationPanelProps> = ({
+  flaggedCosts,
+  onResolve,
 }) => {
   const [selectedCost, setSelectedCost] = useState<string | null>(null);
-  const [resolutionNote, setResolutionNote] = useState('');
+  const [resolutionNote, setResolutionNote] = useState("");
 
   const handleResolve = (costId: string) => {
     if (!resolutionNote.trim()) {
-      alert('Please provide a resolution note');
+      alert("Please provide a resolution note");
       return;
     }
-    
+
     onResolve(costId);
     setSelectedCost(null);
-    setResolutionNote('');
+    setResolutionNote("");
   };
 
   const getFlagReason = (cost: FlaggedCost): string => {
-    if (cost.amount > 1000) return 'High amount (>R1000)';
-    if (cost.description.toLowerCase().includes('unusual')) return 'Unusual expense';
-    return 'Requires approval';
+    if (cost.amount > 1000) return "High amount (>R1000)";
+    if (cost.description.toLowerCase().includes("unusual")) return "Unusual expense";
+    return "Requires approval";
   };
 
   if (flaggedCosts.length === 0) {
@@ -44,9 +44,7 @@ const FlagInvestigationPanel: React.FC<FlagInvestigationPanelProps> = ({
       <Card className="p-6">
         <div className="text-center">
           <div className="text-green-600 text-4xl mb-4">✓</div>
-          <h3 className="text-xl font-semibold text-green-600 mb-2">
-            No Flags to Resolve
-          </h3>
+          <h3 className="text-xl font-semibold text-green-600 mb-2">No Flags to Resolve</h3>
           <p className="text-gray-600">All costs have been reviewed and approved.</p>
         </div>
       </Card>
@@ -59,36 +57,30 @@ const FlagInvestigationPanel: React.FC<FlagInvestigationPanelProps> = ({
         <h3 className="text-xl font-semibold mb-4">
           Flag Investigation ({flaggedCosts.length} items)
         </h3>
-        
+
         <div className="space-y-4">
           {flaggedCosts.map((cost) => (
             <div key={cost.id} className="border border-red-200 rounded-lg p-4 bg-red-50">
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h4 className="font-medium text-red-800">{cost.description}</h4>
-                  <p className="text-sm text-red-600">
-                    🚩 {getFlagReason(cost)}
-                  </p>
-                  <p className="text-lg font-semibold text-red-700">
-                    R{cost.amount.toFixed(2)}
-                  </p>
+                  <p className="text-sm text-red-600">🚩 {getFlagReason(cost)}</p>
+                  <p className="text-lg font-semibold text-red-700">R{cost.amount.toFixed(2)}</p>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setSelectedCost(selectedCost === cost.id ? null : cost.id)}
                 >
-                  {selectedCost === cost.id ? 'Cancel' : 'Investigate'}
+                  {selectedCost === cost.id ? "Cancel" : "Investigate"}
                 </Button>
               </div>
-              
+
               {selectedCost === cost.id && (
                 <div className="border-t border-red-200 pt-3 mt-3">
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Investigation Notes
-                      </label>
+                      <label className="block text-sm font-medium mb-1">Investigation Notes</label>
                       <textarea
                         value={resolutionNote}
                         onChange={(e) => setResolutionNote(e.target.value)}
@@ -97,7 +89,7 @@ const FlagInvestigationPanel: React.FC<FlagInvestigationPanelProps> = ({
                         rows={3}
                       />
                     </div>
-                    
+
                     <div className="text-sm text-gray-600">
                       <strong>Investigation Checklist:</strong>
                       <ul className="list-disc list-inside mt-1 space-y-1">
@@ -107,12 +99,9 @@ const FlagInvestigationPanel: React.FC<FlagInvestigationPanelProps> = ({
                         <li>Validate amount accuracy</li>
                       </ul>
                     </div>
-                    
+
                     <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setSelectedCost(null)}
-                      >
+                      <Button variant="outline" onClick={() => setSelectedCost(null)}>
                         Cancel
                       </Button>
                       <Button
@@ -128,14 +117,13 @@ const FlagInvestigationPanel: React.FC<FlagInvestigationPanelProps> = ({
             </div>
           ))}
         </div>
-        
+
         {flaggedCosts.length > 0 && (
           <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h4 className="font-medium text-yellow-800 mb-2">
-              ⚠️ Action Required
-            </h4>
+            <h4 className="font-medium text-yellow-800 mb-2">⚠️ Action Required</h4>
             <p className="text-sm text-yellow-700">
-              All flagged costs must be investigated and resolved before proceeding to trip completion.
+              All flagged costs must be investigated and resolved before proceeding to trip
+              completion.
             </p>
           </div>
         )}

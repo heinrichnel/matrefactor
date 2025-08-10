@@ -1,3 +1,6 @@
+import Button from "@/components/ui/Button";
+import Card, { CardContent, CardHeader } from "@/components/ui/Card";
+import { Input } from "@/components/ui/FormElements";
 import {
   Activity,
   AlertTriangle,
@@ -15,9 +18,6 @@ import {
   X,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import Button from "../../components/ui/Button";
-import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-import { Input } from "../../components/ui/FormElements";
 import Modal from "../../components/ui/Modal";
 import { Tooltip } from "../../components/ui/Tooltip";
 import { useAppContext } from "../../context/AppContext";

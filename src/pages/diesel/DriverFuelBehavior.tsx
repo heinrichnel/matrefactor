@@ -1,8 +1,8 @@
 import Button from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import SyncIndicator from "@/components/ui/SyncIndicator";
 import { Filter, Search, TrendingDown, TrendingUp, User } from "lucide-react";
 import React, { useState } from "react";
-import SyncIndicator from "../../components/ui/SyncIndicator";
 
 interface DriverFuelScore {
   id: string;

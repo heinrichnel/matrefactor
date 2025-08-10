@@ -1,3 +1,6 @@
+import Button from "@/components/ui/Button";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import Modal from "@/components/ui/Modal";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -18,9 +21,6 @@ import CostList from "../../components/lists/CostList";
 import InvoiceSubmissionModal from "../../components/Models/Invoice/InvoiceSubmissionModal";
 import SystemCostGenerator from "../../components/SystemCostGenerator";
 import TripReport from "../../components/TripManagement/TripReport";
-import Button from "../../components/ui/Button";
-import { Card, CardContent, CardHeader } from "../../components/ui/Card";
-import Modal from "../../components/ui/Modal";
 import { useAppContext } from "../../context/AppContext";
 import { CostEntry, DelayReason, Trip } from "../../types";
 import {
@@ -40,7 +40,8 @@ interface TripDetailsProps {
 const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip: propTrip, onBack }) => {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const { getTrip, addCostEntry, updateCostEntry, deleteCostEntry, updateTrip, addDelayReason } = useAppContext();
+  const { getTrip, addCostEntry, updateCostEntry, deleteCostEntry, updateTrip, addDelayReason } =
+    useAppContext();
 
   // State for trip data - use prop trip or fetch from context
   const [trip, setTrip] = useState<Trip | undefined>(propTrip);
@@ -845,13 +846,15 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip: propTrip, onBack })
           trip={trip}
           onClose={() => setShowInvoiceSubmission(false)}
           onSubmit={handleInvoiceSubmission}
-          onAddAdditionalCost={(cost, files) => {
+          onAddAdditionalCost={(cost) => {
             if (trip && trip.id) {
               // Handle adding additional cost
               updateTrip({
                 ...trip,
-                additionalCosts: [...trip.additionalCosts,
-                  { ...cost, id: `addcost-${Date.now()}` }]
+                additionalCosts: [
+                  ...trip.additionalCosts,
+                  { ...cost, id: `addcost-${Date.now()}` },
+                ],
               });
             }
           }}
@@ -860,7 +863,7 @@ const TripDetailsPage: React.FC<TripDetailsProps> = ({ trip: propTrip, onBack })
               // Handle removing additional cost
               updateTrip({
                 ...trip,
-                additionalCosts: trip.additionalCosts.filter(cost => cost.id !== costId)
+                additionalCosts: trip.additionalCosts.filter((cost) => cost.id !== costId),
               });
             }
           }}

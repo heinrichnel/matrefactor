@@ -1,3 +1,5 @@
+import Button from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
 import {
   addDays,
   addWeeks,
@@ -33,8 +35,6 @@ import Timeline, {
   TimelineMarkers,
 } from "react-calendar-timeline";
 import "react-calendar-timeline/dist/style.css";
-import Button from "../../components/ui/Button";
-import { Card, CardContent } from "../../components/ui/Card";
 import { firestore as db } from "../../utils/firebaseConnectionHandler"; // Using firestore from connection handler
 
 interface Vehicle {

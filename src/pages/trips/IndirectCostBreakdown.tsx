@@ -1,3 +1,6 @@
+import Button from "@/components/ui/Button";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import SyncIndicator from "@/components/ui/SyncIndicator";
 import React, { useEffect, useState } from "react";
 import {
   Bar,
@@ -12,9 +15,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Button from "../../components/ui/Button";
-import { Card, CardContent, CardHeader } from "../../components/ui/Card";
-import SyncIndicator from "../../components/ui/SyncIndicator";
 import { useAppContext } from "../../context/AppContext";
 
 interface CostCategory {
@@ -275,7 +275,11 @@ const IndirectCostBreakdown: React.FC = () => {
                       <td className="px-4 py-2 text-center">{category.percentage}%</td>
                       <td className="px-4 py-2 text-center">{getTrendIcon(category.trend)}</td>
                       <td className="px-4 py-2 text-right">
-                        <Button variant="outline" className="text-sm" onClick={() => handleCategoryClick(category)}>
+                        <Button
+                          variant="outline"
+                          className="text-sm"
+                          onClick={() => handleCategoryClick(category)}
+                        >
                           View Details
                         </Button>
                       </td>

@@ -1,6 +1,6 @@
+import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import React from "react";
 import { Link, Outlet } from "react-router-dom";
-import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 
 /**
  * This is a test wrapper for all of our form components and pages

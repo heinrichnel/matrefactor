@@ -1,9 +1,9 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { ClipboardList, Map, Truck, User } from "lucide-react";
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import MapsView from "../../components/Map/MapsView";
 import MissedLoadsTracker from "../../components/TripManagement/MissedLoadsTracker";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 import { useAppContext } from "../../context/AppContext";
 import DieselDashboard from "../diesel/DieselDashboard";
 import DriverBehaviorPage from "../drivers/DriverBehaviorPage";

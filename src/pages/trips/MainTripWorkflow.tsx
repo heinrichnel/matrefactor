@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui";
 import { useState } from "react";
 import { TripForm } from "../../components/forms/trips/TripForm";
-import { Button } from "../../components/ui";
 import { canProceedToNextStep, defaultTripWorkflowConfig } from "../../config/tripWorkflowConfig";
 import CostEntryForm from "./CostEntryForm";
 import FlagInvestigationPanel from "./FlagInvestigationPanel";

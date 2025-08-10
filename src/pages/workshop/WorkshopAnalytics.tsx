@@ -1,3 +1,5 @@
+import Button from "@/components/ui/Button";
+import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import {
   BarChart,
   Calendar,
@@ -6,11 +8,9 @@ import {
   Download,
   PieChart,
   TrendingUp,
-  Wrench
-} from 'lucide-react';
-import React from 'react';
-import Button from '../../components/ui/Button';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
+  Wrench,
+} from "lucide-react";
+import React from "react";
 
 const WorkshopAnalytics: React.FC = () => {
   return (
@@ -21,13 +21,12 @@ const WorkshopAnalytics: React.FC = () => {
             <BarChart className="w-7 h-7 mr-2 text-blue-500" />
             Workshop Analytics Dashboard
           </h2>
-          <p className="text-gray-600">Comprehensive analytics for workshop operations, costs, and efficiency</p>
+          <p className="text-gray-600">
+            Comprehensive analytics for workshop operations, costs, and efficiency
+          </p>
         </div>
         <div>
-          <Button
-            variant="outline"
-            icon={<Download className="w-4 h-4" />}
-          >
+          <Button variant="outline" icon={<Download className="w-4 h-4" />}>
             Export Report
           </Button>
         </div>
@@ -98,7 +97,8 @@ const WorkshopAnalytics: React.FC = () => {
               <div className="text-center">
                 <PieChart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">
-                  Pie chart showing distribution of job types would be displayed here in production environment.
+                  Pie chart showing distribution of job types would be displayed here in production
+                  environment.
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2 max-w-xs mx-auto text-sm">
                   <div className="flex items-center">
@@ -131,7 +131,8 @@ const WorkshopAnalytics: React.FC = () => {
               <div className="text-center">
                 <BarChart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">
-                  Bar chart showing average completion times would be displayed here in production environment.
+                  Bar chart showing average completion times would be displayed here in production
+                  environment.
                 </p>
                 <div className="mt-4 grid grid-cols-1 gap-2 max-w-xs mx-auto text-sm">
                   <div className="flex items-center justify-between">
@@ -167,7 +168,7 @@ const WorkshopAnalytics: React.FC = () => {
                   <span className="text-sm font-medium text-gray-900">85%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: '85%' }}></div>
+                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: "85%" }}></div>
                 </div>
               </div>
 
@@ -177,7 +178,7 @@ const WorkshopAnalytics: React.FC = () => {
                   <span className="text-sm font-medium text-gray-900">92%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: '92%' }}></div>
+                  <div className="bg-green-600 h-2 rounded-full" style={{ width: "92%" }}></div>
                 </div>
               </div>
 
@@ -187,7 +188,7 @@ const WorkshopAnalytics: React.FC = () => {
                   <span className="text-sm font-medium text-gray-900">78%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-orange-600 h-2 rounded-full" style={{ width: '78%' }}></div>
+                  <div className="bg-orange-600 h-2 rounded-full" style={{ width: "78%" }}></div>
                 </div>
               </div>
 
@@ -197,7 +198,7 @@ const WorkshopAnalytics: React.FC = () => {
                   <span className="text-sm font-medium text-gray-900">81%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: '81%' }}></div>
+                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: "81%" }}></div>
                 </div>
               </div>
             </div>
@@ -250,11 +251,7 @@ const WorkshopAnalytics: React.FC = () => {
         <CardHeader
           title="Trending Maintenance Issues"
           action={
-            <Button
-              size="sm"
-              variant="outline"
-              icon={<Download className="w-4 h-4" />}
-            >
+            <Button size="sm" variant="outline" icon={<Download className="w-4 h-4" />}>
               Export
             </Button>
           }
@@ -264,19 +261,34 @@ const WorkshopAnalytics: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Issue
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Affected Fleet
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Occurrences
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Avg. Repair Cost
                   </th>
-                  <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Trend
                   </th>
                 </tr>
@@ -303,9 +315,7 @@ const WorkshopAnalytics: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     Electrical System Issues
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    All Fleets
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">All Fleets</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
                     18
                   </td>
@@ -337,9 +347,7 @@ const WorkshopAnalytics: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     Cooling System Leaks
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    22H, 24H
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">22H, 24H</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
                     9
                   </td>
@@ -359,13 +367,11 @@ const WorkshopAnalytics: React.FC = () => {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
         <h2 className="text-lg font-medium text-blue-800 mb-4">About Workshop Analytics</h2>
         <p className="text-blue-700 mb-4">
-          This dashboard provides key insights into workshop operations, performance metrics, and maintenance trends.
-          In a production environment, this data would be pulled from Firestore collections tracking job cards,
-          inspections, parts inventory, and labor records.
+          This dashboard provides key insights into workshop operations, performance metrics, and
+          maintenance trends. In a production environment, this data would be pulled from Firestore
+          collections tracking job cards, inspections, parts inventory, and labor records.
         </p>
-        <p className="text-blue-700">
-          Use these analytics to identify:
-        </p>
+        <p className="text-blue-700">Use these analytics to identify:</p>
         <ul className="list-disc pl-5 space-y-1 text-blue-700 mt-2">
           <li>Recurring maintenance issues across your fleet</li>
           <li>Opportunities to improve workshop efficiency</li>

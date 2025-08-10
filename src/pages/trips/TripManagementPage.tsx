@@ -1,10 +1,10 @@
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Modal from "@/components/ui/Modal";
 import { addDoc, collection } from "firebase/firestore";
 import { PlusCircle, Truck } from "lucide-react";
 import React, { useState } from "react";
 import { TripForm } from "../../components/forms/trips/TripForm";
-import Button from "../../components/ui/Button";
-import Card from "../../components/ui/Card";
-import Modal from "../../components/ui/Modal";
 import { db } from "../../firebase";
 import type { TripFormData } from "../../types/TripTypes";
 

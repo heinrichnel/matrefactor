@@ -1,7 +1,7 @@
+import { Button, Card, CardContent, CardHeader } from "@/components/ui";
 import { FormProvider, useForm } from "react-hook-form";
 import ClientDropdown from "../../components/common/ClientDropdown";
 import FormClientDropdown from "../../components/common/FormClientDropdown";
-import { Button, Card, CardContent, CardHeader } from "../../components/ui";
 import { useClientDropdown } from "../../hooks/useClients";
 
 const ClientSelectionExample = () => {
