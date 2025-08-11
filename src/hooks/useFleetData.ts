@@ -29,7 +29,7 @@ export const useFleetData = () => {
           id: doc.id,
           ...doc.data(),
         })) as Vehicle[];
-        
+
         setVehicles(vehiclesList);
       } catch (err) {
         console.error("Error fetching fleet data:", err);
@@ -44,5 +44,3 @@ export const useFleetData = () => {
 
   return { vehicles, loading, error };
 };
-
-export default useFleetData;

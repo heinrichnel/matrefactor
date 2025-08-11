@@ -1,23 +1,23 @@
-import { AlertTriangle, Save, X } from 'lucide-react';
-import React, { useState } from 'react';
-import { Trip, TRIP_EDIT_REASONS, TripEditRecord } from '../../../types';
-import { formatDateTime } from '../../../utils/helpers';
-import Button from '../../ui/Button';
-import { Input, Select, TextArea } from '../../ui/FormElements';
-import Modal from '../../ui/Modal';
+import { AlertTriangle, Save, X } from "lucide-react";
+import React, { useState } from "react";
+import { Trip, TRIP_EDIT_REASONS, TripEditRecord } from "../../../types";
+import { formatDateTime } from "../../../utils/helpers";
+import { Button } from "../../ui/Button";
+import { Input, Select, TextArea } from "../../ui/FormElements";
+import Modal from "../../ui/Modal";
 
 interface CompletedTripEditModalProps {
   isOpen: boolean;
   trip: Trip;
   onClose: () => void;
-  onSave: (updatedTrip: Trip, editRecord: Omit<TripEditRecord, 'id'>) => void;
+  onSave: (updatedTrip: Trip, editRecord: Omit<TripEditRecord, "id">) => void;
 }
 
 const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
   isOpen,
   trip,
   onClose,
-  onSave
+  onSave,
 }) => {
   const [formData, setFormData] = useState({
     fleetNumber: trip.fleetNumber,
@@ -26,23 +26,20 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
     startDate: trip.startDate,
     endDate: trip.endDate,
     route: trip.route,
-    description: trip.description || '',
+    description: trip.description || "",
     baseRevenue: trip.baseRevenue.toString(),
     revenueCurrency: trip.revenueCurrency,
-    distanceKm: trip.distanceKm?.toString() || '',
+    distanceKm: trip.distanceKm?.toString() || "",
   });
 
-  const [editReason, setEditReason] = useState('');
-  const [customReason, setCustomReason] = useState('');
+  const [editReason, setEditReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const handleChange = (field: string, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -50,22 +47,22 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!editReason) {
-      newErrors.editReason = 'Edit reason is required for completed trips';
+      newErrors.editReason = "Edit reason is required for completed trips";
     }
 
-    if (editReason === 'Other (specify in comments)' && !customReason.trim()) {
-      newErrors.customReason = 'Please specify the reason for editing';
+    if (editReason === "Other (specify in comments)" && !customReason.trim()) {
+      newErrors.customReason = "Please specify the reason for editing";
     }
 
     // Check if any changes were made
-    const hasChanges = Object.keys(formData).some(key => {
-      const originalValue = trip[key as keyof Trip]?.toString() || '';
-      const newValue = formData[key as keyof typeof formData] || '';
+    const hasChanges = Object.keys(formData).some((key) => {
+      const originalValue = trip[key as keyof Trip]?.toString() || "";
+      const newValue = formData[key as keyof typeof formData] || "";
       return originalValue !== newValue;
     });
 
     if (!hasChanges) {
-      newErrors.general = 'No changes detected. Please make changes before saving.';
+      newErrors.general = "No changes detected. Please make changes before saving.";
     }
 
     setErrors(newErrors);
@@ -76,33 +73,33 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
     if (!validateForm()) return;
 
     // Identify changed fields
-    const changes: Array<{field: string, oldValue: string, newValue: string}> = [];
+    const changes: Array<{ field: string; oldValue: string; newValue: string }> = [];
 
-    Object.keys(formData).forEach(key => {
-      const originalValue = trip[key as keyof Trip]?.toString() || '';
-      const newValue = formData[key as keyof typeof formData] || '';
+    Object.keys(formData).forEach((key) => {
+      const originalValue = trip[key as keyof Trip]?.toString() || "";
+      const newValue = formData[key as keyof typeof formData] || "";
       if (originalValue !== newValue) {
         changes.push({
           field: key,
           oldValue: originalValue,
-          newValue: newValue
+          newValue: newValue,
         });
       }
     });
 
-    const finalReason = editReason === 'Other (specify in comments)' ? customReason : editReason;
+    const finalReason = editReason === "Other (specify in comments)" ? customReason : editReason;
 
     // Create edit records for each change
-    changes.forEach(change => {
-      const editRecord: Omit<TripEditRecord, 'id'> = {
+    changes.forEach((change) => {
+      const editRecord: Omit<TripEditRecord, "id"> = {
         tripId: trip.id,
-        editedBy: 'Current User', // In real app, use actual user
+        editedBy: "Current User", // In real app, use actual user
         editedAt: new Date().toISOString(),
         reason: finalReason,
         fieldChanged: change.field,
         oldValue: change.oldValue,
         newValue: change.newValue,
-        changeType: 'update'
+        changeType: "update",
       };
 
       // Update trip with new data and edit history
@@ -111,7 +108,13 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
         ...formData,
         baseRevenue: Number(formData.baseRevenue),
         distanceKm: formData.distanceKm ? Number(formData.distanceKm) : undefined,
-        editHistory: [...(trip.editHistory || [])]
+        editHistory: [
+          ...(trip.editHistory || []),
+          {
+            id: `trip-edit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            ...editRecord,
+          },
+        ],
       };
 
       onSave(updatedTrip, editRecord);
@@ -121,12 +124,7 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Edit Completed Trip"
-      maxWidth="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Completed Trip" maxWidth="lg">
       <div className="space-y-6">
         {/* Warning Alert */}
         <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
@@ -135,8 +133,9 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
             <div>
               <h4 className="text-sm font-medium text-amber-800">Editing Completed Trip</h4>
               <p className="text-sm text-amber-700 mt-1">
-                This trip has been completed. All changes will be logged with timestamps and reasons for audit purposes.
-                The edit history will be included in all future reports and exports.
+                This trip has been completed. All changes will be logged with timestamps and reasons
+                for audit purposes. The edit history will be included in all future reports and
+                exports.
               </p>
             </div>
           </div>
@@ -151,17 +150,19 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
             value={editReason}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEditReason(e.target.value)}
             options={[
-              { label: 'Select reason for editing...', value: '' },
-              ...TRIP_EDIT_REASONS.map(reason => ({ label: reason, value: reason }))
+              { label: "Select reason for editing...", value: "" },
+              ...TRIP_EDIT_REASONS.map((reason: string) => ({ label: reason, value: reason })),
             ]}
             error={errors.editReason}
           />
 
-          {editReason === 'Other (specify in comments)' && (
+          {editReason === "Other (specify in comments)" && (
             <TextArea
               label="Specify Reason *"
               value={customReason}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomReason(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setCustomReason(e.target.value)
+              }
               placeholder="Please provide a detailed reason for editing this completed trip..."
               rows={3}
               error={errors.customReason}
@@ -177,48 +178,62 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
             <Input
               label="Fleet Number"
               value={formData.fleetNumber}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('fleetNumber', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("fleetNumber", e.target.value)
+              }
             />
 
             <Input
               label="Driver Name"
               value={formData.driverName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('driverName', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("driverName", e.target.value)
+              }
             />
 
             <Input
               label="Client Name"
               value={formData.clientName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('clientName', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("clientName", e.target.value)
+              }
             />
 
             <Input
               label="Route"
               value={formData.route}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('route', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("route", e.target.value)
+              }
             />
 
             <Input
               label="Start Date"
               type="date"
               value={formData.startDate}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('startDate', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("startDate", e.target.value)
+              }
             />
 
             <Input
               label="End Date"
               type="date"
               value={formData.endDate}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('endDate', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("endDate", e.target.value)
+              }
             />
 
             <Select
               label="Currency"
               value={formData.revenueCurrency}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('revenueCurrency', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                handleChange("revenueCurrency", e.target.value)
+              }
               options={[
-                { label: 'ZAR (R)', value: 'ZAR' },
-                { label: 'USD ($)', value: 'USD' }
+                { label: "ZAR (R)", value: "ZAR" },
+                { label: "USD ($)", value: "USD" },
               ]}
             />
 
@@ -227,7 +242,9 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
               type="number"
               step="0.01"
               value={formData.baseRevenue}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('baseRevenue', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("baseRevenue", e.target.value)
+              }
             />
 
             <Input
@@ -235,14 +252,18 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
               type="number"
               step="0.1"
               value={formData.distanceKm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('distanceKm', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleChange("distanceKm", e.target.value)
+              }
             />
           </div>
 
           <TextArea
             label="Description"
             value={formData.description}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('description', e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              handleChange("description", e.target.value)
+            }
             rows={3}
           />
         </div>
@@ -252,11 +273,16 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
           <div className="space-y-4 border-t pt-4">
             <h3 className="text-lg font-medium text-gray-900">Previous Edit History</h3>
             <div className="bg-gray-50 rounded-md p-4 max-h-40 overflow-y-auto">
-              {trip.editHistory.map((edit: TripEditRecord, index: number) => (
-                <div key={index} className="text-sm border-b border-gray-200 pb-2 mb-2 last:border-0">
+              {trip.editHistory.map((edit, index) => (
+                <div
+                  key={index}
+                  className="text-sm border-b border-gray-200 pb-2 mb-2 last:border-0"
+                >
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium">{edit.fieldChanged}: {edit.oldValue} → {edit.newValue}</p>
+                      <p className="font-medium">
+                        {edit.fieldChanged}: {edit.oldValue} → {edit.newValue}
+                      </p>
                       <p className="text-gray-600">Reason: {edit.reason}</p>
                     </div>
                     <div className="text-right text-xs text-gray-500">
@@ -271,24 +297,15 @@ const CompletedTripEditModal: React.FC<CompletedTripEditModalProps> = ({
         )}
 
         {errors.general && (
-          <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-            {errors.general}
-          </div>
+          <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{errors.general}</div>
         )}
 
         {/* Actions */}
         <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            icon={<X className="w-4 h-4" />}
-          >
+          <Button variant="outline" onClick={onClose} icon={<X className="w-4 h-4" />}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSave}
-            icon={<Save className="w-4 h-4" />}
-          >
+          <Button onClick={handleSave} icon={<Save className="w-4 h-4" />}>
             Save Changes & Log Edit
           </Button>
         </div>

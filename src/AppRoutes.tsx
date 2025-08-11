@@ -165,7 +165,7 @@ const CustomerDashboard = lazy(() => import("./pages/clients/CustomerDashboard")
 const CustomerReports = lazy(() => import("./pages/clients/CustomerReports"));
 const ActiveCustomers = lazy(() => import("./pages/clients/ActiveCustomers"));
 const ClientDetail = lazy(() => import("./pages/clients/ClientDetail"));
-const RetentionMetrics = lazy(() => import("./pages/clients/RetentionMetrics"));
+const RetentionMetrics = lazy(() => import("./pages/clients/CustomerRetentionDashboard"));
 const AddNewCustomer = lazy(() => import("./pages/clients/AddNewCustomer"));
 const ClientNetworkMap = lazy(() => import("./pages/clients/ClientNetworkMap"));
 const ClientManagementPageOriginal = lazy(() => import("./pages/clients/ClientManagementPage")); // Added (renamed to avoid conflict)

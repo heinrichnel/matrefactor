@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal } from "/workspaces/matrefactor/src/components/ui/modal";
+import Modal from '../../ui/Modal';
 import { TripForm } from "/workspaces/matrefactor/src/components/forms/trips/TripForm";
 import { Trip } from "../../../types";
 import { useAppContext } from "../../../context/AppContext";

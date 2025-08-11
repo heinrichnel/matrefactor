@@ -1,13 +1,13 @@
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
-import { ArrowLeft, FileText } from 'lucide-react';
-import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import EnhancedDriverForm from '../../components/forms/driver/EnhancedDriverForm';
-import { Button } from '../../components/ui/Button';
-import useOfflineForm from '../../hooks/useOfflineForm';
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { ArrowLeft, FileText } from "lucide-react";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import EnhancedDriverForm from "../../components/forms/driver/EnhancedDriverForm";
+import { Button } from "../../components/ui/Button";
+import useOfflineForm from "../../hooks/useOfflineForm";
 
 // Import DriverData interface
-import type { DriverData } from '../../types/Details';
+import type { DriverData } from "../../types/Details";
 
 const AddEditDriverPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,15 +26,15 @@ const AddEditDriverPage: React.FC = () => {
       if (!isEditMode) return;
 
       try {
-        const driverDoc = await getDoc(doc(db, 'drivers', id as string));
+        const driverDoc = await getDoc(doc(db, "drivers", id as string));
         if (driverDoc.exists()) {
           setDriver(driverDoc.data() as Partial<DriverData>);
         } else {
-          setError(new Error('Driver not found'));
+          setError(new Error("Driver not found"));
         }
       } catch (err) {
-        console.error('Error fetching driver:', err);
-        setError(err instanceof Error ? err : new Error('Unknown error'));
+        console.error("Error fetching driver:", err);
+        setError(err instanceof Error ? err : new Error("Unknown error"));
       } finally {
         setLoading(false);
       }
@@ -44,7 +44,7 @@ const AddEditDriverPage: React.FC = () => {
   }, [db, id, isEditMode]);
 
   // Offline form handling
-  const { submit, isSubmitting, isOfflineOperation } = useOfflineForm({
+  const { submit } = useOfflineForm({
     collectionPath: "drivers",
     showOfflineWarning: true,
     onSuccess: () => {
@@ -52,7 +52,7 @@ const AddEditDriverPage: React.FC = () => {
       if (isEditMode) {
         navigate(`/drivers/profiles/${id}`);
       } else {
-        navigate('/drivers/profiles');
+        navigate("/drivers/profiles");
       }
     },
   });
@@ -69,7 +69,7 @@ const AddEditDriverPage: React.FC = () => {
     if (isEditMode) {
       navigate(`/drivers/profiles/${id}`);
     } else {
-      navigate('/drivers/profiles');
+      navigate("/drivers/profiles");
     }
   };
 

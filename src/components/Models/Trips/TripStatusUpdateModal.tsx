@@ -38,7 +38,7 @@ const TripStatusUpdateModal: React.FC<TripStatusUpdateModalProps> = ({
   };
 
   const statusTitle = status === 'shipped' ? 'Mark as Shipped' : 'Mark as Delivered';
-  const statusDescription = status === 'shipped' 
+  const statusDescription = status === 'shipped'
     ? 'This will mark the trip as shipped and record the current time as the shipping timestamp.'
     : 'This will mark the trip as delivered and record the current time as the delivery timestamp.';
 
@@ -135,14 +135,14 @@ const TripStatusUpdateModal: React.FC<TripStatusUpdateModalProps> = ({
         <div className="flex justify-end space-x-3 pt-4 border-t">
           <Button
             variant="outline"
-            onClick={onClick}
+            onClick={onClose}
             icon={<X className="w-4 h-4" />}
             disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button
-            onClick={onClick}
+            onClick={handleSubmit}
             icon={<Send className="w-4 h-4" />}
             disabled={isSubmitting}
             isLoading={isSubmitting}

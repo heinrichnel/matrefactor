@@ -101,6 +101,7 @@ const MainTripWorkflow = () => {
         )}
         {step === 1 && trip && (
           <CostEntryForm
+            tripId={trip.id}
             onSubmit={(c) => {
               setCosts((cs) => [...cs, c]);
             }}

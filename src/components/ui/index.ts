@@ -9,6 +9,9 @@ export { default as Button } from "./Button";
 // Re-export Card components
 export { Card, CardContent, CardHeader, CardTitle } from "./Card";
 
+// Re-export Alert components
+export { Alert, AlertDescription, AlertTitle } from "./Alert";
+
 // Re-export Input component
 export { default as Input } from "./Input";
 

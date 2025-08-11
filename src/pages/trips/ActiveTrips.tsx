@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { Trip } from "../../api/tripsApi";
 import AddTripModal from "../../components/Models/Trips/AddTripModal";
 import { useRealtimeTrips } from "../../hooks/useRealtimeTrips";
-import { formatCurrency, SupportedCurrency } from "../../lib/currency";
+import { SupportedCurrency } from "../../types";
+import { formatCurrency } from "../../utils/helpers";
 
 interface ActiveTripsProps {
-  displayCurrency: SupportedCurrency;
+  displayCurrency?: SupportedCurrency; // optional with default
 }
 
 // Mock active trips data with cost breakdown
@@ -73,6 +74,9 @@ const initialActiveTrips: Trip[] = [
 ];
 
 const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) => {
+  // Narrow currency to the ones supported by formatCurrency helper (USD|ZAR)
+  const currencyForDisplay: "USD" | "ZAR" =
+    displayCurrency === "USD" || displayCurrency === "ZAR" ? displayCurrency : "ZAR";
   // State variables
   const { trips: fetchedTrips } = useRealtimeTrips({ status: "active" });
   const [activeTrips, setActiveTrips] = useState<Trip[]>(initialActiveTrips);
@@ -870,7 +874,7 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>
                       <div className="font-medium">
-                        {formatCurrency(trip.cost, displayCurrency)}
+                        {formatCurrency(trip.cost, currencyForDisplay)}
                       </div>
                       <button
                         className="text-xs text-blue-600 hover:underline mt-1"
@@ -887,7 +891,7 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      <button className="text-indigo-600 hover:text-indigo-900" onClick={() => { }}>
+                      <button className="text-indigo-600 hover:text-indigo-900" onClick={() => {}}>
                         View
                       </button>
                       <button

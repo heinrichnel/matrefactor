@@ -1,306 +1,390 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { SupportedCurrency, formatCurrency } from "../../lib/currency";
-
-interface Trip {
-  id: string;
-  tripNumber: string;
-  origin: string;
-  destination: string;
-  startDate: string;
-  endDate: string;
-  status: "active" | "completed" | "scheduled";
-  driver: string;
-  vehicle: string;
-  distance: number;
-  cost: number;
-  revenue: number;
-}
+import { Input, Select, TextArea } from "@/components/ui/FormElements";
+import { Trip, TripDeletionRecord } from "../../types";
+import { useAppContext } from "../../context/AppContext";
+import Card, { CardContent, CardHeader } from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import CompletedTripEditModal from "../../components/Models/Trips/CompletedTripEditModal";
+import TripDeletionModal from "../../components/Models/Trips/TripDeletionModal";
+import SyncIndicator from "@/components/ui/SyncIndicator";
+import {
+  Eye,
+  Download,
+  FileSpreadsheet,
+  Filter,
+  Calendar,
+  User,
+  Edit,
+  Trash2,
+  History,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  formatCurrency,
+  calculateTotalCosts,
+  formatDate,
+  downloadTripPDF,
+  downloadTripExcel,
+  formatDateTime,
+} from "../../utils/helpers";
 
 interface CompletedTripsProps {
-  displayCurrency: SupportedCurrency;
+  trips: Trip[];
+  onView: (trip: Trip) => void;
 }
 
-const mockCompletedTrips: Trip[] = [
-  {
-    id: "101",
-    tripNumber: "TR-2023-097",
-    origin: "New York, NY",
-    destination: "Boston, MA",
-    startDate: "2025-07-01T08:00:00",
-    endDate: "2025-07-02T14:00:00",
-    status: "completed",
-    driver: "Alex Johnson",
-    vehicle: "Truck 234",
-    distance: 215,
-    cost: 950.25,
-    revenue: 1450.5,
-  },
-  {
-    id: "102",
-    tripNumber: "TR-2023-098",
-    origin: "Philadelphia, PA",
-    destination: "Pittsburgh, PA",
-    startDate: "2025-07-03T09:30:00",
-    endDate: "2025-07-05T11:00:00",
-    status: "completed",
-    driver: "Chris Wilson",
-    vehicle: "Truck 567",
-    distance: 305,
-    cost: 1320.75,
-    revenue: 2100.0,
-  },
-  {
-    id: "103",
-    tripNumber: "TR-2023-099",
-    origin: "Chicago, IL",
-    destination: "Milwaukee, WI",
-    startDate: "2025-07-05T07:00:00",
-    endDate: "2025-07-05T14:30:00",
-    status: "completed",
-    driver: "Emily Roberts",
-    vehicle: "Truck 789",
-    distance: 92,
-    cost: 425.5,
-    revenue: 750.25,
-  },
-  {
-    id: "104",
-    tripNumber: "TR-2023-100",
-    origin: "Dallas, TX",
-    destination: "Houston, TX",
-    startDate: "2025-07-07T08:00:00",
-    endDate: "2025-07-07T16:00:00",
-    status: "completed",
-    driver: "Mark Thompson",
-    vehicle: "Truck 345",
-    distance: 239,
-    cost: 875.25,
-    revenue: 1325.5,
-  },
-  {
-    id: "105",
-    tripNumber: "TR-2023-101",
-    origin: "Seattle, WA",
-    destination: "Portland, OR",
-    startDate: "2025-07-10T09:00:00",
-    endDate: "2025-07-10T15:00:00",
-    status: "completed",
-    driver: "Lisa Brown",
-    vehicle: "Truck 678",
-    distance: 174,
-    cost: 795.0,
-    revenue: 1250.75,
-  },
-];
+const CompletedTrips: React.FC<CompletedTripsProps> = ({ trips, onView }) => {
+  const { updateTrip, deleteTrip, connectionStatus } = useAppContext();
+  const [filters, setFilters] = useState({
+    startDate: "",
+    endDate: "",
+    client: "",
+    driver: "",
+    currency: "",
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [deletingTrip, setDeletingTrip] = useState<Trip | null>(null);
+  const [showEditHistory, setShowEditHistory] = useState<string | null>(null);
 
-const CompletedTrips: React.FC<CompletedTripsProps> = ({ displayCurrency }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<keyof Trip>("endDate");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  // Mock user role - in real app, get from auth context
+  const userRole: "admin" | "manager" | "operator" = "admin";
 
-  // Filter trips based on search term
-  const filteredTrips = mockCompletedTrips.filter(
-    (trip) =>
-      trip.tripNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trip.origin.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trip.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trip.driver.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Sort trips
-  const sortedTrips = [...filteredTrips].sort((a, b) => {
-    if (sortField === "endDate" || sortField === "startDate") {
-      const dateA = new Date(a[sortField]).getTime();
-      const dateB = new Date(b[sortField]).getTime();
-      return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
-    }
-
-    if (typeof a[sortField] === "number" && typeof b[sortField] === "number") {
-      return sortDirection === "asc"
-        ? (a[sortField] as number) - (b[sortField] as number)
-        : (b[sortField] as number) - (a[sortField] as number);
-    }
-
-    const valueA = String(a[sortField]).toLowerCase();
-    const valueB = String(b[sortField]).toLowerCase();
-    return sortDirection === "asc" ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+  const filteredTrips = trips.filter((trip) => {
+    if (filters.startDate && trip.startDate < filters.startDate) return false;
+    if (filters.endDate && trip.endDate > filters.endDate) return false;
+    if (filters.client && trip.clientName !== filters.client) return false;
+    if (filters.driver && trip.driverName !== filters.driver) return false;
+    if (filters.currency && trip.revenueCurrency !== filters.currency) return false;
+    return true;
   });
 
-  const handleSort = (field: keyof Trip) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Calculate total profit
-  const totalRevenue = sortedTrips.reduce((sum, trip) => sum + trip.revenue, 0);
-  const totalCost = sortedTrips.reduce((sum, trip) => sum + trip.cost, 0);
-  const totalProfit = totalRevenue - totalCost;
-  const averageMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+  const clearFilters = () => {
+    setFilters({
+      startDate: "",
+      endDate: "",
+      client: "",
+      driver: "",
+      currency: "",
+    });
+  };
+
+  const handleEditSave = (updatedTrip: Trip) => {
+    updateTrip(updatedTrip);
+    setEditingTrip(null);
+    alert("Trip updated successfully. Edit has been logged for audit purposes.");
+  };
+
+  const handleDelete = (trip: Trip, deletionRecord: Omit<TripDeletionRecord, "id">) => {
+    // In real app, save deletion record to audit log before deleting
+    console.log("Deletion Record:", deletionRecord);
+    deleteTrip(trip.id);
+    setDeletingTrip(null);
+    alert("Trip deleted successfully. Deletion has been logged for governance purposes.");
+  };
+
+  const uniqueClients = [...new Set(trips.map((trip) => trip.clientName))];
+  const uniqueDrivers = [...new Set(trips.map((trip) => trip.driverName))];
+
+  if (trips.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No completed trips found</h3>
+        <p className="text-gray-500">Complete some trips to see them here.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Completed Trips</h1>
-          <p className="text-gray-600">Showing {sortedTrips.length} completed trips</p>
+          <h2 className="text-2xl font-bold text-gray-900">Completed Trips</h2>
+          <div className="flex items-center mt-1">
+            <p className="text-gray-500 mr-3">
+              {filteredTrips.length} completed trip{filteredTrips.length !== 1 ? "s" : ""}
+            </p>
+            <SyncIndicator />
+          </div>
         </div>
-        <div>
-          <Link
-            to="/trips"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+        <div className="flex items-center space-x-3">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            icon={<Filter className="w-4 h-4" />}
           >
-            Back to Trip Management
-          </Link>
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
-          <div className="text-sm text-gray-500 mb-1">Total Revenue</div>
-          <div className="text-xl font-bold">{formatCurrency(totalRevenue, displayCurrency)}</div>
+      {/* Filters */}
+      {showFilters && (
+        <Card>
+          <CardHeader title="Filter Completed Trips" />
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <Input
+                label="Start Date"
+                type="date"
+                value={filters.startDate}
+                onChange={(e) => handleFilterChange("startDate", e.target.value)}
+              />
+              <Input
+                label="End Date"
+                type="date"
+                value={filters.endDate}
+                onChange={(e) => handleFilterChange("endDate", e.target.value)}
+              />
+              <Select
+                label="Client"
+                value={filters.client}
+                onChange={(e) => handleFilterChange("client", e.target.value)}
+                options={[
+                  { label: "All Clients", value: "" },
+                  ...uniqueClients.map((c) => ({ label: c, value: c })),
+                ]}
+              />
+              <Select
+                label="Driver"
+                value={filters.driver}
+                onChange={(e) => handleFilterChange("driver", e.target.value)}
+                options={[
+                  { label: "All Drivers", value: "" },
+                  ...uniqueDrivers.map((d) => ({ label: d, value: d })),
+                ]}
+              />
+              <Select
+                label="Currency"
+                value={filters.currency}
+                onChange={(e) => handleFilterChange("currency", e.target.value)}
+                options={[
+                  { label: "All Currencies", value: "" },
+                  { label: "ZAR (R)", value: "ZAR" },
+                  { label: "USD ($)", value: "USD" },
+                ]}
+              />
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                Clear Filters
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Offline warning */}
+      {connectionStatus !== "connected" && (
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-4">
+          <div className="flex items-start space-x-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-medium text-amber-800">Working Offline</h4>
+              <p className="text-sm text-amber-700 mt-1">
+                You're currently working offline. Changes to completed trips will be synced when
+                your connection is restored.
+              </p>
+            </div>
+          </div>
         </div>
+      )}
 
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
-          <div className="text-sm text-gray-500 mb-1">Total Costs</div>
-          <div className="text-xl font-bold">{formatCurrency(totalCost, displayCurrency)}</div>
-        </div>
+      <div className="grid gap-4">
+        {filteredTrips.map((trip) => {
+          const currency = trip.revenueCurrency;
+          const totalCosts = calculateTotalCosts(trip.costs);
+          const profit = (trip.baseRevenue || 0) - totalCosts;
+          const hasEditHistory = trip.editHistory && trip.editHistory.length > 0;
 
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-          <div className="text-sm text-gray-500 mb-1">Total Profit</div>
-          <div className="text-xl font-bold">{formatCurrency(totalProfit, displayCurrency)}</div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow border-l-4 border-purple-500">
-          <div className="text-sm text-gray-500 mb-1">Average Margin</div>
-          <div className="text-xl font-bold">{averageMargin.toFixed(2)}%</div>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search by trip number, origin, destination or driver..."
-          className="w-full px-4 py-2 border rounded-lg"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("tripNumber")}
-                >
-                  Trip Number {sortField === "tripNumber" && (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Route
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Driver / Vehicle
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("endDate")}
-                >
-                  Completion Date {sortField === "endDate" && (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("cost")}
-                >
-                  Cost {sortField === "cost" && (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("revenue")}
-                >
-                  Revenue {sortField === "revenue" && (sortDirection === "asc" ? "↑" : "↓")}
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Profit
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {sortedTrips.map((trip) => (
-                <tr key={trip.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {trip.tripNumber}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex flex-col">
-                      <span className="font-medium">From: {trip.origin}</span>
-                      <span>To: {trip.destination}</span>
-                      <span className="text-xs text-gray-400">{trip.distance} miles</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{trip.driver}</span>
-                      <span className="text-xs">{trip.vehicle}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(trip.endDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(trip.cost, displayCurrency)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(trip.revenue, displayCurrency)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span
-                      className={trip.revenue - trip.cost > 0 ? "text-green-600" : "text-red-600"}
-                    >
-                      {formatCurrency(trip.revenue - trip.cost, displayCurrency)}
+          return (
+            <Card key={trip.id} className="hover:shadow-md transition-shadow">
+              <CardHeader
+                title={`Fleet ${trip.fleetNumber} - ${trip.route}`}
+                subtitle={
+                  <div className="flex items-center space-x-4 text-sm">
+                    <span>
+                      {trip.clientName} • Completed {formatDate(trip.completedAt || trip.endDate)}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button className="text-indigo-600 hover:text-indigo-900" onClick={() => {}}>
-                        Details
-                      </button>
-                      <button className="text-blue-600 hover:text-blue-900" onClick={() => {}}>
-                        Report
-                      </button>
+                    {hasEditHistory && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-800">
+                        <History className="w-3 h-3 mr-1" />
+                        Edited
+                      </span>
+                    )}
+                  </div>
+                }
+              />
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <User className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-500">Driver</p>
+                      <p className="font-medium">{trip.driverName}</p>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-500">Duration</p>
+                      <p className="font-medium">
+                        {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Revenue</p>
+                    <p className="font-medium text-green-600">
+                      {formatCurrency(trip.baseRevenue || 0, currency)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Total Costs</p>
+                    <p className="font-medium text-red-600">
+                      {formatCurrency(totalCosts, currency)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Net Profit</p>
+                    <p className={`font-medium ${profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {formatCurrency(profit, currency)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Edit History Preview */}
+                {hasEditHistory && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600" />
+                        <span className="text-sm font-medium text-amber-800">
+                          This trip has been edited {trip.editHistory!.length} time
+                          {trip.editHistory!.length !== 1 ? "s" : ""} after completion
+                        </span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setShowEditHistory(showEditHistory === trip.id ? null : trip.id)
+                        }
+                        icon={<History className="w-3 h-3" />}
+                      >
+                        {showEditHistory === trip.id ? "Hide" : "View"} History
+                      </Button>
+                    </div>
+
+                    {showEditHistory === trip.id && (
+                      <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+                        {trip.editHistory!.map((edit, index) => (
+                          <div key={index} className="text-sm bg-white p-2 rounded border">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-medium">
+                                  {edit.fieldChanged}: {edit.oldValue} → {edit.newValue}
+                                </p>
+                                <p className="text-gray-600">Reason: {edit.reason}</p>
+                              </div>
+                              <div className="text-right text-xs text-gray-500">
+                                <p>{edit.editedBy}</p>
+                                <p>{formatDateTime(edit.editedAt)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    {trip.costs.length} cost entries
+                    {trip.distanceKm && ` • ${trip.distanceKm} km`}
+                    {trip.completedBy && ` • Completed by ${trip.completedBy}`}
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onView(trip)}
+                      icon={<Eye className="w-3 h-3" />}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => downloadTripExcel(trip)}
+                      icon={<FileSpreadsheet className="w-3 h-3" />}
+                    >
+                      Excel
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => downloadTripPDF(trip)}
+                      icon={<Download className="w-3 h-3" />}
+                    >
+                      PDF
+                    </Button>
+
+                    {/* Edit Button - Available for all users */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingTrip(trip)}
+                      icon={<Edit className="w-3 h-3" />}
+                    >
+                      Edit
+                    </Button>
+
+                    {/* Delete Button - Admin Only */}
+                    {userRole === "admin" && (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => setDeletingTrip(trip)}
+                        icon={<Trash2 className="w-3 h-3" />}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Edit Modal */}
+      {editingTrip && (
+        <CompletedTripEditModal
+          isOpen={!!editingTrip}
+          trip={editingTrip}
+          onClose={() => setEditingTrip(null)}
+          onSave={handleEditSave}
+        />
+      )}
+
+      {/* Deletion Modal */}
+      {deletingTrip && (
+        <TripDeletionModal
+          isOpen={!!deletingTrip}
+          trip={deletingTrip}
+          onClose={() => setDeletingTrip(null)}
+          onDelete={handleDelete}
+          userRole={userRole}
+        />
+      )}
     </div>
   );
 };

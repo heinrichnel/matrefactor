@@ -8,6 +8,7 @@ import { Input, Select, TextArea } from "../../ui/FormElements";
 interface CostFormProps {
   tripId: string;
   cost?: CostEntry;
+  existingCosts?: any[];
   onSubmit: (costData: Omit<CostEntry, "id" | "attachments">, files?: FileList) => void;
   onCancel: () => void;
 }

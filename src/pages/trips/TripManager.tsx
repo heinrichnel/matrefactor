@@ -174,8 +174,8 @@ const TripManager: React.FC<TripManagerProps> = ({ displayCurrency = "USD" }) =>
             </TabsContent>
 
             <TabsContent value="completed" className="p-0">
-              {/* Only pass props that CompletedTrips component accepts */}
-              <CompletedTrips displayCurrency={displayCurrency} />
+              {/* CompletedTrips expects trips & onView; currently no data wired, pass empty list & noop */}
+              <CompletedTrips trips={[]} onView={() => {}} />
             </TabsContent>
 
             <TabsContent value="calendar" className="p-0">

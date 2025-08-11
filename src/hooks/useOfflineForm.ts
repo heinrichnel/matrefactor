@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { getNetworkState } from '../utils/networkDetection';
-import { saveDocument, deleteDocument } from '../utils/offlineOperations';
+import { useState } from "react";
+import { getNetworkState } from "../utils/networkDetection";
+import { saveDocument, deleteDocument } from "../utils/offlineOperations";
 
 interface UseOfflineFormOptions {
   collectionPath: string;
@@ -20,7 +20,7 @@ interface OfflineFormReturn {
 
 /**
  * A custom hook for handling form submissions with offline support
- * 
+ *
  * @param options Configuration options
  * @returns An object with form submission functions and state
  */
@@ -40,33 +40,33 @@ const useOfflineForm = (options: UseOfflineFormOptions): OfflineFormReturn => {
 
     try {
       const networkState = getNetworkState();
-      
+
       // Check if we're offline
-      if (networkState.isOffline) {
+      if (networkState.status === "offline") {
         setIsOfflineOperation(true);
         if (options.showOfflineWarning) {
-          console.warn('You are offline. Changes will be saved when you reconnect.');
+          console.warn("You are offline. Changes will be saved when you reconnect.");
         }
       }
 
       // Generate ID if not provided
       const documentId = id || `doc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      
+
       // Save to Firestore (or queue for offline)
       await saveDocument(options.collectionPath, documentId, data);
-      
+
       // Call success callback if provided
       if (options.onSuccess) {
         options.onSuccess({
           id: documentId,
-          ...data
+          ...data,
         });
       }
     } catch (err) {
-      console.error('Error submitting form:', err);
+      console.error("Error submitting form:", err);
       const error = err instanceof Error ? err : new Error(String(err));
       setError(error);
-      
+
       // Call error callback if provided
       if (options.onError) {
         options.onError(error);
@@ -86,27 +86,27 @@ const useOfflineForm = (options: UseOfflineFormOptions): OfflineFormReturn => {
 
     try {
       const networkState = getNetworkState();
-      
+
       // Check if we're offline
-      if (networkState.isOffline) {
+      if (networkState.status === "offline") {
         setIsOfflineOperation(true);
         if (options.showOfflineWarning) {
-          console.warn('You are offline. Deletion will be processed when you reconnect.');
+          console.warn("You are offline. Deletion will be processed when you reconnect.");
         }
       }
 
       // Delete from Firestore (or queue for offline)
       await deleteDocument(options.collectionPath, id);
-      
+
       // Call success callback if provided
       if (options.onSuccess) {
         options.onSuccess({ id, deleted: true });
       }
     } catch (err) {
-      console.error('Error deleting document:', err);
+      console.error("Error deleting document:", err);
       const error = err instanceof Error ? err : new Error(String(err));
       setError(error);
-      
+
       // Call error callback if provided
       if (options.onError) {
         options.onError(error);
@@ -122,7 +122,7 @@ const useOfflineForm = (options: UseOfflineFormOptions): OfflineFormReturn => {
     isSubmitting,
     isDeleting,
     isOfflineOperation,
-    error
+    error,
   };
 };
 

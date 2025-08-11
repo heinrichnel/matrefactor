@@ -4,10 +4,12 @@
 
 import { getAnalytics } from "firebase/analytics";
 import { FirebaseOptions, getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { connectAuthEmulator, getAuth } from "firebase/auth";
 import {
   addDoc,
   collection,
+  collectionGroup,
+  connectFirestoreEmulator,
   deleteDoc,
   disableNetwork,
   doc,
@@ -21,11 +23,12 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
-import { getStorage } from "firebase/storage";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
+import { connectStorageEmulator, getStorage } from "firebase/storage";
 
 // Import types
 import {
@@ -147,6 +150,46 @@ export const auth = getAuth(firebaseApp);
 export const storage = getStorage(firebaseApp);
 export const functions = getFunctions(firebaseApp);
 
+// -----------------------------------------------------------------------------
+// OPTIONAL: Connect to local emulators when running locally (http, localhost)
+// Controlled via VITE_USE_EMULATORS to avoid accidental emulator usage.
+// Ports read from firebase.json (firestore:8081, auth:9099, functions:8888, storage:9198)
+// -----------------------------------------------------------------------------
+(() => {
+  if (typeof window === "undefined") return; // SSR / build safeguard
+  const isLocalHttp =
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+    window.location.protocol === "http:";
+  if (!isLocalHttp) return;
+  if (import.meta.env.VITE_USE_EMULATORS !== "true") return;
+  try {
+    // Firestore
+    try {
+      connectFirestoreEmulator(firestore, "127.0.0.1", 8081);
+    } catch {
+      /* already connected */
+    }
+    try {
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+    } catch {
+      /* already */
+    }
+    try {
+      connectFunctionsEmulator(functions, "127.0.0.1", 8888);
+    } catch {
+      /* already */
+    }
+    try {
+      connectStorageEmulator(storage, "127.0.0.1", 9198);
+    } catch {
+      /* already */
+    }
+    console.info("✅ Connected Firebase services to local emulators");
+  } catch (err) {
+    console.warn("⚠️ Failed to connect one or more Firebase emulators:", err);
+  }
+})();
+
 // Add analytics in browser environment only
 let analytics: any;
 if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
@@ -161,6 +204,10 @@ export const missedLoadsCollection = collection(firestore, "missedLoads");
 export const systemConfigCollection = collection(firestore, "systemConfig");
 export const activityLogsCollection = collection(firestore, "activityLogs");
 export const driverBehaviorCollection = collection(firestore, "driverBehavior");
+// Legacy alias kept for backward compatibility & migration clarity
+export const driverBehaviorLegacyCollection = driverBehaviorCollection;
+// New root collection for month-subcollection schema
+export const DRIVER_BEHAVIOR_EVENTS_ROOT = "driverBehaviorEvents";
 export const actionItemsCollection = collection(firestore, "actionItems");
 export const carReportsCollection = collection(firestore, "carReports");
 export const tyresCollection = collection(firestore, "tyres");
@@ -632,20 +679,54 @@ export const listenToMissedLoads = (
 // DRIVER BEHAVIOR FUNCTIONS
 // =============================================================================
 
+// === Driver Behavior Events helpers (month-subcollection schema) ===
+interface DBEventPathArgs {
+  fleetNumber: string; // e.g. "21H"
+  eventType: string; // e.g. "Fatigue Alert"
+  eventDate: string; // "YYYY/MM/DD"
+  eventTime: string; // "HH:MM" (retain colon in doc id)
+}
+
+export function buildDriverBehaviorDocRef(args: DBEventPathArgs) {
+  const [year, month, day] = args.eventDate.split("/");
+  const eventCategory = `${args.fleetNumber}_${args.eventType}_${year}`; // parent doc id
+  const docId = `${day}_${args.eventTime}`; // keep colon → "20_17:23"
+  return doc(firestore, DRIVER_BEHAVIOR_EVENTS_ROOT, eventCategory, month, docId);
+}
+
+export async function updateDriverBehaviorEventInFirebase(
+  args: DBEventPathArgs,
+  patch: Record<string, any>
+): Promise<string> {
+  const ref = buildDriverBehaviorDocRef(args);
+  const updateData = cleanUndefinedValues({ ...patch, updatedAt: serverTimestamp() });
+  await updateDoc(ref, updateData);
+  console.log("✅ Driver behavior event updated at:", ref.path);
+  await logActivity("driver_behavior_updated", ref.path, "driver_behavior", updateData);
+  return ref.id;
+}
+
 export const addDriverBehaviorEventToFirebase = async (eventData: any) => {
   try {
-    const eventWithTimestamp = cleanUndefinedValues({
+    const ref = buildDriverBehaviorDocRef({
+      fleetNumber: eventData.fleetNumber,
+      eventType: eventData.eventType,
+      eventDate: eventData.eventDate,
+      eventTime: eventData.eventTime,
+    });
+
+    const payload = cleanUndefinedValues({
       ...eventData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
+      importSource: eventData.importSource ?? "web_book",
+      uniqueKey: `${eventData.fleetNumber}_${eventData.eventType}_${eventData.eventDate}_${eventData.eventTime}`,
     });
 
-    const docRef = await addDoc(driverBehaviorCollection, eventWithTimestamp);
-    console.log("✅ Driver behavior event added with ID:", docRef.id);
-
-    await logActivity("driver_behavior_created", docRef.id, "driver_behavior", eventData);
-
-    return docRef.id;
+    await setDoc(ref, payload, { merge: true });
+    console.log("✅ Driver behavior event saved at:", ref.path);
+    await logActivity("driver_behavior_created", ref.path, "driver_behavior", eventData);
+    return ref.id;
   } catch (error) {
     console.error("Error adding driver behavior event:", error);
     await handleFirestoreError(error);
@@ -653,35 +734,101 @@ export const addDriverBehaviorEventToFirebase = async (eventData: any) => {
   }
 };
 
+// Legacy listener retained (top-level collection). Prefer listenToDriverBehaviorEventsAllMonths.
 export function listenToDriverBehaviorEvents(
   callback: (events: any[]) => void,
   onError?: (error: Error) => void
 ): () => void {
-  const q = query(driverBehaviorCollection, orderBy("eventDate", "desc"));
-
+  console.warn(
+    "⚠️ listenToDriverBehaviorEvents (legacy) uses top-level 'driverBehavior'. Use listenToDriverBehaviorEventsAllMonths for new schema."
+  );
+  const q = query(driverBehaviorLegacyCollection, orderBy("eventDate", "desc"));
   return onSnapshot(
     q,
     (snapshot) => {
       const events: any[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
         events.push({
-          id: doc.id,
+          id: docSnap.id,
           ...data,
           createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
           updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
         });
       });
-
-      console.log(`🔄 Real-time driver behavior events update: ${events.length} events loaded`);
       callback(events);
     },
     (error) => {
-      console.error("❌ Real-time driver behavior events listener error:", error);
-      if (onError) onError(error);
+      if (onError) onError(error as Error);
       handleFirestoreError(error);
     }
   );
+}
+
+// New aggregated listener querying month collection groups (01..12) individually
+export function listenToDriverBehaviorEventsAllMonths(
+  onBatch: (events: any[]) => void,
+  onError?: (err: Error) => void
+): () => void {
+  const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
+  const unsubs: Array<() => void> = [];
+  months.forEach((mm) => {
+    const q = query(
+      collectionGroup(firestore, mm),
+      where("importSource", "==", "web_book"),
+      orderBy("createdAt", "desc")
+    );
+    unsubs.push(
+      onSnapshot(
+        q,
+        (snap) => {
+          const batch: any[] = [];
+          snap.forEach((d) => {
+            const data: any = d.data();
+            batch.push({
+              id: d.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
+              updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt,
+              _path: d.ref.path,
+            });
+          });
+          onBatch(batch);
+        },
+        (err) => {
+          console.error(`❌ driverBehavior month ${mm} listener error:`, err);
+          onError?.(err as any);
+          handleFirestoreError(err);
+        }
+      )
+    );
+  });
+  return () => unsubs.forEach((u) => u());
+}
+
+// Utility: one-off fixer to convert createdAt string to Timestamp for a known doc
+export async function fixCreatedAtString(
+  fleet: string,
+  eventType: string,
+  year: string,
+  month: string,
+  docId: string
+) {
+  const ref = doc(
+    firestore,
+    DRIVER_BEHAVIOR_EVENTS_ROOT,
+    `${fleet}_${eventType}_${year}`,
+    month,
+    docId
+  );
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    const data: any = snap.data();
+    if (typeof data.createdAt === "string") {
+      await updateDoc(ref, { createdAt: Timestamp.fromDate(new Date(data.createdAt)) });
+      console.log("✅ Fixed createdAt for", ref.path);
+    }
+  }
 }
 
 // =============================================================================

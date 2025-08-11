@@ -56,9 +56,7 @@ const InventorySelectionForm: React.FC<InventorySelectionFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get inventory options from Firestore
-  const { options: inventoryOptions, loading: loadingInventory } = useInventoryOptions(
-    formData.storeLocation
-  );
+  const { options: inventoryOptions } = useInventoryOptions(formData.storeLocation);
 
   // Form submission handler
   const { submitForm, loading, error, success } = useFormSubmit("inventoryUsage");

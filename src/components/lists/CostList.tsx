@@ -58,7 +58,7 @@ const CostList: React.FC<CostListProps> = ({
                 <div className="flex justify-end space-x-2">
                   {onViewAttachments && cost.attachments && cost.attachments.length > 0 && (
                     <Button
-                      onClick={onClick}
+                      onClick={() => onViewAttachments(cost)}
                       variant="outline"
                       size="sm"
                       aria-label="View attachments"
@@ -68,7 +68,7 @@ const CostList: React.FC<CostListProps> = ({
                   )}
                   {onEdit && (
                     <Button
-                      onClick={onClick}
+                      onClick={() => onEdit(cost)}
                       variant="outline"
                       size="sm"
                       aria-label="Edit cost"
@@ -78,7 +78,7 @@ const CostList: React.FC<CostListProps> = ({
                   )}
                   {onDelete && (
                     <Button
-                      onClick={onClick}
+                      onClick={() => onDelete(cost.id)}
                       variant="outline"
                       size="sm"
                       aria-label="Delete cost"

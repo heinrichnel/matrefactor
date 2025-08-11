@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Circle, Polygon, Polyline, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import React, { useEffect, useState } from "react";
+import { Circle, MapContainer, Polygon, Polyline, TileLayer, useMapEvents } from "react-leaflet";
 
-// --- MOCKING EXTERNAL DEPENDENCIES ---
-// These are included to make the page self-contained and runnable.
-// In a real application, these would be in separate files (e.g., hooks/useWialonConnection.ts)
+/* ----------------------------------------------------------------
+   MOCKS (keep app runnable without external deps; replace as needed)
+-------------------------------------------------------------------*/
 const db = {}; // Mock Firestore DB
-const WIALON_API_URL = "https://hosting.wialon.com/wialon/ajax.html";
-const WIALON_LOGIN_URL = "https://hosting.wialon.com/?token=YOUR_TOKEN_HERE";
+const WIALON_API_URL = "https://hosting.wialon.com/?token=[VITE-WIALON-TOKEN]&lang=en";
+const WIALON_LOGIN_URL =
+  "https://hosting.wialon.com/?token=c1099bc37c906fd0832d8e783b60ae0dD9D1A721B294486AC08F8AA3ACAC2D2FD45FF053&lang=en";
 
 interface WialonConnectionStatus {
   connected: boolean;
@@ -29,13 +30,12 @@ const useWialonConnection = () => {
 
   const refresh = () => {
     setLoading(true);
-    // Simulate API call
     setTimeout(() => {
       setStatus({
         connected: true,
         user: "MockUser",
         serverTime: new Date(),
-        tokenExpiry: new Date(Date.now() + 3600000), // 1 hour from now
+        tokenExpiry: new Date(Date.now() + 3600000),
         errorMessage: null,
       });
       setLoading(false);
@@ -49,28 +49,22 @@ const useWialonConnection = () => {
   return { status, loading, refresh };
 };
 
-interface WialonUnit {
+export interface WialonUnit {
   id: number;
   name: string;
-  pos?: {
-    x: number;
-    y: number;
-    s: number;
-    t: number;
-  };
+  pos?: { x: number; y: number; s: number; t: number };
   cls_id?: number;
   type?: string;
-  last_message?: number; // Unix timestamp
-  connection_state?: number; // 1 for online, 0 for offline
+  last_message?: number; // unix seconds
+  connection_state?: number; // 1 online, 0 offline
 }
 
 const useWialonUnits = () => {
   const [units, setUnits] = useState<WialonUnit[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate fetching units from Wialon
     setTimeout(() => {
       setUnits([
         {
@@ -130,7 +124,7 @@ const useWialonSession = (sdkReady: boolean) => {
     if (sdkReady) {
       setLoggedIn(true);
       setSession({
-        getItem: (id: number) => ({
+        getItem: () => ({
           createDriver: (payload: any, callback: any) => {
             console.log("Mock driver create:", payload);
             callback(0, { n: payload.n });
@@ -150,12 +144,12 @@ const useWialonSession = (sdkReady: boolean) => {
 const useWialonResources = (session: any, loggedIn: boolean) => {
   const [resources, setResources] = useState<any[]>([]);
   useEffect(() => {
-    if (loggedIn && session) {
+    if (loggedIn && session)
       setResources([
         { id: 1, name: "Company A" },
         { id: 2, name: "Company B" },
       ]);
-    }
+    else setResources([]);
   }, [loggedIn, session]);
   return resources;
 };
@@ -168,9 +162,7 @@ const useWialonDrivers = (session: any, resourceId: number | null) => {
         { id: 101, n: "John Doe", ds: "Truck Driver", p: "+12345" },
         { id: 102, n: "Jane Smith", ds: "Van Driver", p: "+67890" },
       ]);
-    } else {
-      setDrivers([]);
-    }
+    } else setDrivers([]);
   }, [session, resourceId]);
   return drivers;
 };
@@ -193,35 +185,35 @@ const useWialonGeofences = (session: any, resourceId: number | null) => {
           ],
         },
       ]);
-    } else {
-      setGeofences([]);
-    }
+    } else setGeofences([]);
   }, [session, resourceId]);
   return geofences;
 };
 
 const firestoreMock = {
-  doc: (db: any, collection: string, docId: string) => ({
-    exists: true,
-    data: () => ({
-      baseUrl: "https://hosting.wialon.com/",
-      token: "mock-token-12345",
-      language: "en",
-      defaultView: "monitoring",
-    }),
-  }),
+  doc: (_db: any, _collection: string, _docId: string) => {
+    void _db;
+    void _collection;
+    void _docId; // mark as used
+    return {
+      exists: true,
+      data: () => ({
+        baseUrl: "https://hosting.wialon.com/",
+        token: "mock-token-12345",
+        language: "en",
+        defaultView: "monitoring",
+      }),
+    };
+  },
   getDoc: async (ref: any) => ref,
-  updateDoc: async (ref: any, data: any) => console.log("Mock update:", data),
-  setDoc: async (ref: any, data: any) => console.log("Mock set:", data),
+  updateDoc: async (_ref: any, data: any) => console.log("Mock update:", data),
+  setDoc: async (_ref: any, data: any) => console.log("Mock set:", data),
 };
 const { doc, getDoc, updateDoc, setDoc } = firestoreMock;
 
-// --- PAGE COMPONENTS ---
-
-/**
- * WialonStatus Component
- * A component to display the current status of Wialon connection
- */
+/* ----------------------------------------------------------------
+   STATUS
+-------------------------------------------------------------------*/
 const WialonStatus: React.FC = () => {
   const { status, loading: connectionLoading, refresh } = useWialonConnection();
   const { units, loading: unitsLoading, error: unitsError } = useWialonUnits();
@@ -239,6 +231,7 @@ const WialonStatus: React.FC = () => {
           Refresh
         </button>
       </div>
+
       <div className="p-2 border border-gray-200 dark:border-gray-700 rounded-md mb-2 bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center">
           <div
@@ -258,6 +251,7 @@ const WialonStatus: React.FC = () => {
           </div>
         )}
       </div>
+
       {status.connected && (
         <div className="text-sm space-y-1 mt-3">
           {status.user && (
@@ -302,6 +296,7 @@ const WialonStatus: React.FC = () => {
           </div>
         </div>
       )}
+
       {!status.connected && !connectionLoading && (
         <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
           <p className="font-medium">Troubleshooting:</p>
@@ -315,22 +310,37 @@ const WialonStatus: React.FC = () => {
   );
 };
 
-/**
- * WialonUnitsList Component
- * Displays a list of Wialon units with filtering and sorting options.
- */
+/* ----------------------------------------------------------------
+   UNITS LIST (typed sorting fix for TS7053)
+-------------------------------------------------------------------*/
+type SortKey = "name" | "last_message";
+type SortDirection = "ascending" | "descending";
+
+const getSortableValue = (u: WialonUnit, key: SortKey): string | number => {
+  if (key === "name") return u.name ?? "";
+  if (key === "last_message")
+    return typeof u.last_message === "number" ? u.last_message : -Infinity;
+  // unreachable due to union type, but satisfies exhaustive checks
+  return "";
+};
+
+const compareValues = (a: string | number, b: string | number, dir: SortDirection) => {
+  if (a < b) return dir === "ascending" ? -1 : 1;
+  if (a > b) return dir === "ascending" ? 1 : -1;
+  return 0;
+};
+
 const WialonUnitsList: React.FC = () => {
   const { units, loading, error } = useWialonUnits();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("");
-  const [filteredUnits, setFilteredUnits] = useState<WialonUnit[]>([]);
-  const [sortConfig, setSortConfig] = useState<{
-    key: string;
-    direction: "ascending" | "descending";
-  }>({
+
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({
     key: "name",
     direction: "ascending",
   });
+
+  const [filteredUnits, setFilteredUnits] = useState<WialonUnit[]>([]);
 
   useEffect(() => {
     if (!units) {
@@ -338,70 +348,63 @@ const WialonUnitsList: React.FC = () => {
       return;
     }
 
-    let currentFiltered = [...units];
+    let current = [...units];
 
     if (searchQuery) {
-      currentFiltered = currentFiltered.filter((unit) =>
-        unit.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const q = searchQuery.toLowerCase();
+      current = current.filter((u) => u.name.toLowerCase().includes(q));
     }
+
     if (selectedType) {
-      currentFiltered = currentFiltered.filter(
-        (unit) =>
-          (unit.cls_id && String(unit.cls_id) === selectedType) ||
-          (unit.type && unit.type.toLowerCase() === selectedType.toLowerCase())
+      current = current.filter(
+        (u) =>
+          (u.cls_id && String(u.cls_id) === selectedType) ||
+          (u.type && u.type.toLowerCase() === selectedType.toLowerCase())
       );
     }
 
-    currentFiltered.sort((a, b) => {
-      const valueA = a[sortConfig.key] !== undefined ? a[sortConfig.key] : "";
-      const valueB = b[sortConfig.key] !== undefined ? b[sortConfig.key] : "";
-      if (sortConfig.key === "last_message") {
-        const numA = typeof valueA === "number" ? valueA : -Infinity;
-        const numB = typeof valueB === "number" ? valueB : -Infinity;
-        if (numA < numB) return sortConfig.direction === "ascending" ? -1 : 1;
-        if (numA > numB) return sortConfig.direction === "ascending" ? 1 : -1;
-      } else {
-        if (valueA < valueB) return sortConfig.direction === "ascending" ? -1 : 1;
-        if (valueA > valueB) return sortConfig.direction === "ascending" ? 1 : -1;
-      }
-      return 0;
+    // Typed sort
+    current.sort((a, b) => {
+      const va = getSortableValue(a, sortConfig.key);
+      const vb = getSortableValue(b, sortConfig.key);
+      return compareValues(va, vb, sortConfig.direction);
     });
 
-    setFilteredUnits(currentFiltered);
+    setFilteredUnits(current);
   }, [units, searchQuery, selectedType, sortConfig]);
 
   const unitTypes = units
-    ? Array.from(new Set(units.map((unit) => (unit.cls_id ? `Class ${unit.cls_id}` : unit.type))))
+    ? Array.from(new Set(units.map((u) => (u.cls_id ? `Class ${u.cls_id}` : u.type))))
         .filter(Boolean)
-        .map((type) => ({
-          id: String(type),
-          name: type as string,
-        }))
+        .map((t) => ({ id: String(t), name: String(t) }))
     : [];
 
-  if (loading) {
+  if (loading)
     return (
       <div className="p-4 text-center">
         <div className="animate-pulse text-gray-600">Loading Wialon units...</div>
       </div>
     );
-  }
-  if (error) {
+  if (error)
     return (
       <div className="p-4 text-center text-red-600">
         <p className="font-medium">Error loading units</p>
         <p className="text-sm mt-1">{String(error)}</p>
       </div>
     );
-  }
-  if (!units || units.length === 0) {
+  if (!units || units.length === 0)
     return <div className="p-4 text-center text-gray-600">No units available.</div>;
-  }
+
+  const toggleSort = (key: SortKey) =>
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "ascending" ? "descending" : "ascending",
+    }));
 
   return (
     <div className="p-4 bg-white rounded shadow">
       <h2 className="text-xl font-semibold mb-4">Wialon Units</h2>
+
       <div className="mb-4 flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <label htmlFor="unit-search" className="block text-sm font-medium text-gray-700 mb-1">
@@ -427,31 +430,24 @@ const WialonUnitsList: React.FC = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Types</option>
-            {unitTypes.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.name}
+            {unitTypes.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
               </option>
             ))}
           </select>
         </div>
       </div>
+
       <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
         <table className="min-w-full bg-white divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th
                 className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() =>
-                  setSortConfig((prevConfig) => ({
-                    key: "name",
-                    direction:
-                      prevConfig.key === "name" && prevConfig.direction === "ascending"
-                        ? "descending"
-                        : "ascending",
-                  }))
-                }
+                onClick={() => toggleSort("name")}
               >
-                Name
+                Name{" "}
                 {sortConfig.key === "name" && (
                   <span className="ml-1">{sortConfig.direction === "ascending" ? "↑" : "↓"}</span>
                 )}
@@ -461,17 +457,9 @@ const WialonUnitsList: React.FC = () => {
               </th>
               <th
                 className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() =>
-                  setSortConfig((prevConfig) => ({
-                    key: "last_message",
-                    direction:
-                      prevConfig.key === "last_message" && prevConfig.direction === "ascending"
-                        ? "descending"
-                        : "ascending",
-                  }))
-                }
+                onClick={() => toggleSort("last_message")}
               >
-                Last Active
+                Last Active{" "}
                 {sortConfig.key === "last_message" && (
                   <span className="ml-1">{sortConfig.direction === "ascending" ? "↑" : "↓"}</span>
                 )}
@@ -482,27 +470,25 @@ const WialonUnitsList: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredUnits.map((unit) => (
+            {filteredUnits.map((u) => (
               <tr
-                key={unit.id}
+                key={u.id}
                 className="hover:bg-blue-50 cursor-pointer transition-colors duration-150 ease-in-out"
               >
                 <td className="px-4 py-3">
-                  <div className="text-sm font-medium text-gray-900">{unit.name}</div>
+                  <div className="text-sm font-medium text-gray-900">{u.name}</div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500">
-                  {unit.type || (unit.cls_id ? `Class ${unit.cls_id}` : "N/A")}
+                  {u.type || (u.cls_id ? `Class ${u.cls_id}` : "N/A")}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500">
-                  {unit.last_message
-                    ? new Date(unit.last_message * 1000).toLocaleString()
-                    : "Never"}
+                  {u.last_message ? new Date(u.last_message * 1000).toLocaleString() : "Never"}
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${unit.connection_state === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${u.connection_state === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
                   >
-                    {unit.connection_state === 1 ? "Online" : "Offline"}
+                    {u.connection_state === 1 ? "Online" : "Offline"}
                   </span>
                 </td>
               </tr>
@@ -510,6 +496,7 @@ const WialonUnitsList: React.FC = () => {
           </tbody>
         </table>
       </div>
+
       <div className="mt-4 text-right text-sm text-gray-500">
         {filteredUnits.length} units shown{" "}
         {units.length > filteredUnits.length && `(out of ${units.length})`}
@@ -518,11 +505,12 @@ const WialonUnitsList: React.FC = () => {
   );
 };
 
-// --- WialonConfig Component ---
+/* ----------------------------------------------------------------
+   CONFIG
+-------------------------------------------------------------------*/
 interface WialonConfigProps {
   companyId?: string;
 }
-
 interface WialonConfigState {
   baseUrl: string;
   token: string;
@@ -561,10 +549,9 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
         setIsLoading(true);
         const configRef = doc(db, "integrationConfig", `wialon-${companyId}`);
         const docSnap = await getDoc(configRef);
-        if (docSnap.exists) {
-          setConfig({ ...config, ...(docSnap.data() as WialonConfigState) });
-        }
-      } catch (err) {
+        if (docSnap.exists)
+          setConfig((prev) => ({ ...prev, ...(docSnap.data() as WialonConfigState) }));
+      } catch {
         setError("Failed to load configuration. Please try again.");
       } finally {
         setIsLoading(false);
@@ -582,10 +569,7 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
         setError("Base URL and Token are required fields.");
         return;
       }
-      let formattedBaseUrl = config.baseUrl;
-      if (!formattedBaseUrl.endsWith("/")) {
-        formattedBaseUrl += "/";
-      }
+      const formattedBaseUrl = config.baseUrl.endsWith("/") ? config.baseUrl : `${config.baseUrl}/`;
       const configRef = doc(db, "integrationConfig", `wialon-${companyId}`);
       const docSnap = await getDoc(configRef);
       if (docSnap.exists) {
@@ -604,20 +588,16 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
       }
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
+    } catch {
       setError("Failed to save configuration. Please try again.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleToggleTokenVisibility = () => {
-    setIsTokenVisible((v) => !v);
-  };
+  const handleToggleTokenVisibility = () => setIsTokenVisible((v) => !v);
 
-  if (isLoading) {
-    return <div className="p-4 text-center">Loading configuration...</div>;
-  }
+  if (isLoading) return <div className="p-4 text-center">Loading configuration...</div>;
 
   return (
     <div className="p-4 bg-white rounded shadow">
@@ -630,6 +610,7 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
           Configuration saved successfully!
         </div>
       )}
+
       <div className="mb-4">
         <label htmlFor="baseUrl" className="block text-sm font-medium text-gray-700 mb-1">
           Wialon Base URL
@@ -644,6 +625,7 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
         />
         <p className="mt-1 text-xs text-gray-500">The base URL for your Wialon instance</p>
       </div>
+
       <div className="mb-4">
         <label htmlFor="token" className="block text-sm font-medium text-gray-700 mb-1">
           Wialon Token
@@ -673,6 +655,7 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
           The authentication token for accessing your Wialon account
         </p>
       </div>
+
       <div className="mb-4">
         <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
           Default Language
@@ -690,6 +673,7 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
           ))}
         </select>
       </div>
+
       <div className="mb-4">
         <label htmlFor="defaultView" className="block text-sm font-medium text-gray-700 mb-1">
           Default View
@@ -697,7 +681,12 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
         <select
           id="defaultView"
           value={config.defaultView}
-          onChange={(e) => setConfig({ ...config, defaultView: e.target.value as any })}
+          onChange={(e) =>
+            setConfig({
+              ...config,
+              defaultView: e.target.value as WialonConfigState["defaultView"],
+            })
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="monitoring">Monitoring</option>
@@ -705,6 +694,7 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
           <option value="dashboard">Dashboard</option>
         </select>
       </div>
+
       <div className="flex justify-end mt-6">
         <button
           type="button"
@@ -719,44 +709,46 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
   );
 };
 
-// --- WialonConfigDisplay Component ---
-const WialonConfigDisplay: React.FC = () => {
-  return (
-    <div className="bg-white shadow rounded-lg p-4">
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Wialon Configuration</h3>
-      <div className="space-y-3">
-        <div>
-          <span className="text-sm font-medium text-gray-500">API URL:</span>
-          <div className="ml-2 text-sm break-all">{WIALON_API_URL}</div>
+/* ----------------------------------------------------------------
+   CONFIG DISPLAY
+-------------------------------------------------------------------*/
+const WialonConfigDisplay: React.FC = () => (
+  <div className="bg-white shadow rounded-lg p-4">
+    <h3 className="text-lg font-medium text-gray-900 mb-2">Wialon Configuration</h3>
+    <div className="space-y-3">
+      <div>
+        <span className="text-sm font-medium text-gray-500">API URL:</span>
+        <div className="ml-2 text-sm break-all">{WIALON_API_URL}</div>
+      </div>
+      <div>
+        <span className="text-sm font-medium text-gray-500">Login URL:</span>
+        <div className="ml-2 text-xs break-all mb-2 font-mono bg-gray-50 p-1 border rounded">
+          {WIALON_LOGIN_URL}
         </div>
-        <div>
-          <span className="text-sm font-medium text-gray-500">Login URL:</span>
-          <div className="ml-2 text-xs break-all mb-2 font-mono bg-gray-50 p-1 border rounded">
-            {WIALON_LOGIN_URL}
-          </div>
-          <a
-            href={WIALON_LOGIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-          >
-            Open Wialon Login
-          </a>
-        </div>
-        <div className="text-xs text-gray-500 pt-2 border-t">
-          <p className="mb-1">To access Wialon hosting directly:</p>
-          <ol className="list-decimal list-inside pl-2">
-            <li>Click the "Open Wialon Login" button above</li>
-            <li>Or use the Wialon Login Panel component in the admin area</li>
-            <li>The token is automatically included in the URL</li>
-          </ol>
-        </div>
+        <a
+          href={WIALON_LOGIN_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+        >
+          Open Wialon Login
+        </a>
+      </div>
+      <div className="text-xs text-gray-500 pt-2 border-t">
+        <p className="mb-1">To access Wialon hosting directly:</p>
+        <ol className="list-decimal list-inside pl-2">
+          <li>Click the "Open Wialon Login" button above</li>
+          <li>Or use the Wialon Login Panel component in the admin area</li>
+          <li>The token is automatically included in the URL</li>
+        </ol>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
-// --- WialonDriverManager Component ---
+/* ----------------------------------------------------------------
+   DRIVER MANAGER
+-------------------------------------------------------------------*/
 interface Driver {
   id: number;
   n: string;
@@ -774,6 +766,7 @@ export const WialonDriverManager: React.FC = () => {
   const [form, setForm] = useState({ n: "", ds: "", p: "" });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+
   const handleCreate = () => {
     if (!selectedRes || !session) return;
     const res = session.getItem(selectedRes);
@@ -792,11 +785,8 @@ export const WialonDriverManager: React.FC = () => {
         jp: {},
       },
       (code: number, data: any) => {
-        alert(
-          code
-            ? `Driver create error: ${window.wialon.core.Errors.getErrorText(code)}`
-            : `Driver "${data.n}" created!`
-        );
+        const errorText = (globalThis as any)?.wialon?.core?.Errors?.getErrorText?.(code) ?? code;
+        alert(code ? `[Wialon] Driver create error: ${errorText}` : `Driver "${data.n}" created!`);
       }
     );
   };
@@ -805,6 +795,7 @@ export const WialonDriverManager: React.FC = () => {
     <div className="p-4 bg-white rounded shadow">
       <h2 className="text-xl font-semibold mb-4">Wialon Driver Manager</h2>
       {error && <div className="text-red-500 mb-2">{error}</div>}
+
       <label className="block mb-2">
         <span className="text-sm font-medium text-gray-700">Resource:</span>
         <select
@@ -820,6 +811,7 @@ export const WialonDriverManager: React.FC = () => {
           ))}
         </select>
       </label>
+
       <h3 className="text-lg font-semibold mt-4">Drivers</h3>
       <ul className="list-disc list-inside space-y-1 mt-2">
         {drivers.map((d) => (
@@ -828,6 +820,7 @@ export const WialonDriverManager: React.FC = () => {
           </li>
         ))}
       </ul>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -867,7 +860,9 @@ export const WialonDriverManager: React.FC = () => {
   );
 };
 
-// --- WialonGeofenceManager Component ---
+/* ----------------------------------------------------------------
+   GEOFENCE MANAGER
+-------------------------------------------------------------------*/
 type LatLngTuple = [number, number];
 const center: LatLngTuple = [-26.2041, 28.0473];
 
@@ -904,7 +899,8 @@ export const WialonGeofenceManager: React.FC = () => {
         p: [{ x: newCircle.lng, y: newCircle.lat, r: newCircle.radius }],
       },
       (code: number, data: any) => {
-        alert(code ? window.wialon.core.Errors.getErrorText(code) : `Geofence "${data.n}" created`);
+        const errorText = (globalThis as any)?.wialon?.core?.Errors?.getErrorText?.(code) ?? code;
+        alert(code ? errorText : `Geofence "${data.n}" created`);
       }
     );
   };
@@ -913,6 +909,7 @@ export const WialonGeofenceManager: React.FC = () => {
     <div className="p-4 bg-white rounded shadow">
       <h2 className="text-xl font-semibold mb-4">Wialon Geofence Manager</h2>
       {error && <div className="text-red-500 mb-2">{error}</div>}
+
       <label className="block mb-4">
         <span className="text-sm font-medium text-gray-700">Resource:</span>
         <select
@@ -928,6 +925,7 @@ export const WialonGeofenceManager: React.FC = () => {
           ))}
         </select>
       </label>
+
       <div className="mt-4">
         <MapContainer
           center={center}
@@ -939,7 +937,8 @@ export const WialonGeofenceManager: React.FC = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <MapClickHandler />
-          {geofences.map((zone) =>
+
+          {geofences.map((zone: any) =>
             zone.t === 3 && zone.p && zone.p.length > 0 ? (
               <Circle
                 key={zone.id}
@@ -961,6 +960,7 @@ export const WialonGeofenceManager: React.FC = () => {
               />
             ) : null
           )}
+
           {newCircle && (
             <Circle
               center={[newCircle.lat, newCircle.lng]}
@@ -969,6 +969,7 @@ export const WialonGeofenceManager: React.FC = () => {
             />
           )}
         </MapContainer>
+
         <div className="mt-2 flex items-center space-x-2">
           <input
             placeholder="Geofence name"
@@ -990,7 +991,11 @@ export const WialonGeofenceManager: React.FC = () => {
   );
 };
 
-// --- THE MAIN PAGE COMPONENT ---
+/* ----------------------------------------------------------------
+   PAGE
+-------------------------------------------------------------------*/
+// forward declaration removed (component already defined above)
+
 const WialonAdminPage: React.FC = () => {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("default");
   const [companies, setCompanies] = useState<any[]>([]);
@@ -1007,8 +1012,8 @@ const WialonAdminPage: React.FC = () => {
           ]);
           setIsLoading(false);
         }, 1000);
-      } catch (error) {
-        console.error("Error fetching companies:", error);
+      } catch (e) {
+        console.error("Error fetching companies:", e);
         setIsLoading(false);
       }
     };
@@ -1018,12 +1023,12 @@ const WialonAdminPage: React.FC = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Page Header */}
+        {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Wialon Integration Dashboard</h1>
         </div>
 
-        {/* Company Selection Panel */}
+        {/* Company selection */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Configuration Target</h2>
           <div className="mb-4">
@@ -1041,9 +1046,9 @@ const WialonAdminPage: React.FC = () => {
             >
               <option value="default">System Default (All Companies)</option>
               {!isLoading &&
-                companies.map((company) => (
-                  <option key={company.id} value={company.id}>
-                    {company.name}
+                companies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
                   </option>
                 ))}
             </select>
@@ -1053,7 +1058,7 @@ const WialonAdminPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Status and Configuration Sections */}
+        {/* Status & Config */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <WialonStatus />
           <div className="space-y-6">
@@ -1066,18 +1071,17 @@ const WialonAdminPage: React.FC = () => {
           <WialonUnitsList />
         </div>
 
-        {/* Management Sections */}
+        {/* Management */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <WialonDriverManager />
           <WialonGeofenceManager />
         </div>
 
-        {/* Info Block */}
+        {/* Info */}
         <div className="bg-blue-50 border-l-4 border-blue-500 p-4 text-sm rounded">
           <h3 className="font-medium text-blue-700">About This Panel</h3>
           <p className="mt-1 text-blue-600">
-            This dashboard provides a centralized interface for managing the Wialon integration. Use
-            the components above to configure API settings, manage company-specific data, and
+            Use the components above to configure API settings, manage company-specific data, and
             perform essential tasks like driver and geofence management.
           </p>
         </div>
