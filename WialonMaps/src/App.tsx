@@ -8,8 +8,9 @@ const App = () => {
   const [activeTab, setActiveTab] = useState("units");
 
   useEffect(() => {
-    // Use optional token from environment if provided (Vite style env var)
-    const token = (import.meta as any).env?.VITE_WIALON_TOKEN as string | undefined;
+    // The type system now correctly recognizes VITE_WIALON_TOKEN
+    // as an optional string by using an inline type assertion.
+    const token = (import.meta.env as { VITE_WIALON_TOKEN?: string }).VITE_WIALON_TOKEN;
     initialize(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

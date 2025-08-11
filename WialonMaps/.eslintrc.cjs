@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* /workspaces/matrefactor/WialonMaps/.eslintrc.cjs */
 module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
@@ -6,7 +8,8 @@ module.exports = {
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:react/jsx-runtime" // new JSX transform
   ],
   settings: {
     react: { version: "detect" }
@@ -16,10 +19,27 @@ module.exports = {
     sourceType: "module",
     project: null
   },
+  rules: {
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-uses-react": "off"
+  },
+  ignorePatterns: [
+    "dist",
+    "build",
+    "node_modules",
+    "coverage"
+  ],
   overrides: [
+    // Ensure Node globals (module, require, __dirname) are defined for config/build scripts
     {
-      files: ["vite.config.ts", "tailwind.config.ts", "postcss.config.cjs"],
-      parserOptions: { project: null }
+      files: [
+        "*.cjs",
+        "*.js",
+        "vite.config.ts",
+        "tailwind.config.ts",
+        "postcss.config.cjs"
+      ],
+      env: { node: true }
     }
   ]
 };

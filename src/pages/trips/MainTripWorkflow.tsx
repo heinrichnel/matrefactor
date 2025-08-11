@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui";
 import { useState } from "react";
+import CostForm from "../../components/forms/cost/CostForm";
 import { TripForm } from "../../components/forms/trips/TripForm";
 import { canProceedToNextStep, defaultTripWorkflowConfig } from "../../config/tripWorkflowConfig";
-import CostEntryForm from "./CostEntryForm";
 import FlagInvestigationPanel from "./FlagInvestigationPanel";
 import PaymentTrackingPanel from "./PaymentTrackingPanel";
 import ReportingPanel from "./ReportingPanel";
@@ -100,7 +100,7 @@ const MainTripWorkflow = () => {
           />
         )}
         {step === 1 && trip && (
-          <CostEntryForm
+          <CostForm
             tripId={trip.id}
             onSubmit={(c) => {
               setCosts((cs) => [...cs, c]);

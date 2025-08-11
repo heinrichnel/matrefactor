@@ -1,5 +1,6 @@
+// src/components/tabs/UnitsTab.tsx
 import { useEffect, useState } from "react";
-import type { WialonUnit } from "../../types/wialon";
+import type { WialonUnit, WialonUnitStatus } from "../../types/wialon";
 import { Table } from "../ui/Table";
 import { UnitDetailsModal } from "../tabs/UnitDetailsModal";
 
@@ -14,14 +15,14 @@ export const UnitsTab = ({ units, onRefresh }: UnitsTabProps) => {
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
-
     if (autoRefresh) {
       interval = setInterval(() => {
         onRefresh();
       }, 5000);
     }
-
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [autoRefresh, onRefresh]);
 
   const columns = [
@@ -33,7 +34,7 @@ export const UnitsTab = ({ units, onRefresh }: UnitsTabProps) => {
 
   const data = units.map((unit) => ({
     id: unit.id,
-    status: <StatusIndicator status={unit.status} />,
+    status: <StatusIndicator status={unit.status ?? "unknown"} />,
     name: unit.name,
     driver: unit.driver?.name || "-",
     actions: (
@@ -71,17 +72,21 @@ export const UnitsTab = ({ units, onRefresh }: UnitsTabProps) => {
   );
 };
 
-const StatusIndicator = ({ status }: { status: string }) => {
-  const statusColors: Record<string, string> = {
+const StatusIndicator = ({ status }: { status: WialonUnitStatus | undefined }) => {
+  const s: WialonUnitStatus = status ?? "unknown";
+
+  const statusColors: Record<WialonUnitStatus, string> = {
     online: "bg-green-500",
-    offline: "bg-red-500",
+    moving: "bg-green-500",
     parked: "bg-yellow-500",
+    offline: "bg-red-500",
+    unknown: "bg-gray-500",
   };
 
   return (
     <div className="flex items-center">
-      <span className={`w-3 h-3 rounded-full ${statusColors[status] || "bg-gray-500"}`}></span>
-      <span className="ml-2 capitalize">{status}</span>
+      <span className={`w-3 h-3 rounded-full ${statusColors[s]}`}></span>
+      <span className="ml-2 capitalize">{s}</span>
     </div>
   );
 };

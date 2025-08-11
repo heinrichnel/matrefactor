@@ -1,3 +1,4 @@
+// /workspaces/matrefactor/WialonMaps/src/components/tabs/SensorsTab.tsx
 import { useEffect, useState } from "react";
 import type { WialonSensor, WialonUnit } from "../../types/wialon";
 import { Button } from "../ui/Button";
@@ -7,30 +8,37 @@ interface SensorsTabProps {
   units: WialonUnit[];
 }
 
+type SensorForm = Pick<WialonSensor, "name" | "type" | "measurement" | "parameter">;
+
 export const SensorsTab = ({ units }: SensorsTabProps) => {
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [selectedSensor, setSelectedSensor] = useState<string>("");
   const [sensors, setSensors] = useState<WialonSensor[]>([]);
-  const [formData, setFormData] = useState<Partial<WialonSensor>>({
+  const [formData, setFormData] = useState<Partial<SensorForm>>({
     name: "",
     type: "",
-    metrics: "",
+    measurement: "",
     parameter: "",
   });
 
   useEffect(() => {
     if (selectedUnit) {
-      // Fetch sensors for selected unit
+      // Fetch sensors for selected unit (TODO: replace with real call)
       const unit = units.find((u) => u.id === selectedUnit);
       if (unit) {
-        // TODO: Replace with actual sensor fetch
         const mockSensors: WialonSensor[] = [
-          { id: "1", name: "Fuel Level", type: "fuel", metrics: "liters", parameter: "fuel_level" },
+          {
+            id: "1",
+            name: "Fuel Level",
+            type: "fuel",
+            measurement: "liters",
+            parameter: "fuel_level",
+          },
           {
             id: "2",
             name: "Engine Temp",
             type: "temperature",
-            metrics: "°C",
+            measurement: "°C",
             parameter: "engine_temp",
           },
         ];
@@ -48,18 +56,18 @@ export const SensorsTab = ({ units }: SensorsTabProps) => {
       setFormData({
         name: sensor.name,
         type: sensor.type,
-        metrics: sensor.metrics,
+        measurement: sensor.measurement,
         parameter: sensor.parameter,
       });
     } else {
-      setFormData({ name: "", type: "", metrics: "", parameter: "" });
+      setFormData({ name: "", type: "", measurement: "", parameter: "" });
     }
     setSelectedSensor(sensorId);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev: Partial<WialonSensor>) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target as { name: keyof SensorForm; value: string };
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCreate = () => {
@@ -118,9 +126,9 @@ export const SensorsTab = ({ units }: SensorsTabProps) => {
           />
           <input
             type="text"
-            name="metrics"
-            placeholder="Sensor Metrics"
-            value={formData.metrics || ""}
+            name="measurement"
+            placeholder="Sensor Measurement"
+            value={formData.measurement || ""}
             onChange={handleInputChange}
             className="p-2 border rounded"
           />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useWialon } from "../../hooks/useWialon";
-import type { WialonCommand, WialonUnit } from "../../types/wialon";
+import type { WialonCommand, WialonUnit, CommandParamConfig } from "../../types/wialon";
 import { Button } from "../ui/Button";
 import { Select } from "../ui/Select";
 
@@ -8,38 +8,52 @@ interface CommandsTabProps {
   units: WialonUnit[];
 }
 
+type ExecStatus = { status: "idle" | "pending" | "success" | "error"; message: string };
+
+/** Normalize schema regardless of whether the source used `parameters` or `paramsSchema`. */
+function getParamSchema(cmd: WialonCommand): Record<string, CommandParamConfig> {
+  return cmd.parameters ?? cmd.paramsSchema ?? {};
+}
+
 export const CommandsTab = ({ units }: CommandsTabProps) => {
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [selectedCommand, setSelectedCommand] = useState<string>("");
   const [commands, setCommands] = useState<WialonCommand[]>([]);
   const [commandParams, setCommandParams] = useState<Record<string, string>>({});
-  const [executionStatus, setExecutionStatus] = useState<{
-    status: "idle" | "pending" | "success" | "error";
-    message: string;
-  }>({ status: "idle", message: "" });
+  const [executionStatus, setExecutionStatus] = useState<ExecStatus>({
+    status: "idle",
+    message: "",
+  });
   const { executeCommand } = useWialon();
 
   // Load commands when unit is selected
   useEffect(() => {
-    if (selectedUnit) {
-      const unit = units.find((u) => u.id === selectedUnit);
-      if (unit && unit.commands) {
-        setCommands(unit.commands);
-        // Initialize empty params for each command
-        const params: Record<string, string> = {};
-        unit.commands.forEach((cmd) => {
-          if (cmd.parameters) {
-            Object.keys(cmd.parameters).forEach((param) => {
-              params[`${cmd.id}_${param}`] = "";
-            });
-          }
-        });
-        setCommandParams(params);
-      }
-    } else {
+    if (!selectedUnit) {
       setCommands([]);
       setSelectedCommand("");
+      setCommandParams({});
+      return;
     }
+
+    const unit = units.find((u) => u.id === selectedUnit);
+    if (!unit || !unit.commands) {
+      setCommands([]);
+      setSelectedCommand("");
+      setCommandParams({});
+      return;
+    }
+
+    setCommands(unit.commands);
+
+    // Initialize empty params for each command/param
+    const params: Record<string, string> = {};
+    unit.commands.forEach((cmd) => {
+      const schema = getParamSchema(cmd);
+      Object.keys(schema).forEach((paramName) => {
+        params[`${cmd.id}_${paramName}`] = "";
+      });
+    });
+    setCommandParams(params);
   }, [selectedUnit, units]);
 
   // Reset selected command when commands list changes
@@ -49,41 +63,37 @@ export const CommandsTab = ({ units }: CommandsTabProps) => {
   }, [commands]);
 
   const handleParamChange = (commandId: string, paramName: string, value: string) => {
-    setCommandParams((prev) => ({
-      ...prev,
-      [`${commandId}_${paramName}`]: value,
-    }));
+    setCommandParams((prev) => ({ ...prev, [`${commandId}_${paramName}`]: value }));
   };
+
+  const getCurrentCommand = () => commands.find((c) => c.id === selectedCommand);
 
   const handleExecute = async () => {
     if (!selectedUnit || !selectedCommand) return;
 
-    const command = commands.find((c) => c.id === selectedCommand);
+    const command = getCurrentCommand();
     if (!command) return;
 
     setExecutionStatus({ status: "pending", message: "Sending command..." });
 
     try {
-      // Prepare parameters
+      const schema = getParamSchema(command);
       const params: Record<string, string> = {};
-      if (command.parameters) {
-        Object.keys(command.parameters).forEach((param) => {
-          const key = `${command.id}_${param}`;
-          params[param] = commandParams[key] || "";
-        });
+      Object.keys(schema).forEach((paramName) => {
+        const key = `${command.id}_${paramName}`;
+        params[paramName] = commandParams[key] || "";
+      });
+
+      const result: unknown = await executeCommand(selectedUnit, selectedCommand, params);
+
+      let msg: string | undefined;
+      if (result && typeof result === "object" && "message" in result) {
+        msg = (result as { message: string }).message;
       }
 
-      // Execute command through Wialon service
-      const result: unknown = await executeCommand(selectedUnit, selectedCommand, params);
-      let message: string | undefined;
-      if (result && typeof result === "object" && "message" in result) {
-        // runtime guard ensures safe access
-        // @ts-ignore
-        message = (result as any).message as string | undefined;
-      }
       setExecutionStatus({
         status: "success",
-        message: `Command executed successfully: ${message || "No response"}`,
+        message: `Command executed successfully${msg ? `: ${msg}` : ""}`,
       });
     } catch (error) {
       setExecutionStatus({
@@ -93,23 +103,49 @@ export const CommandsTab = ({ units }: CommandsTabProps) => {
     }
   };
 
-  const getCurrentCommand = () => {
-    return commands.find((c) => c.id === selectedCommand);
-  };
-
   const renderParameterInputs = () => {
     const command = getCurrentCommand();
-    if (!command || !command.parameters) return null;
+    if (!command) return null;
 
-    return Object.entries(command.parameters).map(([paramName, paramConfig]) => {
+    const schema = getParamSchema(command);
+    if (!schema || Object.keys(schema).length === 0) return null;
+
+    return Object.entries(schema).map(([paramName, paramConfig]) => {
       const paramKey = `${command.id}_${paramName}`;
+      const type = paramConfig.type ?? "text";
+
+      if (type === "select" && Array.isArray(paramConfig.options)) {
+        return (
+          <div key={paramKey} className="mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {paramConfig.label || paramName}
+            </label>
+            <select
+              value={commandParams[paramKey] || ""}
+              onChange={(e) => handleParamChange(command.id, paramName, e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select…</option>
+              {paramConfig.options.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {paramConfig.description && (
+              <p className="mt-1 text-xs text-gray-500">{paramConfig.description}</p>
+            )}
+          </div>
+        );
+      }
+
       return (
         <div key={paramKey} className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             {paramConfig.label || paramName}
           </label>
           <input
-            type={paramConfig.type === "number" ? "number" : "text"}
+            type={type === "number" ? "number" : "text"}
             value={commandParams[paramKey] || ""}
             onChange={(e) => handleParamChange(command.id, paramName, e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -179,3 +215,5 @@ export const CommandsTab = ({ units }: CommandsTabProps) => {
     </div>
   );
 };
+
+export default CommandsTab;

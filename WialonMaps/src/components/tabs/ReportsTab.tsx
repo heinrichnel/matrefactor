@@ -1,6 +1,8 @@
+// src/components/tabs/ReportsTab.tsx
 import { useEffect, useState } from "react";
 import { exportToExcel } from "../../lib/reportUtils";
-import type { WialonReport, WialonResource, WialonUnit } from "../../types/wialon";
+import type { WialonReport } from "../../lib/reportUtils"; // <-- FIX: import the right type
+import type { WialonResource, WialonUnit } from "../../types/wialon";
 import { Button } from "../ui/Button";
 import { Select } from "../ui/Select";
 import { Table } from "../ui/Table";
@@ -42,8 +44,7 @@ export const ReportsTab = ({ resources, units }: ReportsTabProps) => {
     setError(null);
 
     try {
-      // TODO: Implement actual report execution
-      // This is mock data for demonstration
+      // TODO: Replace with real report execution call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const mockReport: WialonReport = {
@@ -70,14 +71,10 @@ export const ReportsTab = ({ resources, units }: ReportsTabProps) => {
     }
   };
 
-  const handleClear = () => {
-    setReportData(null);
-  };
+  const handleClear = () => setReportData(null);
 
   const handleExport = () => {
-    if (reportData) {
-      exportToExcel(reportData);
-    }
+    if (reportData) exportToExcel(reportData);
   };
 
   return (
@@ -89,7 +86,7 @@ export const ReportsTab = ({ resources, units }: ReportsTabProps) => {
           label="Resource"
           value={selectedResource}
           onChange={setSelectedResource}
-          options={resources.map((r: WialonResource) => ({ value: r.id, label: r.name }))}
+          options={resources.map((r) => ({ value: r.id, label: r.name }))}
         />
 
         <Select
@@ -135,26 +132,23 @@ export const ReportsTab = ({ resources, units }: ReportsTabProps) => {
         {reportData && (
           <div className="mt-4">
             <h4 className="font-medium mb-2">{reportData.name}</h4>
-            {reportData.tables.map(
-              (
-                table: { name: string; headers: string[]; rows: (string | number)[][] },
-                index: number
-              ) => (
-                <div key={index} className="mb-6">
-                  <h5 className="text-sm font-semibold mb-1">{table.name}</h5>
-                  <Table
-                    columns={table.headers.map((h, i) => ({ key: `${i}`, header: h }))}
-                    data={table.rows.map((row, rIdx) => {
-                      const obj: Record<string, any> = { id: rIdx };
-                      row.forEach((cell, cIdx) => {
-                        obj[`${cIdx}`] = cell;
-                      });
-                      return obj;
-                    })}
-                  />
-                </div>
-              )
-            )}
+            {reportData.tables.map((table, index) => (
+              <div key={index} className="mb-6">
+                <h5 className="text-sm font-semibold mb-1">{table.name}</h5>
+                <Table
+                  columns={table.headers.map((h, i) => ({ key: `${i}`, header: h }))}
+                  data={table.rows.map((row, rIdx) => {
+                    const obj: Record<string, string | number> & { id: string | number } = {
+                      id: rIdx,
+                    };
+                    row.forEach((cell, cIdx) => {
+                      obj[`${cIdx}`] = cell;
+                    });
+                    return obj;
+                  })}
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>

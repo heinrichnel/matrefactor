@@ -84,7 +84,7 @@ const TripInvoicingPanel = lazy(() => import("./pages/trips/TripInvoicingPanel")
 const TripCompletionPanel = lazy(() => import("./pages/trips/TripCompletionPanel"));
 const FlagInvestigationPanel = lazy(() => import("./pages/trips/FlagInvestigationPanel"));
 const FlagsInvestigationsPage = lazy(() => import("./pages/trips/FlagsInvestigationsPage"));
-const CostEntryForm = lazy(() => import("./pages/trips/CostEntryForm"));
+const CostForm = lazy(() => import("./components/forms/cost/CostForm"));
 const CreateLoadConfirmationPage = lazy(() => import("./pages/trips/CreateLoadConfirmationPage"));
 const MainTripWorkflow = lazy(() => import("./pages/trips/MainTripWorkflow"));
 const IndirectCostBreakdown = lazy(() => import("./pages/trips/IndirectCostBreakdown"));
@@ -151,7 +151,7 @@ const TrainingRecords = lazy(() => import("./pages/drivers/TrainingRecords"));
 const LicenseManagement = lazy(() => import("./pages/drivers/LicenseManagement"));
 const AddEditDriverPage = lazy(() => import("./pages/drivers/AddEditDriverPage"));
 const DriverProfiles = lazy(() => import("./pages/drivers/DriverProfiles"));
-const AddNewDriver = lazy(() => import("./pages/drivers/AddNewDriver"));
+const AddNewDriver = lazy(() => import("./pages/drivers/AddNewDriverPage"));
 const DriverDetailsComponent = lazy(() => import("./pages/drivers/DriverDetails")); // Added (renamed to avoid conflict)
 const DriverManagementWrapper = lazy(() => import("./pages/drivers/DriverManagementWrapper")); // Added
 const EditDriverPage = lazy(() => import("./pages/drivers/EditDriver")); // Added (renamed to avoid conflict)
@@ -302,7 +302,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="completion/:tripId" element={withSuspense(TripCompletionPanel)} />
           <Route path="flags/:tripId" element={withSuspense(FlagInvestigationPanel)} />
           <Route path="missed-loads" element={withSuspense(TripManager)} />
-          <Route path="cost-entry" element={withSuspense(CostEntryForm)} />
+          <Route path="cost-entry" element={withSuspense(CostForm)} />
           <Route
             path="create-load-confirmation"
             element={withSuspense(CreateLoadConfirmationPage)}

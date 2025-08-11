@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { WialonUnit } from "../../types/wialon";
+import type { WialonUnit, WialonUnitStatus } from "../../types/wialon";
 
 interface MapViewProps {
   units?: WialonUnit[];
@@ -13,65 +13,67 @@ export const MapView = ({ units = [], onUnitSelect }: MapViewProps) => {
   const markersRef = useRef<Record<string, L.Marker>>({});
 
   useEffect(() => {
-    // Initialize map
-    mapRef.current = L.map("map").setView([0, 0], 2);
-
+    const el = document.getElementById("map");
+    if (!el) return;
+    mapRef.current = L.map(el).setView([0, 0], 2);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 19,
     }).addTo(mapRef.current);
-
     return () => {
       mapRef.current?.remove();
+      mapRef.current = null;
     };
   }, []);
 
   useEffect(() => {
-    if (!mapRef.current || !units.length) return;
+    if (!mapRef.current) return;
 
-    // Clear existing markers
-    Object.values(markersRef.current).forEach((marker) => {
-      mapRef.current?.removeLayer(marker);
-    });
+    // clear old markers
+    Object.values(markersRef.current).forEach((marker) => mapRef.current?.removeLayer(marker));
     markersRef.current = {};
 
-    // Add new markers
+    const points: L.LatLngExpression[] = [];
+
     units.forEach((unit) => {
-      if (!unit.position) return;
+      const p = unit.position;
+      if (!p) return;
 
-      const icon = getStatusIcon(unit.status);
-      const marker = L.marker([unit.position.lat, unit.position.lng], { icon })
+      const status: WialonUnitStatus = unit.status ?? "unknown";
+      const icon = getStatusIcon(status);
+
+      const marker = L.marker([p.latitude, p.longitude], { icon })
         .addTo(mapRef.current!)
-        .bindPopup(`<b>${unit.name}</b><br>Status: ${unit.status}`);
+        .bindPopup(`<b>${escapeHtml(unit.name)}</b><br/>Status: ${status}<br/>Speed: ${p.speed}`);
 
-      if (onUnitSelect) {
-        marker.on("click", () => onUnitSelect(unit));
-      }
+      if (onUnitSelect) marker.on("click", () => onUnitSelect(unit));
 
       markersRef.current[unit.id] = marker;
+      points.push([p.latitude, p.longitude]);
     });
 
-    // Fit bounds to show all markers
-    if (units.some((u) => u.position)) {
-      const bounds = L.latLngBounds(
-        units.filter((u) => u.position).map((u) => [u.position!.lat, u.position!.lng])
-      );
-      mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+    if (points.length) {
+      mapRef.current.fitBounds(L.latLngBounds(points), { padding: [50, 50] });
     }
-  }, [units]);
+  }, [units, onUnitSelect]);
 
   return <div id="map" className="w-full h-full" />;
 };
 
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: WialonUnitStatus) => {
   const iconUrl =
     {
       online:
+        "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+      moving:
         "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
       parked:
         "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
       offline:
         "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-    }[status] ||
+      unknown:
+        "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+    }[status] ??
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png";
 
   return L.icon({
@@ -81,5 +83,14 @@ const getStatusIcon = (status: string) => {
     popupAnchor: [1, -34],
   });
 };
+
+function escapeHtml(input: string) {
+  return input
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 export default MapView;

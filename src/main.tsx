@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { TyreProvider } from "./context/TyreContext";
 import { TyreStoresProvider } from "./context/TyreStoresContext";
 import "./index.css";
+import "./styles/enhanced-ui.css";
 import { getEnvVar, initBrowserEnv } from "./utils/envUtils";
 import { initializeConnectionMonitoring } from "./utils/firebaseConnectionHandler";
 

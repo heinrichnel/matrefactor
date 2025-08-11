@@ -1,10 +1,12 @@
+import React from "react";
+
 interface TableColumn {
   key: string;
   header: string;
 }
 interface TableProps {
   columns: TableColumn[];
-  data: Array<Record<string, any>>;
+  data: Array<Record<string, React.ReactNode> & { id: string | number }>;
   className?: string;
 }
 

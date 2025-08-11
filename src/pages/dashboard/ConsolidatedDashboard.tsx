@@ -213,17 +213,21 @@ const ConsolidatedDashboard: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Clipboard className="h-6 w-6" /> Dashboard
-        </h1>
+    <div className="container mx-auto p-6 lg:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+            <Clipboard className="h-7 w-7 text-blue-600" /> Consolidated Dashboard
+          </h1>
+          <p className="text-gray-600 text-lg">Comprehensive overview of your fleet operations</p>
+        </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3 bg-white shadow-md rounded-xl p-2 border border-gray-100">
+          <span className="text-sm font-medium text-gray-500 pl-2">View Data For:</span>
           <select
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value as any)}
-            className="border border-gray-300 rounded p-2 text-sm"
+            className="border border-gray-200 rounded-lg p-2 text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="day">Today</option>
             <option value="week">This Week</option>
@@ -234,55 +238,173 @@ const ConsolidatedDashboard: React.FC = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 mb-8">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 rounded-xl overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex justify-between mb-3">
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Drivers</h3>
-                <p className="text-2xl font-bold">{mockStats.drivers.total}</p>
+                <h3 className="text-sm uppercase tracking-wider font-medium text-gray-500">
+                  Drivers
+                </h3>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{mockStats.drivers.total}</p>
               </div>
-              <div className="p-2 bg-blue-100 rounded-full">
-                <User className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-blue-100 rounded-xl">
+                <User className="h-7 w-7 text-blue-700" />
               </div>
             </div>
-            <div className="mt-2 text-sm">
-              <span className="text-green-600 font-medium">{mockStats.drivers.active} active</span>
-              <span className="mx-1">•</span>
-              <span className="text-red-600">
+            <div className="mt-3 text-sm flex flex-wrap gap-2">
+              <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium border border-green-200">
+                {mockStats.drivers.active} active
+              </span>
+              <span className="bg-red-50 text-red-700 px-3 py-1 rounded-full font-medium border border-red-200">
                 {mockStats.drivers.expiredLicenses} expired licenses
               </span>
             </div>
-            <Link to="/drivers" className="text-blue-600 hover:underline text-xs block mt-1">
-              View Drivers →
+            <Link
+              to="/drivers"
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center mt-4"
+            >
+              View Drivers{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </Link>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 rounded-xl overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex justify-between mb-3">
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Vehicles</h3>
-                <p className="text-2xl font-bold">{mockStats.vehicles.total}</p>
+                <h3 className="text-sm uppercase tracking-wider font-medium text-gray-500">
+                  Vehicles
+                </h3>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{mockStats.vehicles.total}</p>
               </div>
-              <div className="p-2 bg-green-100 rounded-full">
-                <Truck className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-emerald-100 rounded-xl">
+                <Truck className="h-7 w-7 text-emerald-700" />
               </div>
             </div>
-            <div className="mt-2 text-sm">
-              <span className="text-green-600 font-medium">{mockStats.vehicles.active} active</span>
-              <span className="mx-1">•</span>
-              <span className="text-yellow-600">
+            <div className="mt-3 text-sm flex flex-wrap gap-2">
+              <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium border border-green-200">
+                {mockStats.vehicles.active} active
+              </span>
+              <span className="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full font-medium border border-yellow-200">
                 {mockStats.vehicles.maintenance} in maintenance
               </span>
             </div>
-            <Link to="/vehicles" className="text-blue-600 hover:underline text-xs block mt-1">
-              View Vehicles →
+            <Link
+              to="/vehicles"
+              className="text-emerald-600 hover:text-emerald-800 text-sm font-medium flex items-center mt-4"
+            >
+              View Vehicles{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
             </Link>
           </CardContent>
         </Card>
-
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 rounded-xl overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex justify-between mb-3">
+              <div>
+                <h3 className="text-sm uppercase tracking-wider font-medium text-gray-500">
+                  Clients
+                </h3>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{mockStats.clients.total}</p>
+              </div>
+              <div className="p-3 bg-purple-100 rounded-xl">
+                <Building2 className="h-7 w-7 text-purple-700" />
+              </div>
+            </div>
+            <div className="mt-3 text-sm flex flex-wrap gap-2">
+              <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium border border-green-200">
+                {mockStats.clients.active} active
+              </span>
+              <span className="bg-red-50 text-red-700 px-3 py-1 rounded-full font-medium border border-red-200">
+                {mockStats.clients.pendingPayments} pending payments
+              </span>
+            </div>
+            <Link
+              to="/clients"
+              className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center mt-4"
+            >
+              View Clients{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Link>
+          </CardContent>
+        </Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 rounded-xl overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex justify-between mb-3">
+              <div>
+                <h3 className="text-sm uppercase tracking-wider font-medium text-gray-500">
+                  Trips
+                </h3>
+                <p className="text-3xl font-bold text-gray-900 mt-1">
+                  {mockStats.trips.inProgress + mockStats.trips.scheduled}
+                </p>
+              </div>
+              <div className="p-3 bg-amber-100 rounded-xl">
+                <Truck className="h-7 w-7 text-amber-700" />
+              </div>
+            </div>
+            <div className="mt-3 text-sm flex flex-wrap gap-2">
+              <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium border border-blue-200">
+                {mockStats.trips.inProgress} in progress
+              </span>
+              <span className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full font-medium border border-amber-200">
+                {mockStats.trips.scheduled} scheduled
+              </span>
+            </div>
+            <Link
+              to="/trips"
+              className="text-amber-600 hover:text-amber-800 text-sm font-medium flex items-center mt-4"
+            >
+              View Trips{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Link>
+          </CardContent>
+        </Card>{" "}
         <Card>
           <CardContent className="p-4">
             <div className="flex justify-between">
@@ -306,7 +428,6 @@ const ConsolidatedDashboard: React.FC = () => {
             </Link>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex justify-between">

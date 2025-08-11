@@ -1,54 +1,67 @@
-import React, { Suspense, useMemo, useState } from "react";
+// src/components/layout/Layout.tsx
+import React, { Suspense, useMemo, useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 import { TripSelectionProvider, useTripSelection } from "../../context/TripSelectionContext";
-import { Trip } from "../../types";
+import type { Trip } from "../../types"; // canonical Trip from your barrel
 import { ErrorBoundary } from "../common/ErrorBoundary";
-import Navigation from "./Navigation"; // Assuming this is the updated Navigation
+import Navigation from "./Navigation";
 import SelectedTripBanner from "./SelectedTripBanner";
-import Sidebar from "./Sidebar"; // Assuming this is the updated Sidebar with drawer logic
+import Sidebar from "./Sidebar";
 
 interface LayoutProps {
   setShowTripForm: (show: boolean) => void;
   setEditingTrip: (trip: Trip | undefined) => void;
 }
 
+/** Only enforce presence of additionalCosts; do NOT assume other fields (e.g., name) exist. */
+const normalizeTrip = (t: Partial<Trip>): Trip => {
+  return {
+    ...(t as Trip), // keep whatever the caller provides
+    additionalCosts: t.additionalCosts ?? [], // ensure required field
+  };
+};
+
 const Layout: React.FC<LayoutProps> = ({ setShowTripForm, setEditingTrip }) => {
-  // Hooks
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null); // legacy state for backward compat
+
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+
   useAppContext();
 
-  // Calculate current view from URL path
   const currentView = useMemo(() => {
-    const pathSegments = location.pathname.split("/").filter(Boolean);
-    if (pathSegments.length === 0) return "dashboard";
-    if (pathSegments.length > 1) return pathSegments.join("/");
-    return pathSegments[0] === "workshop" && searchParams.get("tab")
+    const parts = location.pathname.split("/").filter(Boolean);
+    if (parts.length === 0) return "dashboard";
+    if (parts.length > 1) return parts.join("/");
+    return parts[0] === "workshop" && searchParams.get("tab")
       ? `workshop-${searchParams.get("tab")}`
-      : pathSegments[0];
+      : parts[0];
   }, [location.pathname, searchParams]);
 
-  // Navigation handler
   const handleNavigate = (view: string) => {
     const hasQuery = view.includes("?");
     navigate(
       hasQuery
         ? `/${view.split("?")[0]}?${view.split("?")[1]}`
-        : `/${view.startsWith("/") ? view.substring(1) : view}`
+        : `/${view.startsWith("/") ? view.slice(1) : view}`
     );
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Ensure Sidebar accepts these props (see Sidebar note below) */}
       <Sidebar currentView={currentView} onNavigate={handleNavigate} />
+
       <div className="flex flex-col flex-1 overflow-hidden lg:ml-60">
         <Navigation />
         <TripSelectionProvider>
           {selectedTrip && (
-            <LegacyTripStateBridge trip={selectedTrip} clear={() => setSelectedTrip(null)} />
+            <LegacyTripStateBridge
+              trip={normalizeTrip(selectedTrip)}
+              clear={() => setSelectedTrip(null)}
+            />
           )}
           <SelectedTripBanner />
           <main className="flex-1 overflow-y-auto p-2 md:p-3" role="main">
@@ -70,12 +83,13 @@ const Layout: React.FC<LayoutProps> = ({ setShowTripForm, setEditingTrip }) => {
   );
 };
 
-// Bridge component to sync legacy selectedTrip state into new context without breaking existing pages.
 const LegacyTripStateBridge: React.FC<{ trip: Trip; clear: () => void }> = ({ trip }) => {
   const { selectedTrip, setSelectedTrip } = useTripSelection();
-  if (!selectedTrip || selectedTrip.id !== trip.id) {
-    setSelectedTrip(trip);
-  }
+  useEffect(() => {
+    if (!selectedTrip /* first time */) {
+      setSelectedTrip(trip);
+    }
+  }, [selectedTrip, setSelectedTrip, trip]);
   return null;
 };
 

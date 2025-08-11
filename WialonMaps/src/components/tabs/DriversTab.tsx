@@ -1,53 +1,57 @@
+// /workspaces/matrefactor/WialonMaps/src/components/tabs/DriversTab.tsx
 import { useEffect, useState } from "react";
 import { useWialon } from "../../hooks/useWialon";
-import type { WialonDriver, WialonResource } from "../../types/wialon";
+import type { WialonDriver as BaseDriver, WialonResource } from "../../types/wialon";
 import { Button } from "../ui/Button";
 import { Select } from "../ui/Select";
+
+/**
+ * Locally extend the base driver with optional fields used by the UI.
+ * This unblocks the component even if another file still defines a narrower WialonDriver.
+ */
+type WialonDriver = BaseDriver & {
+  code?: string;
+  phone?: string;
+};
 
 interface DriversTabProps {
   resources: WialonResource[];
 }
 
+type DriverForm = { name: string; code: string; phone: string };
+
 export const DriversTab = ({ resources }: DriversTabProps) => {
   const [selectedResource, setSelectedResource] = useState<string>("");
   const [selectedDriver, setSelectedDriver] = useState<string>("");
   const [drivers, setDrivers] = useState<WialonDriver[]>([]);
-  const [formData, setFormData] = useState<Partial<WialonDriver>>({
-    name: "",
-    code: "",
-    phone: "",
-  });
+  const [formData, setFormData] = useState<DriverForm>({ name: "", code: "", phone: "" });
   const { loading, error } = useWialon();
 
   useEffect(() => {
-    if (selectedResource) {
-      // Fetch drivers for selected resource
-      const fetchDrivers = async () => {
-        try {
-          const res = resources.find((r) => r.id === selectedResource);
-          if (res) {
-            // TODO: Implement actual driver fetch from Wialon
-            const mockDrivers: WialonDriver[] = [
-              { id: "1", name: "John Doe", code: "JD123", phone: "+1234567890" },
-              { id: "2", name: "Jane Smith", code: "JS456", phone: "+9876543210" },
-            ];
-            setDrivers(mockDrivers);
-          }
-        } catch (err) {
-          console.error("Failed to fetch drivers:", err);
-        }
-      };
-      fetchDrivers();
+    if (!selectedResource) {
+      setDrivers([]);
+      setSelectedDriver("");
+      return;
     }
+
+    // TODO: Replace with real API call
+    const res = resources.find((r) => r.id === selectedResource);
+    if (!res) return;
+
+    const mockDrivers: WialonDriver[] = [
+      { id: "1", name: "John Doe", code: "JD123", phone: "+1234567890" },
+      { id: "2", name: "Jane Smith", code: "JS456", phone: "+9876543210" },
+    ];
+    setDrivers(mockDrivers);
   }, [selectedResource, resources]);
 
   const handleDriverSelect = (driverId: string) => {
     const driver = drivers.find((d) => d.id === driverId);
     if (driver) {
       setFormData({
-        name: driver.name,
-        code: driver.code,
-        phone: driver.phone,
+        name: driver.name ?? "",
+        code: driver.code ?? "",
+        phone: driver.phone ?? "",
       });
     } else {
       setFormData({ name: "", code: "", phone: "" });
@@ -56,8 +60,8 @@ export const DriversTab = ({ resources }: DriversTabProps) => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev: Partial<WialonDriver>) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target as { name: keyof DriverForm; value: string };
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCreate = () => {
@@ -103,7 +107,7 @@ export const DriversTab = ({ resources }: DriversTabProps) => {
             type="text"
             name="name"
             placeholder="Name"
-            value={formData.name || ""}
+            value={formData.name}
             onChange={handleInputChange}
             className="p-2 border rounded"
           />
@@ -111,7 +115,7 @@ export const DriversTab = ({ resources }: DriversTabProps) => {
             type="text"
             name="code"
             placeholder="Code"
-            value={formData.code || ""}
+            value={formData.code}
             onChange={handleInputChange}
             className="p-2 border rounded"
           />
@@ -119,7 +123,7 @@ export const DriversTab = ({ resources }: DriversTabProps) => {
             type="text"
             name="phone"
             placeholder="Phone"
-            value={formData.phone || ""}
+            value={formData.phone}
             onChange={handleInputChange}
             className="p-2 border rounded"
           />
