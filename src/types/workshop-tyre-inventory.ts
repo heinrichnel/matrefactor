@@ -146,7 +146,7 @@ export interface EnhancedTyre {
     inspections: TyreInspectionEntry[];
   };
 
-  milesRun: number;
+  kmRun: number;
   kmRunLimit: number;
   notes: string;
 }
@@ -371,23 +371,9 @@ export type WorkOrderStatus =
   | "rca_required"
   | "overdue";
 export type Priority = "low" | "medium" | "high" | "critical";
-export type TaskStatus =
-  | "pending"
-  | "in_progress"
-  | "completed"
-  | "not_applicable"
-  | "on_hold";
-export type TyreStatus =
-  | "new"
-  | "in_service"
-  | "spare"
-  | "retreaded"
-  | "scrapped";
-export type TyreConditionStatus =
-  | "good"
-  | "warning"
-  | "critical"
-  | "needs_replacement";
+export type TaskStatus = "pending" | "in_progress" | "completed" | "not_applicable" | "on_hold";
+export type TyreStatus = "new" | "in_service" | "spare" | "retreaded" | "scrapped";
+export type TyreConditionStatus = "good" | "warning" | "critical" | "needs_replacement";
 export type TyreMountStatus = "mounted" | "unmounted" | "in_storage";
 export type TyreType = "steer" | "drive" | "trailer" | "spare";
 export type TyrePosition = string;
@@ -432,10 +418,7 @@ export function parseTyreSizeFromString(sizeStr: string): TyreSize {
  */
 export function determineTyreType(position: string): TyreType {
   if (position.toLowerCase().includes("spare")) return "spare";
-  if (
-    position.toLowerCase().includes("steer") ||
-    position.toLowerCase().includes("front")
-  )
+  if (position.toLowerCase().includes("steer") || position.toLowerCase().includes("front"))
     return "steer";
   if (position.toLowerCase().includes("drive")) return "drive";
   if (position.toLowerCase().includes("trailer")) return "trailer";
@@ -463,8 +446,7 @@ export function mapLegacyStatusToConditionStatus(
 /**
  * Map legacy status to tyre status
  */
-export function mapLegacyStatusToTyreStatus(
-): TyreStatus {
+export function mapLegacyStatusToTyreStatus(): TyreStatus {
   // In legacy system, all tyres were assumed to be 'in_service' regardless of condition
   return "in_service";
 }
@@ -472,15 +454,10 @@ export function mapLegacyStatusToTyreStatus(
 // Compatibility helper functions
 export function getSizeString(enhancedTyre: EnhancedTyre): string {
   const size = enhancedTyre.sizeDetails;
-  return (
-    size.displayString ||
-    `${size.width}/${size.aspectRatio}R${size.rimDiameter}`
-  );
+  return size.displayString || `${size.width}/${size.aspectRatio}R${size.rimDiameter}`;
 }
 
-export function getInstallDetails(
-  enhancedTyre: EnhancedTyre
-): Tyre["installDetails"] {
+export function getInstallDetails(enhancedTyre: EnhancedTyre): Tyre["installDetails"] {
   return {
     date: enhancedTyre.installation.installationDate || "",
     position: enhancedTyre.installation.position || "",
@@ -489,9 +466,7 @@ export function getInstallDetails(
   };
 }
 
-export function getLegacyStatus(
-  enhancedTyre: EnhancedTyre
-): "good" | "worn" | "urgent" {
+export function getLegacyStatus(enhancedTyre: EnhancedTyre): "good" | "worn" | "urgent" {
   // Map from enhanced condition status back to legacy status
   if (enhancedTyre.condition.status === "good") return "good";
   if (enhancedTyre.condition.status === "warning") return "worn";
@@ -563,7 +538,7 @@ export function convertToEnhancedTyre(legacyTyre: Tyre): EnhancedTyre {
         : [],
     },
 
-    milesRun: legacyTyre.currentMileage || 0,
+    kmRun: legacyTyre.currentMileage || 0,
     kmRunLimit: legacyTyre.estimatedLifespan || 0,
     notes: "",
   };
@@ -589,20 +564,18 @@ export function convertToLegacyTyre(enhancedTyre: EnhancedTyre): Tyre {
     cost: enhancedTyre.purchaseDetails.cost,
     estimatedLifespan: enhancedTyre.kmRunLimit,
     pattern: enhancedTyre.pattern,
-    currentMileage: enhancedTyre.milesRun,
+    currentMileage: enhancedTyre.kmRun,
     costPerKm: 0, // Calculate if needed
     // Convert inspections back to the legacy format if needed
-    inspectionHistory: enhancedTyre.maintenanceHistory.inspections.map(
-      (inspection) => ({
-        id: inspection.id,
-        date: inspection.date,
-        inspector: inspection.inspector,
-        treadDepth: inspection.treadDepth,
-        pressure: inspection.pressure,
-        sidewallCondition: inspection.notes,
-        status: inspection.condition,
-        timestamp: new Date().toISOString(), // Default timestamp if missing
-      })
-    ),
+    inspectionHistory: enhancedTyre.maintenanceHistory.inspections.map((inspection) => ({
+      id: inspection.id,
+      date: inspection.date,
+      inspector: inspection.inspector,
+      treadDepth: inspection.treadDepth,
+      pressure: inspection.pressure,
+      sidewallCondition: inspection.notes,
+      status: inspection.condition,
+      timestamp: new Date().toISOString(), // Default timestamp if missing
+    })),
   };
 }

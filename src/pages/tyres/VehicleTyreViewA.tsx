@@ -194,11 +194,7 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                       </p>
                       <p>
                         <span className="text-gray-500">Distance Run:</span>{" "}
-                        {(
-                          selectedTyre.kmRun ??
-                          (selectedTyre as any).milesRun ??
-                          0
-                        ).toLocaleString()}{" "}
+                        {(selectedTyre.kmRun ?? (selectedTyre as any).kmRun ?? 0).toLocaleString()}{" "}
                         km
                       </p>
                       <p>
@@ -290,8 +286,8 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                       </p>
                       <p className="text-xs text-gray-500">
                         Tread: {tyre.condition.treadDepth}mm | Pressure: {tyre.condition.pressure}{" "}
-                        PSI | Distance:{" "}
-                        {(tyre.kmRun ?? (tyre as any).milesRun ?? 0).toLocaleString()} km
+                        PSI | Distance: {(tyre.kmRun ?? (tyre as any).kmRun ?? 0).toLocaleString()}{" "}
+                        km
                       </p>
                     </div>
                     <div className="text-right space-y-1">

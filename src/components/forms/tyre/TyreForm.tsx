@@ -1,8 +1,8 @@
-import { Tyre } from "@/components/Models/Tyre/TyreModel";
 import VehiclePositionDiagram from "@/components/Tyremanagement/VehiclePositionDiagram";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/FormElements";
 import { useTyreReferenceData } from "@/context/TyreReferenceDataContext";
+import { Tyre } from "@/types/TyreModel";
 import React, { useEffect, useState } from "react";
 
 interface TyreFormProps {
@@ -64,7 +64,7 @@ const TyreForm: React.FC<TyreFormProps> = ({
       repairs: [],
       inspections: [],
     },
-    milesRun: initialData.milesRun || 0,
+    kmRun: initialData.kmRun || 0,
     kmRunLimit: initialData.kmRunLimit || 60000,
     notes: initialData.notes || "",
     location: initialData.location || { storeId: "", position: "" },
@@ -384,9 +384,9 @@ const TyreForm: React.FC<TyreFormProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Distance Run (km)"
-                name="milesRun"
+                name="kmRun"
                 type="number"
-                value={formData.milesRun}
+                value={formData.kmRun}
                 onChange={handleNumberChange}
               />
               <Input

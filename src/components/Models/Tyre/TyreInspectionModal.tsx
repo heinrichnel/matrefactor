@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import Modal from '../ui/Modal';
-import Button from '../ui/Button';
-import { Card, CardContent } from '../ui/Card';
+import Button from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import Modal from "@/components/ui/Modal";
+import React, { useState } from "react";
 
 interface TyreInspectionModalProps {
   open: boolean;
@@ -35,28 +35,30 @@ const TyreInspectionModal: React.FC<TyreInspectionModalProps> = ({
   onSubmit,
   tyrePosition,
   fleetNumber,
-  initialData = {}
+  initialData = {},
 }) => {
   const [formData, setFormData] = useState<TyreInspectionData>({
     fleetNumber,
     position: tyrePosition,
-    tyreBrand: initialData.tyreBrand || '',
-    tyreSize: initialData.tyreSize || '',
-    treadDepth: initialData.treadDepth || '',
-    pressure: initialData.pressure || '',
-    condition: initialData.condition || 'good',
-    notes: initialData.notes || '',
-    inspectorName: initialData.inspectorName || '',
-    odometer: initialData.odometer || '',
+    tyreBrand: initialData.tyreBrand || "",
+    tyreSize: initialData.tyreSize || "",
+    treadDepth: initialData.treadDepth || "",
+    pressure: initialData.pressure || "",
+    condition: initialData.condition || "good",
+    notes: initialData.notes || "",
+    inspectorName: initialData.inspectorName || "",
+    odometer: initialData.odometer || "",
     photo: initialData.photo || null,
     signature: initialData.signature || null,
-    inspectionDate: initialData.inspectionDate || new Date().toISOString().split('T')[0],
-    lastUpdated: new Date().toISOString()
+    inspectionDate: initialData.inspectionDate || new Date().toISOString().split("T")[0],
+    lastUpdated: new Date().toISOString(),
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -77,7 +79,10 @@ const TyreInspectionModal: React.FC<TyreInspectionModalProps> = ({
           <CardContent className="space-y-4 p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="fleetNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="fleetNumber"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Fleet Number
                 </label>
                 <input
@@ -133,7 +138,10 @@ const TyreInspectionModal: React.FC<TyreInspectionModalProps> = ({
               </div>
 
               <div>
-                <label htmlFor="treadDepth" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="treadDepth"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Tread Depth (mm)
                 </label>
                 <input
@@ -200,7 +208,10 @@ const TyreInspectionModal: React.FC<TyreInspectionModalProps> = ({
               </div>
 
               <div>
-                <label htmlFor="inspectorName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="inspectorName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Inspector Name
                 </label>
                 <input
@@ -214,7 +225,10 @@ const TyreInspectionModal: React.FC<TyreInspectionModalProps> = ({
               </div>
 
               <div>
-                <label htmlFor="inspectionDate" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="inspectionDate"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Inspection Date
                 </label>
                 <input
@@ -243,18 +257,10 @@ const TyreInspectionModal: React.FC<TyreInspectionModalProps> = ({
             </div>
 
             <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-              >
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button
-                type="submit"
-              >
-                Save Inspection
-              </Button>
+              <Button type="submit">Save Inspection</Button>
             </div>
           </CardContent>
         </Card>

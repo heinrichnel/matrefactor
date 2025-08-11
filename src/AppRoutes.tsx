@@ -76,7 +76,6 @@ const SystemCostGenerator = lazy(() => import("./pages/trips/SystemCostGenerator
 const PaymentTrackingPanel = lazy(() => import("./pages/trips/PaymentTrackingPanel"));
 const ReportingPanel = lazy(() => import("./pages/trips/ReportingPanel"));
 const LoadPlanningPage = lazy(() => import("./pages/Inventory/LoadPlanningPage"));
-const LoadPlanningComponentPage = lazy(() => import("./pages/trips/LoadPlanningComponentPage"));
 const RoutePlanningPage = lazy(() => import("./pages/trips/RoutePlanningPage"));
 const RouteOptimizationPage = lazy(() => import("./pages/trips/RouteOptimizationPage"));
 const TripTimelinePage = lazy(() => import("./pages/trips/TripTimelinePage"));
@@ -295,7 +294,6 @@ export const AppRoutes: React.FC = () => {
           <Route path="payments/:tripId" element={withSuspense(PaymentTrackingPanel)} />
           <Route path="reports/:tripId" element={withSuspense(ReportingPanel)} />
           <Route path="load-planning" element={withSuspense(LoadPlanningPage)} />
-          <Route path="load-planning/component" element={withSuspense(LoadPlanningComponentPage)} />
           <Route path="calendar" element={withSuspense(TripManager)} />
           <Route path="timeline" element={withSuspense(TripTimelinePage)} />
           <Route path="report" element={withSuspense(TripReportPage)} />

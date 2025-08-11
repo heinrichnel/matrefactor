@@ -55,7 +55,7 @@ export const TyreReports: React.FC = () => {
         status: doc.data().status || "Unknown",
         mountStatus: doc.data().mountStatus || "Unknown",
         maintenanceHistory: doc.data().maintenanceHistory || [],
-        kmRun: doc.data().kmRun || doc.data().milesRun || 0,
+        kmRun: doc.data().kmRun || doc.data().kmRun || 0,
         kmRunLimit: doc.data().kmRunLimit || 0,
         notes: doc.data().notes || "None",
         location: doc.data().location || "HOLDING_BAY",

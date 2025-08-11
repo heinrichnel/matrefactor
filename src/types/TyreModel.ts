@@ -193,10 +193,9 @@ import {
   getTyresByVehicle,
   listenToTyreStores,
   listenToTyres,
-  moveTyreStoreEntry,
   saveTyre,
   updateTyreStoreEntry,
-} from "../../../firebase";
+} from "../firebase";
 
 export {
   addTyreInspection,
@@ -209,7 +208,6 @@ export {
   getTyresByVehicle,
   listenToTyreStores,
   listenToTyres,
-  moveTyreStoreEntry,
   saveTyre,
   updateTyreStoreEntry,
 };
@@ -225,7 +223,7 @@ import {
   getBestTyres,
   getTyreBrandPerformance,
   getTyrePerformanceStats,
-} from "../../../utils/tyreAnalytics";
+} from "../utils/tyreAnalytics";
 
 export type { RankedTyre, TyreStat };
 
@@ -235,10 +233,7 @@ export { filterTyresByPerformance, getBestTyres, getTyreBrandPerformance, getTyr
 // Format/Parse Utilities
 // ========================
 
-import {
-  formatTyreSize as _formatTyreSize,
-  parseTyreSize as _parseTyreSize,
-} from "../../../types/tyre";
+import { formatTyreSize as _formatTyreSize, parseTyreSize as _parseTyreSize } from "./tyre";
 
 export const formatTyreSize = _formatTyreSize;
 export const parseTyreSize = _parseTyreSize;
@@ -290,8 +285,23 @@ export class TyreService {
 
   static async getTyresNeedingAttention(): Promise<Tyre[]> {
     try {
-      const tyres = await getTyres({ condition: "warning" });
-      return tyres;
+      // Use enum value for warning condition if filtering supported
+      const tyres = await getTyres({ condition: "warning" as any });
+      // Normalize maintenanceHistory.rotations to ensure id exists
+      return tyres.map((t: any) => ({
+        ...t,
+        maintenanceHistory: {
+          rotations: (t.maintenanceHistory?.rotations || []).map((r: any, idx: number) => ({
+            id: r.id || `rotation-${t.id}-${idx}`,
+            ...r,
+          })),
+          repairs: (t.maintenanceHistory?.repairs || []).map((r: any, idx: number) => ({
+            id: r.id || `repair-${t.id}-${idx}`,
+            ...r,
+          })),
+          inspections: t.maintenanceHistory?.inspections || [],
+        },
+      }));
     } catch (error) {
       console.error("Error getting tyres needing attention:", error);
       throw error;

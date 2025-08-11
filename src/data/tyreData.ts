@@ -67,6 +67,7 @@ export interface TyreInspectionEntry {
 
 export interface TyreMaintenanceHistory {
   rotations: Array<{
+    id: string;
     date: string;
     fromPosition: string;
     toPosition: string;
@@ -74,6 +75,7 @@ export interface TyreMaintenanceHistory {
     technician: string;
   }>;
   repairs: Array<{
+    id: string;
     date: string;
     type: string;
     description: string;
@@ -288,7 +290,16 @@ export const SAMPLE_TYRES: Tyre[] = [
     status: TyreStatus.IN_SERVICE,
     mountStatus: TyreMountStatus.MOUNTED,
     maintenanceHistory: {
-      rotations: [],
+      rotations: [
+        {
+          id: "rot-sample2-1",
+          date: "2023-06-15",
+          fromPosition: "front-right",
+          toPosition: "front-right",
+          mileage: 10000,
+          technician: "Rotation Tech",
+        },
+      ],
       repairs: [],
       inspections: [],
     },
@@ -333,8 +344,26 @@ export const SAMPLE_TYRES: Tyre[] = [
     status: TyreStatus.IN_SERVICE,
     mountStatus: TyreMountStatus.MOUNTED,
     maintenanceHistory: {
-      rotations: [],
-      repairs: [],
+      rotations: [
+        {
+          id: "rot-sample3-1",
+          date: "2023-07-01",
+          fromPosition: "rear-left",
+          toPosition: "rear-left",
+          mileage: 15000,
+          technician: "Rotation Tech",
+        },
+      ],
+      repairs: [
+        {
+          id: "rep-sample3-1",
+          date: "2023-07-10",
+          type: "puncture",
+          description: "Puncture repair",
+          cost: 500,
+          technician: "Repair Tech",
+        },
+      ],
       inspections: [],
     },
     kmRun: 50000,
@@ -407,7 +436,7 @@ export const parseTyreSize = (sizeString: string): TyreSize | null => {
 
 // Helper functions for tyre management
 export const getTyresByVehicle = (vehicleId: string): Tyre[] => {
-  return SAMPLE_TYRES.filter(tyre => tyre.installation.vehicleId === vehicleId);
+  return SAMPLE_TYRES.filter((tyre) => tyre.installation.vehicleId === vehicleId);
 };
 
 export const getTyreStatusColor = (status: TyreStatus): string => {
@@ -442,9 +471,8 @@ export const getTyreConditionColor = (condition: TyreConditionStatus): string =>
   }
 };
 
-export const getVehicleTyreConfiguration = (vehicleId: string) => {
-  // This would typically come from a configuration mapping
-  // For now, return a simple default configuration
+export const getVehicleTyreConfiguration = () => {
+  // Vehicle-specific configurations can be added later
   return {
     positions: [
       { id: "front-left", name: "Front Left", type: "steer" },

@@ -68,7 +68,7 @@ interface Tyre {
   condition: TyreCondition;
   status: "new" | "used" | "retreaded" | "scrapped";
   mountStatus: "on_vehicle" | "in_store" | "spare";
-  milesRun: number;
+  kmRun: number;
   kmRunLimit: number;
   inspectionHistory: TyreInspection[];
   notes: string;
@@ -139,7 +139,7 @@ export const TyreManagementSystem: React.FC = () => {
       },
       status: "used",
       mountStatus: "on_vehicle",
-      milesRun: 25000,
+      kmRun: 25000,
       kmRunLimit: 100000,
       inspectionHistory: [
         {
@@ -182,7 +182,7 @@ export const TyreManagementSystem: React.FC = () => {
     },
     status: "new",
     mountStatus: "in_store",
-    milesRun: 0,
+    kmRun: 0,
     kmRunLimit: 100000,
     notes: "",
   });
@@ -220,8 +220,8 @@ export const TyreManagementSystem: React.FC = () => {
   };
 
   const calculateCostPerKm = (tyre: Tyre) => {
-    if (tyre.milesRun === 0) return 0;
-    const kmRun = tyre.milesRun * 1.60934; // Convert miles to km
+    if (tyre.kmRun === 0) return 0;
+    const kmRun = tyre.kmRun * 1.60934; // Convert miles to km
     return tyre.purchaseDetails.cost / kmRun;
   };
 
@@ -233,9 +233,9 @@ export const TyreManagementSystem: React.FC = () => {
     const usedTread = newTyreDepth - currentTread;
     const remainingTread = currentTread - minimumTread;
 
-    if (usedTread <= 0 || tyre.milesRun === 0) return 100000;
+    if (usedTread <= 0 || tyre.kmRun === 0) return 100000;
 
-    const wearRate = usedTread / tyre.milesRun;
+    const wearRate = usedTread / tyre.kmRun;
     return Math.max(remainingTread / wearRate, 0);
   };
 
@@ -277,7 +277,7 @@ export const TyreManagementSystem: React.FC = () => {
       condition: newTyre.condition!,
       status: newTyre.status!,
       mountStatus: newTyre.mountStatus!,
-      milesRun: newTyre.milesRun || 0,
+      kmRun: newTyre.kmRun || 0,
       kmRunLimit: newTyre.kmRunLimit || 100000,
       inspectionHistory: [],
       notes: newTyre.notes || "",
@@ -308,7 +308,7 @@ export const TyreManagementSystem: React.FC = () => {
       },
       status: "new",
       mountStatus: "in_store",
-      milesRun: 0,
+      kmRun: 0,
       kmRunLimit: 100000,
       notes: "",
     });
@@ -351,7 +351,7 @@ export const TyreManagementSystem: React.FC = () => {
       tyre.condition.status,
       tyre.installation.vehicleId,
       tyre.installation.position,
-      tyre.milesRun,
+      tyre.kmRun,
       tyre.condition.treadDepth,
       tyre.condition.pressure,
       tyre.purchaseDetails.cost,
@@ -490,7 +490,7 @@ export const TyreManagementSystem: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-gray-600">Miles Run</p>
-                            <p className="font-medium">{tyre.milesRun.toLocaleString()}</p>
+                            <p className="font-medium">{tyre.kmRun.toLocaleString()}</p>
                           </div>
                           <div>
                             <p className="text-gray-600">Cost/KM</p>

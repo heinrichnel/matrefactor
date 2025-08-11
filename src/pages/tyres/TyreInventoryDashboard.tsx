@@ -1,5 +1,5 @@
 import { BarChart, Download, Filter, PieChart, Plus, Search } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Button from "../../components/ui/Button";
 import { Card, CardContent } from "../../components/ui/Card";
 import SyncIndicator from "../../components/ui/SyncIndicator";
@@ -22,6 +22,8 @@ interface TyreRecord {
   pattern?: string;
 }
 
+import { useTyreInventory } from "@/hooks/useTyreInventory";
+
 interface TyreInventoryDashboardProps {
   onAddTyre?: () => void;
   onViewTyreDetail?: (id: string) => void;
@@ -33,143 +35,16 @@ const TyreInventoryDashboard: React.FC<TyreInventoryDashboardProps> = ({
   onViewTyreDetail,
   onEditTyre,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<keyof TyreRecord>("tyreNumber");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const { uiRecords, loading: isLoading, searchTerm, setSearchTerm } = useTyreInventory();
+  const tyres: TyreRecord[] = uiRecords; // Adapt hook output to existing logic
+  // Derived manufacturer/status/condition filters now from tyres dataset
   const [filterManufacturer, setFilterManufacturer] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterCondition, setFilterCondition] = useState<string>("");
-  const [sortBy, setSortBy] = useState<keyof TyreRecord>("tyreNumber");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [isLoading, setIsLoading] = useState(false);
-  const [tyres, setTyres] = useState<TyreRecord[]>([]);
 
-  // Mock data for initial load
-  const mockTyres: TyreRecord[] = [
-    {
-      id: "1",
-      tyreNumber: "T1001",
-      manufacturer: "Michelin",
-      condition: "Good",
-      status: "In-Service",
-      vehicleAssignment: "MAT001",
-      km: 15000,
-      kmLimit: 60000,
-      treadDepth: 8.5,
-      mountStatus: "Mounted",
-      axlePosition: "Front Left",
-      lastInspection: "2025-06-15",
-      datePurchased: "2025-01-10",
-      size: "295/80R22.5",
-      pattern: "X MultiWay 3D XZE",
-    },
-    {
-      id: "2",
-      tyreNumber: "T1002",
-      manufacturer: "Goodyear",
-      condition: "Fair",
-      status: "In-Service",
-      vehicleAssignment: "MAT001",
-      km: 25000,
-      kmLimit: 60000,
-      treadDepth: 6.2,
-      mountStatus: "Mounted",
-      axlePosition: "Front Right",
-      lastInspection: "2025-06-15",
-      datePurchased: "2025-01-10",
-      size: "295/80R22.5",
-      pattern: "KMAX S",
-    },
-    {
-      id: "3",
-      tyreNumber: "T1003",
-      manufacturer: "Bridgestone",
-      condition: "New",
-      status: "In-Stock",
-      vehicleAssignment: "",
-      km: 0,
-      kmLimit: 80000,
-      treadDepth: 14.0,
-      mountStatus: "Not Mounted",
-      datePurchased: "2025-06-01",
-      size: "315/80R22.5",
-      pattern: "R168",
-    },
-    {
-      id: "4",
-      tyreNumber: "T1004",
-      manufacturer: "Continental",
-      condition: "Poor",
-      status: "Repair",
-      vehicleAssignment: "MAT003",
-      km: 48000,
-      kmLimit: 60000,
-      treadDepth: 3.2,
-      mountStatus: "Removed",
-      axlePosition: "Rear Right Outer",
-      lastInspection: "2025-07-02",
-      datePurchased: "2024-10-15",
-      size: "315/80R22.5",
-      pattern: "HDR2+",
-    },
-    {
-      id: "5",
-      tyreNumber: "T1005",
-      manufacturer: "Pirelli",
-      condition: "Retreaded",
-      status: "In-Service",
-      vehicleAssignment: "MAT002",
-      km: 12000,
-      kmLimit: 40000,
-      treadDepth: 10.5,
-      mountStatus: "Mounted",
-      axlePosition: "Drive Axle Left Inner",
-      lastInspection: "2025-06-28",
-      datePurchased: "2024-12-05",
-      size: "315/80R22.5",
-      pattern: "FH:01",
-    },
-    {
-      id: "6",
-      tyreNumber: "T1006",
-      manufacturer: "Goodyear",
-      condition: "Good",
-      status: "In-Service",
-      vehicleAssignment: "MAT002",
-      km: 18500,
-      kmLimit: 60000,
-      treadDepth: 7.8,
-      mountStatus: "Mounted",
-      axlePosition: "Drive Axle Left Outer",
-      lastInspection: "2025-06-28",
-      datePurchased: "2024-12-05",
-      size: "315/80R22.5",
-      pattern: "KMAX D",
-    },
-    {
-      id: "7",
-      tyreNumber: "T1007",
-      manufacturer: "Michelin",
-      condition: "Retreaded",
-      status: "Scrap",
-      vehicleAssignment: "",
-      km: 75000,
-      kmLimit: 60000,
-      treadDepth: 1.8,
-      mountStatus: "Removed",
-      datePurchased: "2024-05-20",
-      size: "295/80R22.5",
-      pattern: "X MultiWay 3D XDE",
-    },
-  ];
-
-  // Load tyres on component mount
-  useEffect(() => {
-    setIsLoading(true);
-    // Simulate API fetch
-    setTimeout(() => {
-      setTyres(mockTyres);
-      setIsLoading(false);
-    }, 800);
-  }, []);
+  // Legacy mock removed; real-time data via hook
 
   // Filter and sort tyres
   const filteredTyres = tyres

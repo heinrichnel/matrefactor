@@ -3,6 +3,7 @@
 ## Firebase Data Structures
 
 ### Tyre Data Structure
+
 Based on the type definitions in `src/types/tyre.ts`, the Tyre data should be structured as follows in Firebase:
 
 ```typescript
@@ -36,18 +37,18 @@ interface Tyre {
     treadDepth: number;
     pressure: number;
     temperature: number;
-    status: 'good' | 'warning' | 'critical' | 'needs_replacement';
+    status: "good" | "warning" | "critical" | "needs_replacement";
     lastInspectionDate: string;
     nextInspectionDue: string;
   };
-  status: 'new' | 'in_service' | 'spare' | 'retreaded' | 'scrapped';
-  mountStatus: 'mounted' | 'unmounted' | 'in_storage';
+  status: "new" | "in_service" | "spare" | "retreaded" | "scrapped";
+  mountStatus: "mounted" | "unmounted" | "in_storage";
   maintenanceHistory: {
     rotations: TyreRotation[];
     repairs: TyreRepair[];
     inspections: TyreInspection[];
   };
-  milesRun: number;
+  kmRun: number;
   kmRunLimit: number;
   notes: string;
   location: TyreStoreLocation;
@@ -57,6 +58,7 @@ interface Tyre {
 ```
 
 ### Inventory Item Data Structure
+
 Based on the type definitions in `src/types/inventory.ts`, the Inventory Items should be structured as follows in Firebase:
 
 ```typescript
@@ -69,7 +71,7 @@ interface InventoryItem {
   unitPrice: number;
   category: string;
   reorderLevel?: number;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
   stockValue?: number;
   location?: string;
   lastReceived?: string;

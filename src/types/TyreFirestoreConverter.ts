@@ -1,5 +1,5 @@
 import { FirestoreDataConverter, Timestamp } from "firebase/firestore";
-import { Tyre } from "../components/Models/Tyre/TyreModel";
+import { Tyre } from "./TyreModel";
 
 export const tyreConverter: FirestoreDataConverter<Tyre> = {
   toFirestore(tyre: Tyre) {
