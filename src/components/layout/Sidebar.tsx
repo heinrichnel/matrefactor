@@ -16,7 +16,6 @@ import {
   Truck,
   Users,
   Warehouse,
-  Wialon,
   X,
 } from "lucide-react";
 import React, { useState } from "react";
