@@ -8,7 +8,7 @@ import WialonUnitDetails from "../components/wialon/WialonUnitDetails";
 import WialonUnitList from "../components/wialon/WialonUnitList";
 import { WialonProvider } from "../context/WialonContext";
 import { useWialon } from "../hooks/useWialon";
-import WialonTrackingPage from "../pages/WialonTrackingPage";
+import WialonTrackingPage from "../pages/wialon/WialonTrackingPage";
 
 // Re-export all Wialon components and hooks
 export {

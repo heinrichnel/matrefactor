@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import WialonUnitsList from "../../components/wialon/WialonUnitsList";
+import { useWialon } from "../../context/WialonProvider";
 
 /**
  * WialonUnitsPage Component
@@ -9,6 +10,8 @@ import WialonUnitsList from "../../components/wialon/WialonUnitsList";
  */
 const WialonUnitsPage: React.FC = () => {
   const [selectedUnit, setSelectedUnit] = useState<any>(null);
+  // Retrieve Wialon units, loading and error state from provider
+  const { units, initializing, error } = useWialon();
 
   const handleSelectUnit = (unitId: number, unitInfo: any) => {
     setSelectedUnit(unitInfo);
@@ -24,7 +27,12 @@ const WialonUnitsPage: React.FC = () => {
         <div className={`lg:col-span-${selectedUnit ? "2" : "3"}`}>
           <div className="bg-white p-4 rounded shadow">
             <h3 className="font-medium text-gray-900 mb-4">Available Units</h3>
-            <WialonUnitsList onSelectUnit={handleSelectUnit} />
+            <WialonUnitsList
+              units={(units as any) || null}
+              loading={initializing}
+              error={error}
+              onSelectUnit={handleSelectUnit}
+            />
           </div>
         </div>
 

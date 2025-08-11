@@ -76,7 +76,6 @@ const DriverManagementPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [drivers] = useState(mockDrivers);
-  const [processing, setProcessing] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<DriverData | null>(null);
@@ -95,7 +94,6 @@ const DriverManagementPage: React.FC = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAddDriver = async (driverData: DriverData): Promise<void> => {
-    setProcessing(true);
     setErrorMessage(null);
 
     try {
@@ -114,8 +112,6 @@ const DriverManagementPage: React.FC = () => {
       console.error("Error adding driver:", error);
       setErrorMessage("Failed to add driver. Please try again.");
       setSubmitSuccess(false);
-    } finally {
-      setProcessing(false);
     }
   };
   const handleEditDriver = (driver: any) => {

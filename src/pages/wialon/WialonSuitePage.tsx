@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Circle, Polygon, Polyline, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import React, { useEffect, useState } from "react";
+import { Circle, MapContainer, Polygon, Polyline, TileLayer, useMapEvents } from "react-leaflet";
 
 // --- MOCKING EXTERNAL DEPENDENCIES ---
 // These are included to make the page self-contained and runnable.
 // In a real application, these would be in separate files (e.g., hooks/useWialonConnection.ts)
 const db = {}; // Mock Firestore DB
 const WIALON_API_URL = "https://hosting.wialon.com/wialon/ajax.html";
-const WIALON_LOGIN_URL = "https://hosting.wialon.com/?token=YOUR_TOKEN_HERE";
+const WIALON_LOGIN_URL =
+  "https://hosting.wialon.com/?token=c1099bc37c906fd0832d8e783b60ae0dD9D1A721B294486AC08F8AA3ACAC2D2FD45FF053.en";
 
 interface WialonConnectionStatus {
   connected: boolean;
@@ -63,14 +64,16 @@ interface WialonUnit {
   last_message?: number; // Unix timestamp
   connection_state?: number; // 1 for online, 0 for offline
 }
+// Add explicit sort key union to satisfy TS7053 (no string index signature)
+type WialonUnitSortKey = "name" | "last_message";
 
 const useWialonUnits = () => {
   const [units, setUnits] = useState<WialonUnit[] | null>(null);
+  // Remove unused setter to fix eslint no-unused-vars
+  const [error] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate fetching units from Wialon
     setTimeout(() => {
       setUnits([
         {
@@ -130,7 +133,7 @@ const useWialonSession = (sdkReady: boolean) => {
     if (sdkReady) {
       setLoggedIn(true);
       setSession({
-        getItem: (id: number) => ({
+        getItem: () => ({
           createDriver: (payload: any, callback: any) => {
             console.log("Mock driver create:", payload);
             callback(0, { n: payload.n });
@@ -201,11 +204,13 @@ const useWialonGeofences = (session: any, resourceId: number | null) => {
 };
 
 const firestoreMock = {
-  doc: (db: any, collection: string, docId: string) => ({
+  doc: (_db: any, collection: string, docId: string) => ({
     exists: true,
+    collection,
+    docId,
     data: () => ({
       baseUrl: "https://hosting.wialon.com/",
-      token: "mock-token-12345",
+      token: "c1099bc37c906fd0832d8e783b60ae0dD9D1A721B294486AC08F8AA3ACAC2D2FD45FF053",
       language: "en",
       defaultView: "monitoring",
     }),
@@ -325,50 +330,44 @@ const WialonUnitsList: React.FC = () => {
   const [selectedType, setSelectedType] = useState("");
   const [filteredUnits, setFilteredUnits] = useState<WialonUnit[]>([]);
   const [sortConfig, setSortConfig] = useState<{
-    key: string;
+    key: WialonUnitSortKey;
     direction: "ascending" | "descending";
-  }>({
-    key: "name",
-    direction: "ascending",
-  });
+  }>({ key: "name", direction: "ascending" });
 
   useEffect(() => {
     if (!units) {
       setFilteredUnits([]);
       return;
     }
-
-    let currentFiltered = [...units];
+    let current = [...units];
 
     if (searchQuery) {
-      currentFiltered = currentFiltered.filter((unit) =>
-        unit.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      current = current.filter((u) => u.name.toLowerCase().includes(searchQuery.toLowerCase()));
     }
     if (selectedType) {
-      currentFiltered = currentFiltered.filter(
-        (unit) =>
-          (unit.cls_id && String(unit.cls_id) === selectedType) ||
-          (unit.type && unit.type.toLowerCase() === selectedType.toLowerCase())
+      current = current.filter(
+        (u) =>
+          (u.cls_id && `Class ${u.cls_id}` === selectedType) ||
+          (u.type && u.type.toLowerCase() === selectedType.toLowerCase())
       );
     }
 
-    currentFiltered.sort((a, b) => {
-      const valueA = a[sortConfig.key] !== undefined ? a[sortConfig.key] : "";
-      const valueB = b[sortConfig.key] !== undefined ? b[sortConfig.key] : "";
+    current.sort((a, b) => {
+      const aVal = a[sortConfig.key];
+      const bVal = b[sortConfig.key];
       if (sortConfig.key === "last_message") {
-        const numA = typeof valueA === "number" ? valueA : -Infinity;
-        const numB = typeof valueB === "number" ? valueB : -Infinity;
-        if (numA < numB) return sortConfig.direction === "ascending" ? -1 : 1;
-        if (numA > numB) return sortConfig.direction === "ascending" ? 1 : -1;
-      } else {
-        if (valueA < valueB) return sortConfig.direction === "ascending" ? -1 : 1;
-        if (valueA > valueB) return sortConfig.direction === "ascending" ? 1 : -1;
+        const aNum = typeof aVal === "number" ? aVal : -Infinity;
+        const bNum = typeof bVal === "number" ? bVal : -Infinity;
+        return sortConfig.direction === "ascending" ? aNum - bNum : bNum - aNum;
       }
+      const aStr = String(aVal ?? "");
+      const bStr = String(bVal ?? "");
+      if (aStr < bStr) return sortConfig.direction === "ascending" ? -1 : 1;
+      if (aStr > bStr) return sortConfig.direction === "ascending" ? 1 : -1;
       return 0;
     });
 
-    setFilteredUnits(currentFiltered);
+    setFilteredUnits(current);
   }, [units, searchQuery, selectedType, sortConfig]);
 
   const unitTypes = units
@@ -562,9 +561,10 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
         const configRef = doc(db, "integrationConfig", `wialon-${companyId}`);
         const docSnap = await getDoc(configRef);
         if (docSnap.exists) {
-          setConfig({ ...config, ...(docSnap.data() as WialonConfigState) });
+          // Functional update avoids stale closure & accidental loops
+          setConfig((prev) => ({ ...prev, ...(docSnap.data() as WialonConfigState) }));
         }
-      } catch (err) {
+      } catch {
         setError("Failed to load configuration. Please try again.");
       } finally {
         setIsLoading(false);
@@ -604,7 +604,7 @@ const WialonConfig: React.FC<WialonConfigProps> = ({ companyId = "default" }) =>
       }
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
+    } catch {
       setError("Failed to save configuration. Please try again.");
     } finally {
       setIsSaving(false);

@@ -1,6 +1,5 @@
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
-import "../styles/calendar.css";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useCallback, useMemo, useState } from "react";
 
 // Define TypeScript interfaces for our data
 interface TripEvent {
@@ -8,7 +7,7 @@ interface TripEvent {
   title: string;
   start: string; // ISO date string
   end: string; // ISO date string
-  status: 'scheduled' | 'active' | 'completed' | 'delayed';
+  status: "scheduled" | "active" | "completed" | "delayed";
   driver: string;
   vehicle: string;
 }
@@ -18,7 +17,7 @@ interface Event {
   label: string;
   start: Date;
   end: Date;
-  type: TripEvent['status']; // Use TripEvent statuses as types
+  type: TripEvent["status"]; // Use TripEvent statuses as types
   color: string; // Tailwind color class
 }
 
@@ -44,7 +43,7 @@ const getDaysInWeek = (currentDate: Date): Date[] => {
   const days: Date[] = [];
   const startOfWeek = new Date(currentDate);
   // Adjust to Thursday of the current week (or previous week if currentDate is before Thursday)
-  startOfWeek.setDate(currentDate.getDate() - (currentDate.getDay() + 3) % 7);
+  startOfWeek.setDate(currentDate.getDate() - ((currentDate.getDay() + 3) % 7));
 
   for (let i = 0; i < 7; i++) {
     const day = new Date(startOfWeek);
@@ -55,88 +54,90 @@ const getDaysInWeek = (currentDate: Date): Date[] => {
 };
 
 // Helper function to convert TripEvent status to a Tailwind color class
-const getStatusColor = (status: TripEvent['status']): string => {
+const getStatusColor = (status: TripEvent["status"]): string => {
   switch (status) {
-    case 'active':
-      return 'bg-indigo-300';
-    case 'completed':
-      return 'bg-emerald-300';
-    case 'delayed':
-      return 'bg-rose-300';
-    case 'scheduled':
+    case "active":
+      return "bg-indigo-300";
+    case "completed":
+      return "bg-emerald-300";
+    case "delayed":
+      return "bg-rose-300";
+    case "scheduled":
     default:
-      return 'bg-neutral-300'; // Softer gray for scheduled
+      return "bg-neutral-300"; // Softer gray for scheduled
   }
 };
 
 const App: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date()); // Current date for calendar navigation
-  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
 
   // Sample trip events for the calendar (from your provided code)
-  const tripEvents: TripEvent[] = useMemo(() => [
-    {
-      id: 'TRP-2025001',
-      title: 'Windhoek to Walvis Bay',
-      start: '2025-07-10T07:00:00',
-      end: '2025-07-10T14:00:00',
-      status: 'scheduled',
-      driver: 'T. Nangolo',
-      vehicle: 'VEH-2001'
-    },
-    {
-      id: 'TRP-2025002',
-      title: 'Swakopmund to Ondangwa',
-      start: '2025-07-12T08:30:00',
-      end: '2025-07-12T17:30:00',
-      status: 'scheduled',
-      driver: 'M. Shapumba',
-      vehicle: 'VEH-2002'
-    },
-    {
-      id: 'TRP-2025003',
-      title: 'Windhoek to Keetmanshoop',
-      start: '2025-07-15T06:00:00',
-      end: '2025-07-15T16:00:00',
-      status: 'active', // Changed to active for visual diversity
-      driver: 'J. van Wyk',
-      vehicle: 'VEH-2003'
-    },
-    {
-      id: 'TRP-2025004',
-      title: 'Oshakati to Windhoek',
-      start: '2025-07-18T05:30:00',
-      end: '2025-07-18T15:30:00',
-      status: 'delayed', // Changed to delayed for visual diversity
-      driver: 'P. Amukoto',
-      vehicle: 'VEH-2004'
-    },
-    {
-      id: 'TRP-2025005',
-      title: 'Walvis Bay to Lüderitz',
-      start: '2025-07-20T07:00:00',
-      end: '2025-07-21T12:00:00', // Spans two days
-      status: 'completed', // Changed to completed for visual diversity
-      driver: 'L. Haikali',
-      vehicle: 'VEH-2005'
-    },
-    {
-      id: 'TRP-2025006',
-      title: 'Long Haul Trip',
-      start: '2025-07-23T09:00:00',
-      end: '2025-07-28T17:00:00', // Spans multiple days
-      status: 'active',
-      driver: 'K. Smith',
-      vehicle: 'VEH-2001' // Same vehicle as first trip
-    }
-  ], []);
+  const tripEvents: TripEvent[] = useMemo(
+    () => [
+      {
+        id: "TRP-2025001",
+        title: "Windhoek to Walvis Bay",
+        start: "2025-07-10T07:00:00",
+        end: "2025-07-10T14:00:00",
+        status: "scheduled",
+        driver: "T. Nangolo",
+        vehicle: "VEH-2001",
+      },
+      {
+        id: "TRP-2025002",
+        title: "Swakopmund to Ondangwa",
+        start: "2025-07-12T08:30:00",
+        end: "2025-07-12T17:30:00",
+        status: "scheduled",
+        driver: "M. Shapumba",
+        vehicle: "VEH-2002",
+      },
+      {
+        id: "TRP-2025003",
+        title: "Windhoek to Keetmanshoop",
+        start: "2025-07-15T06:00:00",
+        end: "2025-07-15T16:00:00",
+        status: "active", // Changed to active for visual diversity
+        driver: "J. van Wyk",
+        vehicle: "VEH-2003",
+      },
+      {
+        id: "TRP-2025004",
+        title: "Oshakati to Windhoek",
+        start: "2025-07-18T05:30:00",
+        end: "2025-07-18T15:30:00",
+        status: "delayed", // Changed to delayed for visual diversity
+        driver: "P. Amukoto",
+        vehicle: "VEH-2004",
+      },
+      {
+        id: "TRP-2025005",
+        title: "Walvis Bay to Lüderitz",
+        start: "2025-07-20T07:00:00",
+        end: "2025-07-21T12:00:00", // Spans two days
+        status: "completed", // Changed to completed for visual diversity
+        driver: "L. Haikali",
+        vehicle: "VEH-2005",
+      },
+      {
+        id: "TRP-2025006",
+        title: "Long Haul Trip",
+        start: "2025-07-23T09:00:00",
+        end: "2025-07-28T17:00:00", // Spans multiple days
+        status: "active",
+        driver: "K. Smith",
+        vehicle: "VEH-2001", // Same vehicle as first trip
+      },
+    ],
+    []
+  );
 
   // Transform tripEvents into the Vehicle structure for timeline display
   const vehicles: Vehicle[] = useMemo(() => {
     const vehiclesMap = new Map<string, Vehicle>();
 
-    tripEvents.forEach(trip => {
+    tripEvents.forEach((trip) => {
       if (!vehiclesMap.has(trip.vehicle)) {
         vehiclesMap.set(trip.vehicle, { id: trip.vehicle, name: trip.vehicle, events: [] });
       }
@@ -154,12 +155,12 @@ const App: React.FC = () => {
     return Array.from(vehiclesMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [tripEvents]);
 
-  const daysOfWeek = useMemo(() => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], []);
+  const daysOfWeek = useMemo(() => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], []);
 
   const getVisibleDays = useCallback((): Date[] => {
-    if (viewMode === 'month') {
+    if (viewMode === "month") {
       return getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
-    } else if (viewMode === 'week') {
+    } else if (viewMode === "week") {
       return getDaysInWeek(currentDate);
     }
     // For 'day' view, just return the current day
@@ -168,35 +169,15 @@ const App: React.FC = () => {
 
   const visibleDays = getVisibleDays();
 
-  // Calculate the start and end of the visible date range for the header
-  const displayDateRange = useMemo(() => {
-    if (visibleDays.length === 0) return '';
-    const start = visibleDays[0];
-    const end = visibleDays[visibleDays.length - 1];
-
-    const startMonth = start.toLocaleString('en-US', { month: 'short' });
-    const endMonth = end.toLocaleString('en-US', { month: 'short' });
-    const startDay = start.getDate();
-    const endDay = end.getDate();
-    const startYear = start.getFullYear();
-    const endYear = end.getFullYear();
-
-    if (startYear === endYear && startMonth === endMonth) {
-      return `${startDay} - ${endDay} ${startMonth} ${startYear}`;
-    } else if (startYear === endYear) {
-      return `${startDay} ${startMonth} - ${endDay} ${endMonth} ${startYear}`;
-    }
-    return `${startDay} ${startMonth} ${startYear} - ${endDay} ${endMonth} ${endYear}`;
-  }, [visibleDays]);
-
   const handlePrev = () => {
-    setCurrentDate(prevDate => {
+    setCurrentDate((prevDate) => {
       const newDate = new Date(prevDate);
-      if (viewMode === 'month') {
+      if (viewMode === "month") {
         newDate.setMonth(newDate.getMonth() - 1);
-      } else if (viewMode === 'week') {
+      } else if (viewMode === "week") {
         newDate.setDate(newDate.getDate() - 7);
-      } else { // day
+      } else {
+        // day
         newDate.setDate(newDate.getDate() - 1);
       }
       return newDate;
@@ -204,28 +185,22 @@ const App: React.FC = () => {
   };
 
   const handleNext = () => {
-    setCurrentDate(prevDate => {
+    setCurrentDate((prevDate) => {
       const newDate = new Date(prevDate);
-      if (viewMode === 'month') {
+      if (viewMode === "month") {
         newDate.setMonth(newDate.getMonth() + 1);
-      } else if (viewMode === 'week') {
+      } else if (viewMode === "week") {
         newDate.setDate(newDate.getDate() + 7);
-      } else { // day
+      } else {
+        // day
         newDate.setDate(newDate.getDate() + 1);
       }
       return newDate;
     });
   };
 
-  // Filter vehicles based on search term
-  const filteredVehicles = useMemo(() => {
-    if (!searchTerm) return vehicles;
-    return vehicles.filter(vehicle =>
-      vehicle.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.events.some(event => event.label.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [vehicles, searchTerm]);
-
+  // Vehicles currently unfiltered (search removed)
+  const filteredVehicles = vehicles;
 
   return (
     <div className="min-h-screen bg-neutral-50 font-inter text-gray-800 p-4 sm:p-6 lg:p-8 rounded-lg shadow-lg">
@@ -237,12 +212,7 @@ const App: React.FC = () => {
         </div>
         <div className="flex space-x-2 items-center">
           {/* <SyncIndicator /> Removed as it's an external component */}
-          <button
-            className="flex items-center px-4 py-2 rounded-md bg-white text-gray-700 font-semibold text-sm shadow-sm hover:bg-neutral-100 transition-colors border border-gray-200"
-          >
-            <Search className="w-4 h-4 mr-2" />
-            Search Trips
-          </button>
+          {/* Search button removed with search feature */}
           <button
             className="flex items-center px-4 py-2 rounded-md bg-indigo-500 text-white font-semibold text-sm shadow-sm hover:bg-indigo-600 transition-colors"
             // disabled={isLoading?.trips} Removed as isLoading is from external context
@@ -264,7 +234,7 @@ const App: React.FC = () => {
               <ChevronLeft className="w-4 h-4 text-gray-600" />
             </button>
             <h3 className="text-lg font-medium">
-              {currentDate.toLocaleString('default', { month: 'long' })} {currentDate.getFullYear()}
+              {currentDate.toLocaleString("default", { month: "long" })} {currentDate.getFullYear()}
             </h3>
             <button
               onClick={handleNext}
@@ -274,15 +244,15 @@ const App: React.FC = () => {
             </button>
           </div>
           <div className="flex rounded-md shadow-sm">
-            {['Month', 'Week', 'Day'].map((mode) => (
+            {["Month", "Week", "Day"].map((mode) => (
               <button
                 key={mode}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   viewMode === mode.toLowerCase()
-                    ? 'bg-indigo-500 text-white shadow-md'
-                    : 'bg-neutral-100 text-gray-700 hover:bg-neutral-200'
-                } ${mode === 'Month' ? 'rounded-r-none' : ''} ${mode === 'Day' ? 'rounded-l-none' : ''} ${mode === 'Week' ? 'rounded-none' : ''}`}
-                onClick={() => setViewMode(mode.toLowerCase() as 'day' | 'week' | 'month')}
+                    ? "bg-indigo-500 text-white shadow-md"
+                    : "bg-neutral-100 text-gray-700 hover:bg-neutral-200"
+                } ${mode === "Month" ? "rounded-r-none" : ""} ${mode === "Day" ? "rounded-l-none" : ""} ${mode === "Week" ? "rounded-none" : ""}`}
+                onClick={() => setViewMode(mode.toLowerCase() as "day" | "week" | "month")}
               >
                 {mode}
               </button>
@@ -294,7 +264,7 @@ const App: React.FC = () => {
       {/* Calendar Grid (Timeline View) */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="text-center py-2 text-lg font-semibold text-gray-700 border-b border-gray-200">
-          {currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+          {currentDate.toLocaleString("en-US", { month: "long", year: "numeric" })}
         </div>
 
         <div className="flex">
@@ -304,7 +274,10 @@ const App: React.FC = () => {
               Vehicles
             </div>
             {filteredVehicles.map((vehicle) => (
-              <div key={vehicle.id} className="h-12 flex items-center px-3 border-b border-gray-100 text-sm hover:bg-neutral-100 transition-colors">
+              <div
+                key={vehicle.id}
+                className="h-12 flex items-center px-3 border-b border-gray-100 text-sm hover:bg-neutral-100 transition-colors"
+              >
                 {vehicle.name}
               </div>
             ))}
@@ -318,15 +291,13 @@ const App: React.FC = () => {
                 <div
                   key={index}
                   className={`flex-1 min-w-[120px] h-12 flex flex-col items-center justify-center p-2 border-l border-gray-200 ${
-                    day.getDay() === 0 || day.getDay() === 6 ? 'bg-indigo-50' : 'bg-white' // Softer weekend styling
+                    day.getDay() === 0 || day.getDay() === 6 ? "bg-indigo-50" : "bg-white" // Softer weekend styling
                   }`}
                 >
                   <span className="text-xs font-semibold text-gray-600">
                     {daysOfWeek[day.getDay()]}
                   </span>
-                  <span className="text-lg font-bold text-gray-800">
-                    {day.getDate()}
-                  </span>
+                  <span className="text-lg font-bold text-gray-800">{day.getDate()}</span>
                 </div>
               ))}
             </div>
@@ -340,23 +311,50 @@ const App: React.FC = () => {
                     return (
                       <div
                         key={dayIndex}
-                        className={`flex-1 min-w-[120px] border-l border-gray-100 relative ${isWeekend ? 'bg-indigo-50' : 'bg-white'}`}
+                        className={`flex-1 min-w-[120px] border-l border-gray-100 relative ${isWeekend ? "bg-indigo-50" : "bg-white"}`}
                       >
                         {/* Render events that fall on this day */}
                         {vehicle.events.map((event: Event) => {
                           // Check if event overlaps with the current day
-                          const eventStartsOnDay = event.start.toDateString() === day.toDateString();
+                          const eventStartsOnDay =
+                            event.start.toDateString() === day.toDateString();
                           const eventEndsOnDay = event.end.toDateString() === day.toDateString();
                           // Check if the event spans across the current day
-                          const eventSpansDay = event.start < day && event.end > new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59);
-
+                          const eventSpansDay =
+                            event.start < day &&
+                            event.end >
+                              new Date(
+                                day.getFullYear(),
+                                day.getMonth(),
+                                day.getDate(),
+                                23,
+                                59,
+                                59
+                              );
 
                           if (eventStartsOnDay || eventEndsOnDay || eventSpansDay) {
                             // Calculate position and width based on the visible days and event duration
-                            const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0);
-                            const dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59);
+                            const dayStart = new Date(
+                              day.getFullYear(),
+                              day.getMonth(),
+                              day.getDate(),
+                              0,
+                              0,
+                              0
+                            );
+                            const dayEnd = new Date(
+                              day.getFullYear(),
+                              day.getMonth(),
+                              day.getDate(),
+                              23,
+                              59,
+                              59
+                            );
 
-                            const eventVisibleStart = Math.max(event.start.getTime(), dayStart.getTime());
+                            const eventVisibleStart = Math.max(
+                              event.start.getTime(),
+                              dayStart.getTime()
+                            );
                             const eventVisibleEnd = Math.min(event.end.getTime(), dayEnd.getTime());
 
                             const totalDayDuration = dayEnd.getTime() - dayStart.getTime(); // Milliseconds in a day
@@ -364,7 +362,8 @@ const App: React.FC = () => {
 
                             if (visibleEventDuration <= 0) return null; // Event not visible on this day
 
-                            const leftPercentage = ((eventVisibleStart - dayStart.getTime()) / totalDayDuration) * 100;
+                            const leftPercentage =
+                              ((eventVisibleStart - dayStart.getTime()) / totalDayDuration) * 100;
                             const widthPercentage = (visibleEventDuration / totalDayDuration) * 100;
 
                             return (
@@ -374,8 +373,8 @@ const App: React.FC = () => {
                                 style={{
                                   left: `${leftPercentage}%`,
                                   width: `${widthPercentage}%`,
-                                  top: '50%',
-                                  transform: 'translateY(-50%)',
+                                  top: "50%",
+                                  transform: "translateY(-50%)",
                                   zIndex: 10,
                                 }}
                                 title={event.label} // Tooltip for full label
@@ -404,17 +403,34 @@ const App: React.FC = () => {
         <div className="p-4">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-neutral-50"><tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trip ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trip</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> {/* Added Status column */}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr></thead>
-              <tbody className="bg-white divide-y divide-gray-200">{
-                tripEvents.map((trip: TripEvent) => {
+              <thead className="bg-neutral-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trip ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trip
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Driver
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Vehicle
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>{" "}
+                  {/* Added Status column */}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {tripEvents.map((trip: TripEvent) => {
                   const startDate = new Date(trip.start);
                   const endDate = new Date(trip.end);
 
@@ -423,25 +439,37 @@ const App: React.FC = () => {
                       <td className="px-6 py-4 text-sm font-medium text-indigo-600">{trip.id}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{trip.title}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {startDate.toLocaleDateString()} {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {startDate.toLocaleDateString()}{" "}
+                        {startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         {startDate.toDateString() !== endDate.toDateString() && (
-                          <> - {endDate.toLocaleDateString()} {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</>
+                          <>
+                            {" "}
+                            - {endDate.toLocaleDateString()}{" "}
+                            {endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </>
                         )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">{trip.driver}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{trip.vehicle}</td>
                       <td className="px-6 py-4 text-sm">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          trip.status === 'active' ? 'bg-indigo-100 text-indigo-800' :
-                          trip.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
-                          trip.status === 'delayed' ? 'bg-rose-100 text-rose-800' :
-                          'bg-neutral-100 text-neutral-800'
-                        }`}>
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            trip.status === "active"
+                              ? "bg-indigo-100 text-indigo-800"
+                              : trip.status === "completed"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : trip.status === "delayed"
+                                  ? "bg-rose-100 text-rose-800"
+                                  : "bg-neutral-100 text-neutral-800"
+                          }`}
+                        >
                           {trip.status.charAt(0).toUpperCase() + trip.status.slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <button className="px-3 py-1 rounded-md bg-white text-gray-700 font-semibold text-xs shadow-sm hover:bg-neutral-100 transition-colors border border-gray-200">View</button>
+                        <button className="px-3 py-1 rounded-md bg-white text-gray-700 font-semibold text-xs shadow-sm hover:bg-neutral-100 transition-colors border border-gray-200">
+                          View
+                        </button>
                       </td>
                     </tr>
                   );

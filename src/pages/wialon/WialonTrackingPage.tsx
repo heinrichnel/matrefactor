@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import WialonMap from "../components/wialon/WialonMap";
-import WialonUnitDetails from "../components/wialon/WialonUnitDetails";
-import { WialonProvider } from "../context/WialonContext";
+import WialonMap from "../../components/wialon/WialonMap";
+import WialonUnitDetails from "../../components/wialon/WialonUnitDetails";
+import { WialonProvider } from "../../context/WialonContext";
 
 const WialonTrackingPage: React.FC = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);

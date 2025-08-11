@@ -23,7 +23,6 @@ import Timeline, {
   TimelineMarkers,
 } from "react-calendar-timeline";
 import "react-calendar-timeline/dist/style.css";
-import "../../styles/calendar.css";
 
 interface Vehicle {
   id: string;
@@ -277,7 +276,7 @@ const TripCalendarPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-white rounded-lg shadow-card overflow-hidden border border-gray-200">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Trip Timeline</h1>
         <div className="flex space-x-2">
@@ -288,7 +287,7 @@ const TripCalendarPage: React.FC = () => {
         </div>
       </div>
 
-      <Card>
+      <Card className="rounded-none border-0 shadow-none">
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <div className="flex items-center space-x-2">

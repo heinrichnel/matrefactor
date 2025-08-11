@@ -1,30 +1,30 @@
-import React, { useState } from "react";
-import { Input, Select, TextArea } from "@/components/ui/FormElements";
-import { Trip, TripDeletionRecord } from "../../types";
-import { useAppContext } from "../../context/AppContext";
-import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import CompletedTripEditModal from "../../components/Models/Trips/CompletedTripEditModal";
-import TripDeletionModal from "../../components/Models/Trips/TripDeletionModal";
+import Card, { CardContent, CardHeader } from "@/components/ui/Card";
+import { Input, Select } from "@/components/ui/FormElements";
 import SyncIndicator from "@/components/ui/SyncIndicator";
 import {
-  Eye,
+  AlertTriangle,
+  Calendar,
   Download,
+  Edit,
+  Eye,
   FileSpreadsheet,
   Filter,
-  Calendar,
-  User,
-  Edit,
-  Trash2,
   History,
-  AlertTriangle,
+  Trash2,
+  User,
 } from "lucide-react";
+import React, { useState } from "react";
+import CompletedTripEditModal from "../../components/Models/Trips/CompletedTripEditModal";
+import TripDeletionModal from "../../components/Models/Trips/TripDeletionModal";
+import { useAppContext } from "../../context/AppContext";
+import { Trip, TripDeletionRecord } from "../../types";
 import {
-  formatCurrency,
   calculateTotalCosts,
-  formatDate,
-  downloadTripPDF,
   downloadTripExcel,
+  downloadTripPDF,
+  formatCurrency,
+  formatDate,
   formatDateTime,
 } from "../../utils/helpers";
 

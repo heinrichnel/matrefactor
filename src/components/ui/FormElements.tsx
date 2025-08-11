@@ -1,8 +1,4 @@
-import React, {
-  InputHTMLAttributes,
-  SelectHTMLAttributes,
-  TextareaHTMLAttributes,
-} from "react";
+import React, { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 /* ----------------------------------
  * ✅ Input Component
@@ -24,9 +20,7 @@ export const Input: React.FC<InputProps> = ({ label, error, ...props }) => (
       {...props}
       className={`w-full border rounded px-3 py-2 focus:ring focus:outline-none ${
         error ? "border-red-500" : ""
-      } ${props.disabled ? "bg-gray-100 cursor-not-allowed" : ""} ${
-        props.className || ""
-      }`}
+      } ${props.disabled ? "bg-gray-100 cursor-not-allowed" : ""} ${props.className || ""}`}
     />
     {/* Display error message if present */}
     {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
@@ -48,12 +42,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   error?: string | false;
 }
 
-export const Select: React.FC<SelectProps> = ({
-  label,
-  options,
-  error,
-  ...props
-}) => (
+export const Select: React.FC<SelectProps> = ({ label, options, error, ...props }) => (
   <div className="mb-4">
     {/* Label for the select field, with a required indicator if needed */}
     <label className="block font-medium mb-1">
@@ -64,9 +53,7 @@ export const Select: React.FC<SelectProps> = ({
       {...props}
       className={`w-full border rounded px-3 py-2 focus:ring focus:outline-none ${
         error ? "border-red-500" : ""
-      } ${props.disabled ? "bg-gray-100 cursor-not-allowed" : ""} ${
-        props.className || ""
-      }`}
+      } ${props.disabled ? "bg-gray-100 cursor-not-allowed" : ""} ${props.className || ""}`}
     >
       {/* Map through options to create individual <option> elements */}
       {options.map((option, idx) => (
@@ -89,11 +76,7 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: string | false;
 }
 
-export const TextArea: React.FC<TextAreaProps> = ({
-  label,
-  error,
-  ...props
-}) => (
+export const TextArea: React.FC<TextAreaProps> = ({ label, error, ...props }) => (
   <div className="flex flex-col mb-4">
     {/* Optional label for the textarea, with a required indicator if needed */}
     {label && (
@@ -106,32 +89,27 @@ export const TextArea: React.FC<TextAreaProps> = ({
       {...props}
       className={`border rounded p-2 focus:ring ${
         error ? "border-red-500" : ""
-      } ${props.disabled ? "bg-gray-100 cursor-not-allowed" : ""} ${
-        props.className || ""
-      }`}
+      } ${props.disabled ? "bg-gray-100 cursor-not-allowed" : ""} ${props.className || ""}`}
     />
     {/* Display error message if present */}
     {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
   </div>
 );
 
+// Alias export to support both TextArea and Textarea naming
+export const Textarea = TextArea;
+
 /* ----------------------------------
  * ✅ File Upload Component
  * A reusable file input with label and error display, and a file selection callback.
  * ---------------------------------- */
-interface FileUploadProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
+interface FileUploadProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
   label?: string;
   onFileSelect: (files: FileList | null) => void;
   error?: string | false;
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({
-  label,
-  onFileSelect,
-  error,
-  ...props
-}) => (
+export const FileUpload: React.FC<FileUploadProps> = ({ label, onFileSelect, error, ...props }) => (
   <div className="flex flex-col mb-4">
     {/* Optional label for the file input */}
     {label && <label className="mb-1 font-medium">{label}</label>}
@@ -139,9 +117,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     <input
       {...props}
       type="file"
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-        onFileSelect(e.target.files)
-      }
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onFileSelect(e.target.files)}
       className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
         file:rounded-md file:border-0 file:text-sm file:font-medium
         file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100
@@ -153,4 +129,4 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 );
 
 // Export all components as a default object for convenience
-export default { Input, Select, TextArea, FileUpload };
+export default { Input, Select, TextArea, Textarea, FileUpload };
