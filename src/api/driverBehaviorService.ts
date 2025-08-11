@@ -10,18 +10,21 @@ import {
   Timestamp,
   updateDoc,
   where,
+  Unsubscribe,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { cleanObjectForFirestore, convertTimestamps } from "../utils/firestoreUtils";
 
-// Types
+/* =========================
+   Types
+   ========================= */
 export interface DriverBehaviorEvent {
   id: string;
   createdAt: string | Timestamp;
   updatedAt: string | Timestamp;
   driverName: string;
-  eventDate: string; // Format: "YYYY/MM/DD"
-  eventTime: string; // Format: "HH:MM"
+  eventDate: string; // "YYYY/MM/DD"
+  eventTime: string; // "HH:MM"
   eventType: string;
   description: string;
   fleetNumber: string;
@@ -31,155 +34,139 @@ export interface DriverBehaviorEvent {
   severity: string;
   status: string;
   uniqueKey: string;
-  eventCategory?: string; // Added for tracking the category in the path
-  month?: string; // Added for tracking the month in the path
+  eventCategory?: string; // derived from path (e.g. "21H_Fatigue Alert_2025")
+  month?: string; // derived from path "01".."12"
 }
 
-// Callbacks interface
 export interface DriverBehaviorCallbacks {
   setDriverBehaviorEvents?: (events: DriverBehaviorEvent[]) => void;
   onDriverBehaviorUpdate?: (event: DriverBehaviorEvent) => void;
 }
 
+type SyncStatus = "idle" | "syncing" | "success" | "error";
+
+/* =========================
+   Service
+   ========================= */
 export class DriverBehaviorService {
-  private driverBehaviorUnsubscribes: Map<string, () => void> = new Map();
-  private globalUnsubscribes: Map<string, () => void> = new Map();
+  private driverBehaviorUnsubscribes: Map<string, Unsubscribe> = new Map();
+  private globalUnsubscribes: Map<string, Unsubscribe> = new Map();
   private pendingChanges: Map<string, any> = new Map();
   private callbacks: DriverBehaviorCallbacks = {};
-  private isOnline: boolean = navigator.onLine;
+  private isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
   private lastSynced: Date | null = null;
-  private syncStatus: "idle" | "syncing" | "success" | "error" = "idle";
+  private syncStatus: SyncStatus = "idle";
 
   constructor() {
-    // Listen for online/offline events
+    // online/offline listeners
     window.addEventListener("online", () => {
       this.isOnline = true;
-      this.syncPendingChanges();
+      this.syncPendingChanges().catch((e) =>
+        console.error("DriverBehavior syncPendingChanges failed:", e)
+      );
     });
     window.addEventListener("offline", () => {
       this.isOnline = false;
     });
 
-    // Initial load of pending changes from localStorage
     this.loadPendingChangesFromLocalStorage();
   }
 
-  // Set sync status
-  private setSyncStatus(status: "idle" | "syncing" | "success" | "error"): void {
+  /* ---------- status ---------- */
+  private setSyncStatus(status: SyncStatus) {
     this.syncStatus = status;
   }
 
-  // Check if user is authenticated (placeholder - implement based on your auth system)
+  /* ---------- auth gate (replace with your auth check) ---------- */
   private isAuthenticated(): boolean {
-    // Replace with your actual authentication check
-    return true;
+    try {
+      return true;
+    } catch (e) {
+      console.error("Auth check failed:", e);
+      return false;
+    }
   }
 
-  // Store pending changes in localStorage for offline resilience
+  /* ---------- persistence of pending changes ---------- */
   private storePendingChangesInLocalStorage(): void {
     try {
-      const pendingChangesObj: Record<string, any> = {};
-      this.pendingChanges.forEach((value, key) => {
-        pendingChangesObj[key] = value;
-      });
-      localStorage.setItem("driverBehavior_pendingChanges", JSON.stringify(pendingChangesObj));
-    } catch (error) {
-      console.error("Error storing pending changes in localStorage:", error);
+      const obj = Object.fromEntries(this.pendingChanges.entries());
+      localStorage.setItem("driverBehavior_pendingChanges", JSON.stringify(obj));
+    } catch (e) {
+      console.error("Error storing driverBehavior pending changes:", e);
     }
   }
 
-  // Load pending changes from localStorage
   private loadPendingChangesFromLocalStorage(): void {
     try {
-      const pendingChangesStr = localStorage.getItem("driverBehavior_pendingChanges");
-      if (pendingChangesStr) {
-        const pendingChangesObj = JSON.parse(pendingChangesStr);
-        Object.entries(pendingChangesObj).forEach(([key, value]) => {
-          this.pendingChanges.set(key, value);
-        });
-        console.log(
-          `📥 Loaded ${this.pendingChanges.size} pending driver behavior changes from localStorage`
-        );
-      }
-    } catch (error) {
-      console.error("Error loading pending changes from localStorage:", error);
+      const raw = localStorage.getItem("driverBehavior_pendingChanges");
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      this.pendingChanges = new Map(Object.entries(obj));
+      console.log(
+        `📥 Loaded ${this.pendingChanges.size} pending driver behavior changes from localStorage`
+      );
+    } catch (e) {
+      console.error("Error loading driverBehavior pending changes:", e);
     }
   }
 
-  // Sync pending changes when coming back online
+  /* ---------- sync queue when back online ---------- */
   private async syncPendingChanges(): Promise<void> {
     if (!this.isOnline || this.pendingChanges.size === 0) return;
 
     console.log(`🔄 Syncing ${this.pendingChanges.size} pending driver behavior changes`);
     this.setSyncStatus("syncing");
 
-    const promises: Promise<void>[] = [];
     const completedKeys: string[] = [];
 
-    this.pendingChanges.forEach((value, key) => {
-      if (key.startsWith("driverBehaviorEvents:")) {
-        const eventId = key.split(":")[1];
-        const { docPath, ...data } = value;
+    for (const [key, value] of this.pendingChanges.entries()) {
+      if (!key.startsWith("driverBehaviorEvents:")) continue;
 
-        if (docPath) {
-          // This is a document with a specific path
-          const eventRef = doc(db, docPath);
-          promises.push(
-            setDoc(
-              eventRef,
-              {
-                ...data,
-                updatedAt: serverTimestamp(),
-              },
-              { merge: true }
-            )
-              .then(() => {
-                console.log(`✅ Synced driver behavior event ${eventId}`);
-                completedKeys.push(key);
-              })
-              .catch((error) => {
-                console.error(`Error syncing driver behavior event ${eventId}:`, error);
-              })
-          );
-        } else {
-          console.warn(`Missing docPath for driver behavior event ${eventId}`);
-        }
+      const eventId = key.split(":")[1];
+      const { docPath, ...data } = value || {};
+
+      if (!docPath) {
+        console.warn(`Missing docPath for driver behavior event ${eventId}`);
+        continue;
       }
-    });
 
-    try {
-      await Promise.all(promises);
-
-      // Remove completed items
-      completedKeys.forEach((key) => {
-        this.pendingChanges.delete(key);
-      });
-
-      // Update localStorage with remaining items
-      this.storePendingChangesInLocalStorage();
-
-      console.log(`✅ Synced ${completedKeys.length} driver behavior changes`);
-      this.setSyncStatus("success");
-    } catch (error) {
-      console.error("Error syncing pending driver behavior changes:", error);
-      this.setSyncStatus("error");
+      try {
+        const ref = doc(db, docPath);
+        await setDoc(
+          ref,
+          {
+            ...data,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+        console.log(`✅ Synced driver behavior event ${eventId}`);
+        completedKeys.push(key);
+      } catch (e) {
+        console.error(`Error syncing driver behavior event ${eventId}:`, e);
+      }
     }
+
+    // remove successful items and persist the remainder
+    completedKeys.forEach((k) => this.pendingChanges.delete(k));
+    this.storePendingChangesInLocalStorage();
+
+    this.lastSynced = new Date();
+    this.setSyncStatus("success");
   }
 
-  // Register callbacks
+  /* ---------- callbacks ---------- */
   public registerCallbacks(callbacks: DriverBehaviorCallbacks): void {
     this.callbacks = { ...this.callbacks, ...callbacks };
   }
 
-  // Subscribe to driver behavior events for a specific driver
+  /* ---------- targeted subscription by driver ---------- */
   public subscribeToDriverBehavior(driverName: string): void {
-    // Unsubscribe if already subscribed
-    if (this.driverBehaviorUnsubscribes.has(driverName)) {
-      this.driverBehaviorUnsubscribes.get(driverName)?.();
-    }
+    // tear down previous
+    this.driverBehaviorUnsubscribes.get(driverName)?.();
 
-    // Use collectionGroup to query across all nested subcollections
-    // This will search through all month subcollections (01, 02, 03... 12)
+    // collectionGroup across month subcollections "01".."12"
     const monthQueries = Array.from({ length: 12 }, (_, i) => {
       const month = String(i + 1).padStart(2, "0");
       return query(
@@ -190,35 +177,30 @@ export class DriverBehaviorService {
       );
     });
 
-    const unsubscribers: Array<() => void> = [];
+    const unsubs: Unsubscribe[] = [];
 
-    monthQueries.forEach((monthQuery) => {
-      const unsubscribe = onSnapshot(
-        monthQuery,
+    monthQueries.forEach((qry) => {
+      const unsub = onSnapshot(
+        qry,
         (snapshot) => {
           snapshot.docChanges().forEach((change) => {
             const eventData = change.doc.data();
             const docPath = change.doc.ref.path;
 
-            // Extract additional metadata from path
-            const pathParts = docPath.split("/");
-            const eventCategory = pathParts[1]; // "21H_Fatigue Alert_2025"
-            const month = pathParts[2]; // "06"
+            // derive meta from path: driverBehaviorEvents/<category>/<month>/<docId>
+            const parts = docPath.split("/");
+            const eventCategory = parts[1] ?? "";
+            const month = parts[2] ?? "";
 
-            // Convert Firestore timestamps to ISO strings
             const event = convertTimestamps(eventData) as DriverBehaviorEvent;
 
             if (change.type === "added" || change.type === "modified") {
-              console.log(`🔄 Real-time update for driver behavior event ${change.doc.id}`);
-
-              if (this.callbacks.onDriverBehaviorUpdate) {
-                this.callbacks.onDriverBehaviorUpdate({
-                  ...event,
-                  id: change.doc.id,
-                  eventCategory,
-                  month,
-                });
-              }
+              this.callbacks.onDriverBehaviorUpdate?.({
+                ...event,
+                id: change.doc.id,
+                eventCategory,
+                month,
+              });
             }
           });
         },
@@ -226,30 +208,23 @@ export class DriverBehaviorService {
           console.error(`Error subscribing to driver behavior for ${driverName}:`, error);
         }
       );
-
-      unsubscribers.push(unsubscribe);
+      unsubs.push(unsub);
     });
 
-    // Store all unsubscribers for this driver
-    this.driverBehaviorUnsubscribes.set(driverName, () => {
-      unsubscribers.forEach((unsub) => unsub());
-    });
+    // store composite unsubscribe
+    this.driverBehaviorUnsubscribes.set(driverName, () => unsubs.forEach((u) => u()));
   }
 
-  // Subscribe to all driver behavior events
+  /* ---------- global subscription (explicit paths) ---------- */
   public subscribeToAllDriverBehaviorEvents(): void {
-    // Clear any existing global driver behavior listeners
-    if (this.globalUnsubscribes.has("allDriverBehavior")) {
-      this.globalUnsubscribes.get("allDriverBehavior")?.();
-    }
+    // tear down previous
+    this.globalUnsubscribes.get("allDriverBehavior")?.();
 
-    // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
       console.warn("⚠️ Cannot subscribe to driver behavior events - user not authenticated");
       return;
     }
 
-    // Known event types and fleet numbers for targeted querying
     const eventTypes = [
       "Fatigue Alert",
       "Distracted",
@@ -259,168 +234,135 @@ export class DriverBehaviorService {
       "Accident",
       "Unspecified Passenger",
     ];
-
-    const fleetNumbers = ["21H", "24H"]; // Add your known fleet numbers
-    const months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+    const fleets = ["21H", "24H"];
+    const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
 
     const allEvents: DriverBehaviorEvent[] = [];
-    const unsubscribers: Array<() => void> = [];
+    const unsubs: Unsubscribe[] = [];
 
-    fleetNumbers.forEach((fleet) => {
+    fleets.forEach((fleet) => {
       eventTypes.forEach((eventType) => {
         months.forEach((month) => {
-          const collectionPath = `driverBehaviorEvents/${fleet}_${eventType}_2025/${month}`;
-
+          const path = `driverBehaviorEvents/${fleet}_${eventType}_2025/${month}`;
           try {
-            const eventsQuery = query(
-              collection(db, collectionPath),
+            const qry = query(
+              collection(db, path),
               where("importSource", "==", "web_book"),
               orderBy("createdAt", "desc")
             );
 
-            const unsubscribe = onSnapshot(
-              eventsQuery,
+            const unsub = onSnapshot(
+              qry,
               (snapshot) => {
-                // Track changes for debugging
                 let added = 0,
                   modified = 0,
                   removed = 0;
 
-                // Remove old events for this specific path
-                const filteredEvents = allEvents.filter(
+                // drop any existing events from this path/month
+                const filtered = allEvents.filter(
                   (e) =>
                     !(e.fleetNumber === fleet && e.eventType === eventType && e.month === month)
                 );
 
-                // Process document changes
                 snapshot.docChanges().forEach((change) => {
                   const id = change.doc.id;
                   const data = convertTimestamps(change.doc.data());
 
                   if (change.type === "added") {
                     added++;
-                    console.log(`Driver behavior event added: ${collectionPath}/${id}`);
-
-                    filteredEvents.push({
+                    filtered.push({
                       id,
                       ...data,
                       eventCategory: `${fleet}_${eventType}_2025`,
-                      month: month,
+                      month,
                     } as DriverBehaviorEvent);
                   } else if (change.type === "modified") {
                     modified++;
-                    console.log(`Driver behavior event modified: ${collectionPath}/${id}`);
-
-                    filteredEvents.push({
+                    filtered.push({
                       id,
                       ...data,
                       eventCategory: `${fleet}_${eventType}_2025`,
-                      month: month,
+                      month,
                     } as DriverBehaviorEvent);
                   } else if (change.type === "removed") {
                     removed++;
-                    console.log(`Driver behavior event removed: ${collectionPath}/${id}`);
-                    // Event already filtered out above
+                    // already filtered out above
                   }
                 });
 
-                if (added > 0 || modified > 0 || removed > 0) {
+                if (added || modified || removed) {
                   console.log(
-                    `🔄 Driver behavior changes in ${collectionPath}: ${added} added, ${modified} modified, ${removed} removed`
+                    `🔄 Driver behavior changes in ${path}: ${added} added, ${modified} modified, ${removed} removed`
                   );
-
-                  // Update the main events array
                   allEvents.length = 0;
-                  allEvents.push(...filteredEvents);
-
-                  if (typeof this.callbacks.setDriverBehaviorEvents === "function") {
-                    this.callbacks.setDriverBehaviorEvents([...allEvents]);
-                  } else {
-                    console.warn("⚠️ setDriverBehaviorEvents callback not registered");
-                  }
+                  allEvents.push(...filtered);
+                  this.callbacks.setDriverBehaviorEvents?.([...allEvents]);
                   this.lastSynced = new Date();
                 }
               },
               (error) => {
-                console.error(`Error in driver behavior listener for ${collectionPath}:`, error);
-                // Don't break the entire subscription for one collection error
+                console.error(`Error in driver behavior listener for ${path}:`, error);
               }
             );
 
-            unsubscribers.push(unsubscribe);
-          } catch (error) {
-            console.error(`Error setting up listener for ${collectionPath}:`, error);
+            unsubs.push(unsub);
+          } catch (e) {
+            console.error(`Error setting up listener for ${path}:`, e);
           }
         });
       });
     });
 
-    // Store all unsubscribers
-    this.globalUnsubscribes.set("allDriverBehavior", () => {
-      unsubscribers.forEach((unsub) => unsub());
-    });
+    this.globalUnsubscribes.set("allDriverBehavior", () => unsubs.forEach((u) => u()));
   }
 
-  // Alternative method using collectionGroup for simpler querying
+  /* ---------- simpler global subscription via collectionGroup ---------- */
   public subscribeToAllDriverBehaviorEventsSimple(): void {
-    // Clear any existing global driver behavior listeners
-    if (this.globalUnsubscribes.has("allDriverBehavior")) {
-      this.globalUnsubscribes.get("allDriverBehavior")?.();
-    }
+    this.globalUnsubscribes.get("allDriverBehavior")?.();
 
-    // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
       console.warn("⚠️ Cannot subscribe to driver behavior events - user not authenticated");
       return;
     }
 
-    // Use collectionGroup to query across ALL month subcollections at once
-    // This queries all documents in any subcollection named "01", "02", ... "12"
     const monthQueries = Array.from({ length: 12 }, (_, i) => {
-      const month = String(i + 1).padStart(2, "0");
-      return query(
-        collectionGroup(db, month),
-        where("importSource", "==", "web_book"),
-        orderBy("createdAt", "desc")
-      );
+      const m = String(i + 1).padStart(2, "0");
+      return [
+        m,
+        query(
+          collectionGroup(db, m),
+          where("importSource", "==", "web_book"),
+          orderBy("createdAt", "desc")
+        ),
+      ] as const;
     });
 
     const allEvents: DriverBehaviorEvent[] = [];
-    const unsubscribers: Array<() => void> = [];
+    const unsubs: Unsubscribe[] = [];
 
-    monthQueries.forEach((monthQuery, index) => {
-      const month = String(index + 1).padStart(2, "0");
-
-      const unsubscribe = onSnapshot(
-        monthQuery,
+    monthQueries.forEach(([month, qry]) => {
+      const unsub = onSnapshot(
+        qry,
         (snapshot) => {
-          // Remove old events for this month
-          const filteredEvents = allEvents.filter((e) => e.month !== month);
+          const filtered = allEvents.filter((e) => e.month !== month);
 
-          // Add new events for this month
-          snapshot.forEach((doc) => {
-            const data = convertTimestamps(doc.data());
-            const docPath = doc.ref.path;
+          snapshot.forEach((docSnap) => {
+            const data = convertTimestamps(docSnap.data());
+            const docPath = docSnap.ref.path;
+            const parts = docPath.split("/");
+            const eventCategory = parts[1] ?? "";
 
-            // Extract metadata from path
-            const pathParts = docPath.split("/");
-            const eventCategory = pathParts[1]; // "21H_Fatigue Alert_2025"
-
-            filteredEvents.push({
-              id: doc.id,
-              month: month,
-              eventCategory: eventCategory,
+            filtered.push({
+              id: docSnap.id,
+              month,
+              eventCategory,
               ...data,
             } as DriverBehaviorEvent);
           });
 
-          // Update main events array
           allEvents.length = 0;
-          allEvents.push(...filteredEvents);
-
-          if (typeof this.callbacks.setDriverBehaviorEvents === "function") {
-            this.callbacks.setDriverBehaviorEvents([...allEvents]);
-          }
+          allEvents.push(...filtered);
+          this.callbacks.setDriverBehaviorEvents?.([...allEvents]);
           this.lastSynced = new Date();
         },
         (error) => {
@@ -428,16 +370,13 @@ export class DriverBehaviorService {
         }
       );
 
-      unsubscribers.push(unsubscribe);
+      unsubs.push(unsub);
     });
 
-    // Store all unsubscribers
-    this.globalUnsubscribes.set("allDriverBehavior", () => {
-      unsubscribers.forEach((unsub) => unsub());
-    });
+    this.globalUnsubscribes.set("allDriverBehavior", () => unsubs.forEach((u) => u()));
   }
 
-  // Update a driver behavior event with real-time sync
+  /* ---------- mutations (online-first with offline queue) ---------- */
   public async updateDriverBehaviorEvent(
     eventId: string,
     data: Partial<DriverBehaviorEvent>,
@@ -446,68 +385,52 @@ export class DriverBehaviorService {
     try {
       this.setSyncStatus("syncing");
 
-      // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
-
-      // Add updatedAt timestamp
       const updateData = {
         ...cleanData,
         updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       if (this.isOnline) {
-        // If eventPath is provided, use it directly, otherwise construct from data
+        // determine path
         let docPath = eventPath;
-
         if (!docPath && data.fleetNumber && data.eventType && data.eventDate) {
-          const month = data.eventDate.split("/")[1]; // Extract month from "2025/06/20"
+          const month = data.eventDate.split("/")[1]; // "2025/06/20" -> "06"
           docPath = `driverBehaviorEvents/${data.fleetNumber}_${data.eventType}_2025/${month}/${eventId}`;
         }
+        if (!docPath) throw new Error("Cannot determine document path for driver behavior update");
 
-        if (!docPath) {
-          throw new Error("Cannot determine document path for driver behavior event update");
-        }
-
-        // Online - update directly
-        const eventRef = doc(db, docPath);
-        await updateDoc(eventRef, updateData);
-        console.log(`✅ Driver behavior event updated at path: ${docPath}`);
+        await updateDoc(doc(db, docPath), updateData);
+        console.log(`✅ Driver behavior event updated at ${docPath}`);
       } else {
-        // Offline - store for later sync
-        this.pendingChanges.set(`driverBehaviorEvents:${eventId}`, { ...updateData, eventPath });
-        console.log(`📝 Driver behavior event ${eventId} update queued for sync when online`);
-
-        // Store in localStorage as backup
+        // queue with docPath (consistent with syncPendingChanges)
+        this.pendingChanges.set(`driverBehaviorEvents:${eventId}`, {
+          ...updateData,
+          docPath: eventPath ?? null,
+        });
         this.storePendingChangesInLocalStorage();
+        console.log(`📝 Driver behavior event ${eventId} queued for sync`);
       }
 
       this.setSyncStatus("success");
-    } catch (error) {
-      console.error(`Error updating driver behavior event ${eventId}:`, error);
+    } catch (e) {
+      console.error(`Error updating driver behavior event ${eventId}:`, e);
       this.setSyncStatus("error");
-      throw error;
+      throw e;
     }
   }
 
-  // Add a new driver behavior event
   public async addDriverBehaviorEvent(eventData: Omit<DriverBehaviorEvent, "id">): Promise<string> {
     try {
       this.setSyncStatus("syncing");
 
-      // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(eventData);
-
-      // Extract components for document path
       const eventTypeYear = `${eventData.fleetNumber}_${eventData.eventType}_2025`;
-      const month = eventData.eventDate.split("/")[1]; // Extract month from "2025/06/20"
-      const day = eventData.eventDate.split("/")[2]; // Extract day from "2025/06/20"
-      const timeFormatted = eventData.eventTime.replace(":", ""); // "17:23" -> "1723"
-      const documentId = `${day}_${timeFormatted}`; // "20_1723"
-
-      // Build document reference following the observed structure
+      const [, month, day] = eventData.eventDate.split("/"); // ["2025","06","20"]
+      const time = eventData.eventTime.replace(":", ""); // "17:23" -> "1723"
+      const documentId = `${day}_${time}`;
       const docPath = `driverBehaviorEvents/${eventTypeYear}/${month}/${documentId}`;
 
-      // Add timestamps and uniqueKey
       const finalData = {
         ...cleanData,
         createdAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
@@ -516,45 +439,37 @@ export class DriverBehaviorService {
       };
 
       if (this.isOnline) {
-        // Online - add directly to Firestore using setDoc with specific path
-        const docRef = doc(db, docPath);
-        await setDoc(docRef, finalData);
-        console.log(`✅ Driver behavior event added at path: ${docPath}`);
+        await setDoc(doc(db, docPath), finalData);
+        console.log(`✅ Driver behavior event added at ${docPath}`);
       } else {
-        // Offline - store for later sync
-        this.pendingChanges.set(`driverBehaviorEvents:${documentId}`, { ...finalData, docPath });
-        console.log(`📝 Driver behavior event creation queued for sync when online`);
-
-        // Store in localStorage as backup
+        this.pendingChanges.set(`driverBehaviorEvents:${documentId}`, {
+          ...finalData,
+          docPath,
+        });
         this.storePendingChangesInLocalStorage();
+        console.log("📝 Driver behavior event creation queued for sync");
       }
 
       this.setSyncStatus("success");
       return documentId;
-    } catch (error) {
-      console.error(`Error adding driver behavior event:`, error);
+    } catch (e) {
+      console.error("Error adding driver behavior event:", e);
       this.setSyncStatus("error");
-      throw error;
+      throw e;
     }
   }
 
-  // Cleanup method to unsubscribe from all listeners
+  /* ---------- cleanup ---------- */
   public cleanup(): void {
-    console.log("Cleaning up driver behavior listeners");
+    console.log("🧹 Cleaning up driver behavior listeners");
 
-    // Clean up individual driver behavior listeners
-    this.driverBehaviorUnsubscribes.forEach((unsubscribe) => {
-      unsubscribe();
-    });
+    this.driverBehaviorUnsubscribes.forEach((u) => u());
     this.driverBehaviorUnsubscribes.clear();
 
-    // Clean up global listeners
-    this.globalUnsubscribes.forEach((unsubscribe) => {
-      unsubscribe();
-    });
+    this.globalUnsubscribes.forEach((u) => u());
     this.globalUnsubscribes.clear();
   }
 }
 
-// Create and export a singleton instance
+/* Singleton */
 export const driverBehaviorService = new DriverBehaviorService();

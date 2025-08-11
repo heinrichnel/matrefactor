@@ -1,32 +1,16 @@
 import { firestore } from "@/firebase";
-import { tyreConverter } from "@/types/TyreFirestoreConverter";
-import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Tyre } from "../types/TyreModel";
+import { useTyres } from "./useTyres";
 
-// Core Tyre shape used in Firestore (from legacy manager component)
-export interface TyreDoc {
-  id: string;
-  brand: string;
-  model: string;
-  serialNumber: string;
-  size: string;
-  status: "new" | "in_use" | "worn" | "damaged" | "disposed";
-  location: string;
-  vehicleId?: string;
-  vehicleReg?: string;
-  position?: string;
-  purchaseDate: string;
-  purchasePrice: number;
-  treadDepth?: number;
-  lastInspection?: string;
-  notes?: string;
-  [key: string]: any; // flexible extension
-}
+// Define TyreDoc as an alias for Tyre with ID
+type TyreDoc = Tyre & { id: string };
 
 export interface TyreInventoryUIRecord {
   id: string;
-  tyreNumber: string; // mapped from serialNumber
-  manufacturer: string; // mapped from brand
+  tyreNumber: string;
+  manufacturer: string;
   condition: "New" | "Good" | "Fair" | "Poor" | "Retreaded";
   status: "In-Service" | "In-Stock" | "Repair" | "Scrap";
   vehicleAssignment: string;
@@ -40,6 +24,7 @@ export interface TyreInventoryUIRecord {
   datePurchased?: string;
   size?: string;
   pattern?: string;
+  axlePosition?: string;
 }
 
 interface PendingAdd {
@@ -47,11 +32,13 @@ interface PendingAdd {
   tempId: string;
   data: Omit<TyreDoc, "id">;
 }
+
 interface PendingUpdate {
   type: "update";
   id: string;
   data: Partial<Omit<TyreDoc, "id">>;
 }
+
 interface PendingDelete {
   type: "delete";
   id: string;
@@ -67,16 +54,27 @@ interface UseTyreInventoryOptions {
 
 export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
   const { pageSize = 10, cacheKey = "tyres_cache_v1", queueKey = "tyres_op_queue_v1" } = opts;
+
+  // Core state
   const [tyres, setTyres] = useState<TyreDoc[]>([]);
   const [filtered, setFiltered] = useState<TyreDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Filtering state
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [brandFilter, setBrandFilter] = useState<string>("all");
-  const [sizeFilter, setSizeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [brandFilter, setBrandFilter] = useState("all");
+  const [sizeFilter, setSizeFilter] = useState("all");
+
+  // Pagination state
   const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(pageSize);
+  const [totalPages, setTotalPages] = useState(1);
+
   const processingRef = useRef(false);
+
+  const { tyres: liveTyres, loading: tyresLoading, error: tyresError } = useTyres();
 
   // --- Offline Queue Helpers ---
   const loadQueue = (): PendingOp[] => {
@@ -86,7 +84,9 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
       return [];
     }
   };
+
   const saveQueue = (q: PendingOp[]) => localStorage.setItem(queueKey, JSON.stringify(q));
+
   const enqueue = (op: PendingOp) => {
     const q = loadQueue();
     q.push(op);
@@ -99,6 +99,7 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
     if (!q.length) return;
     processingRef.current = true;
     const remain: PendingOp[] = [];
+
     for (const op of q) {
       try {
         if (op.type === "add") {
@@ -133,6 +134,7 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
       return [];
     }
   };
+
   const saveCache = (list: TyreDoc[]) => {
     try {
       localStorage.setItem(cacheKey, JSON.stringify(list));
@@ -141,7 +143,29 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
     }
   };
 
-  // Initial subscribe
+  // Update total pages whenever filtered results or itemsPerPage changes
+  useEffect(() => {
+    setTotalPages(Math.max(1, Math.ceil(filtered.length / itemsPerPage)));
+    // Reset to first page if current page exceeds new total pages
+    if (page > totalPages) {
+      setPage(1);
+    }
+  }, [filtered.length, itemsPerPage, page, totalPages]);
+
+  // Use the tyres data from the useTyres hook
+  useEffect(() => {
+    if (!tyresLoading) {
+      setTyres(liveTyres as TyreDoc[]);
+      applyFilters(liveTyres as TyreDoc[], searchTerm, statusFilter, brandFilter, sizeFilter);
+      saveCache(liveTyres as TyreDoc[]);
+      setLoading(false);
+    }
+    if (tyresError) {
+      setError("Failed to load tyres");
+    }
+  }, [liveTyres, tyresLoading, tyresError, searchTerm, statusFilter, brandFilter, sizeFilter]);
+
+  // Initial setup from cache
   useEffect(() => {
     const cached = loadCache();
     if (cached.length) {
@@ -149,27 +173,10 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
       setFiltered(cached);
       setLoading(false);
     }
-    const ref = collection(firestore, "tyres").withConverter(tyreConverter as any);
-    const unsub = onSnapshot(
-      ref,
-      (snap) => {
-        const live = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-        setTyres(live);
-        applyFilters(live, searchTerm, statusFilter, brandFilter, sizeFilter);
-        saveCache(live);
-        setError(null);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Tyres subscribe error", err);
-        setError("Failed to load tyres");
-        setLoading(false);
-      }
-    );
+
     window.addEventListener("online", processQueue);
     processQueue();
     return () => {
-      unsub();
       window.removeEventListener("online", processQueue);
     };
   }, []);
@@ -189,13 +196,18 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
           (t) =>
             t.serialNumber.toLowerCase().includes(s) ||
             t.brand.toLowerCase().includes(s) ||
-            t.model.toLowerCase().includes(s) ||
-            t.vehicleReg?.toLowerCase().includes(s)
+            t.model?.toLowerCase().includes(s) ||
+            (t.installation?.vehicleId || "").toLowerCase().includes(s)
         );
       }
       if (status !== "all") f = f.filter((t) => t.status === status);
       if (brand !== "all") f = f.filter((t) => t.brand === brand);
-      if (size !== "all") f = f.filter((t) => t.size === size);
+      if (size !== "all") {
+        f = f.filter((t) => {
+          const sizeStr = `${t.size.width}/${t.size.aspectRatio}R${t.size.rimDiameter}`;
+          return sizeStr === size;
+        });
+      }
       setFiltered(f);
       setPage(1);
     },
@@ -207,18 +219,22 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
     setSearchTerm(v);
     applyFilters(tyres, v);
   };
+
   const onStatusChange = (v: string) => {
     setStatusFilter(v);
     applyFilters(tyres, searchTerm, v);
   };
+
   const onBrandChange = (v: string) => {
     setBrandFilter(v);
     applyFilters(tyres, searchTerm, statusFilter, v);
   };
+
   const onSizeChange = (v: string) => {
     setSizeFilter(v);
     applyFilters(tyres, searchTerm, statusFilter, brandFilter, v);
   };
+
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
@@ -227,7 +243,7 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
     applyFilters(tyres, "", "all", "all", "all");
   };
 
-  // CRUD (optimistic with queue)
+  // CRUD operations
   const addTyre = async (data: Omit<TyreDoc, "id">) => {
     const tempId = `temp-${Date.now()}`;
     const optimistic: TyreDoc = { id: tempId, ...data } as TyreDoc;
@@ -236,12 +252,14 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
     applyFilters([optimistic, ...tyres]);
     processQueue();
   };
+
   const updateTyre = async (id: string, data: Partial<Omit<TyreDoc, "id">>) => {
     setTyres((prev) => prev.map((t) => (t.id === id ? { ...t, ...data } : t)));
     enqueue({ type: "update", id, data });
     applyFilters(tyres.map((t) => (t.id === id ? { ...t, ...data } : t)));
     processQueue();
   };
+
   const deleteTyre = async (id: string) => {
     const backup = tyres;
     setTyres((prev) => prev.filter((t) => t.id !== id));
@@ -256,16 +274,16 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
   };
 
   // Pagination
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageItems = useMemo(
-    () => filtered.slice((page - 1) * pageSize, page * pageSize),
-    [filtered, page, pageSize]
+    () => filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage),
+    [filtered, page, itemsPerPage]
   );
+
   const nextPage = () => setPage((p) => Math.min(totalPages, p + 1));
   const prevPage = () => setPage((p) => Math.max(1, p - 1));
   const gotoPage = (p: number) => setPage(Math.min(totalPages, Math.max(1, p)));
 
-  // UI mapping for existing dashboard expecting TyreInventoryUIRecord
+  // UI mapping
   const uiRecords: TyreInventoryUIRecord[] = useMemo(
     () =>
       filtered.map((t) => ({
@@ -274,7 +292,7 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
         manufacturer: t.brand,
         condition: ((): TyreInventoryUIRecord["condition"] => {
           if (t.status === "new") return "New";
-          const tread = t.treadDepth ?? 0;
+          const tread = t.condition?.treadDepth ?? 0;
           if (tread > 10) return "Good";
           if (tread > 6) return "Fair";
           if (tread > 3) return "Poor";
@@ -284,36 +302,38 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
           switch (t.status) {
             case "new":
               return "In-Stock";
-            case "in_use":
+            case "in_service":
               return "In-Service";
-            case "damaged":
+            case "retreaded":
+            case "spare":
               return "Repair";
-            case "disposed":
+            case "scrapped":
               return "Scrap";
             default:
               return "In-Service";
           }
         })(),
-        vehicleAssignment: t.vehicleReg || "",
+        vehicleAssignment: t.installation?.vehicleId || "",
         km: t.kmRun || 0,
         kmLimit: t.kmRunLimit || 60000,
-        treadDepth: t.treadDepth || 0,
-        mountStatus: t.position ? "Mounted" : "Not Mounted",
-        axlePosition: t.position,
-        lastInspection: t.lastInspection,
-        datePurchased: t.purchaseDate,
-        size: t.size,
-        pattern: t.model,
+        treadDepth: t.condition?.treadDepth || 0,
+        mountStatus: t.installation ? "Mounted" : "Not Mounted",
+        axlePosition: t.installation?.position,
+        lastInspection: t.condition?.lastInspectionDate,
+        datePurchased: t.purchaseDetails?.date,
+        size: `${t.size.width}/${t.size.aspectRatio}R${t.size.rimDiameter}`,
+        pattern: t.pattern,
       })),
     [filtered]
   );
 
   return {
-    // raw
+    // raw data
     tyres,
     loading,
     error,
-    // filters
+
+    // filtering
     searchTerm,
     statusFilter,
     brandFilter,
@@ -323,16 +343,22 @@ export function useTyreInventory(opts: UseTyreInventoryOptions = {}) {
     setBrandFilter: onBrandChange,
     setSizeFilter: onSizeChange,
     clearFilters,
+
     // pagination
     page,
+    setPage,
     totalPages,
+    itemsPerPage,
+    setItemsPerPage,
     pageItems,
     nextPage,
     prevPage,
     gotoPage,
+
     // ui mapping
     uiRecords,
-    // crud
+
+    // crud operations
     addTyre,
     updateTyre,
     deleteTyre,

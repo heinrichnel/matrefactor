@@ -23,6 +23,8 @@ import { Button } from "../../components/ui/Button";
 import { Card, CardContent, CardHeader } from "../../components/ui/Card";
 // Using the Tyre type directly from tyreData.ts instead of TyreModel
 import { useTyreReferenceData } from "@/context/TyreReferenceDataContext";
+// Renamed import to avoid conflict with local declaration
+// Removed unused adaptTyreFormat import after local adapter implementation
 
 // Import all necessary Enums and Types from your tyreData.ts file
 // Ensure this path is correct relative to TyreManagementPage.tsx
@@ -49,13 +51,12 @@ import TyrePerformanceReport from "../../components/Tyremanagement/TyrePerforman
 import { TyreReportGenerator } from "../../components/Tyremanagement/TyreReportGenerator";
 import { TyreReports } from "../../components/Tyremanagement/TyreReports";
 import TyreDashboard from "./TyreDashboard";
-
 // Define tabs for navigation
 type TabType = "inventory" | "dashboard" | "analytics" | "reports";
 
 /**
- * Adapts the tyre data format for different components that may expect slightly different structures
- * This ensures backward compatibility with all components while standardizing on one data model
+ * Local adapter to reshape Tyre[] (domain model) into shapes legacy dashboard/analytics expect.
+ * Avoid name collision with imported adaptTyreFormat by keeping local function name.
  */
 const adaptTyreFormatIfNeeded = (tyres: Tyre[], targetComponent: string) => {
   if (!tyres) return [];
@@ -349,23 +350,45 @@ const TyreManagementPage: React.FC = () => {
     }
   };
 
+  // Map TyreStatus enum values (domain) to legacy dashboard string statuses used in TyreDashboard logic
   const getStatusColor = (status: TyreStatus) => {
-    // Changed 'status: string' to 'status: TyreStatus'
     switch (status) {
-      case TyreStatus.IN_SERVICE: // Use enum member
+      case TyreStatus.IN_SERVICE:
         return "text-green-600 bg-green-50";
-      case TyreStatus.NEW: // Use enum member
+      case TyreStatus.NEW:
+      case TyreStatus.SPARE:
         return "text-blue-600 bg-blue-50";
-      case TyreStatus.SPARE: // Use enum member
-        return "text-blue-600 bg-blue-50";
-      case TyreStatus.RETREADED: // Use enum member
+      case TyreStatus.RETREADED:
         return "text-amber-600 bg-amber-50";
-      case TyreStatus.SCRAPPED: // Use enum member
+      case TyreStatus.SCRAPPED:
         return "text-red-600 bg-red-50";
       default:
         return "text-gray-600 bg-gray-50";
     }
   };
+
+  // Convert domain Tyre -> legacy TyreDoc expected by TyreDashboard
+  const toTyreDoc = (t: Tyre): any => ({
+    id: t.id,
+    brand: t.brand,
+    model: t.model,
+    serialNumber: t.serialNumber,
+    size:
+      t.size?.displayString ||
+      (t.size ? `${t.size.width}/${t.size.aspectRatio}R${t.size.rimDiameter}` : ""),
+    status: t.status, // keep enum value; dashboard just displays it
+    location: t.location,
+    vehicleId: t.installation?.vehicleId,
+    vehicleReg: t.installation?.vehicleId,
+    position: t.installation?.position,
+    purchaseDate: t.purchaseDetails?.date || "",
+    purchasePrice: t.purchaseDetails?.cost || 0,
+    treadDepth: t.condition?.treadDepth,
+    lastInspection: t.condition?.lastInspectionDate,
+    notes: t.notes,
+    kmRun: t.kmRun,
+    kmRunLimit: t.kmRunLimit,
+  });
 
   return (
     <div className="space-y-6">
@@ -556,7 +579,25 @@ const TyreManagementPage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   {tyres.length > 0 ? (
-                    <TyreDashboard />
+                    <TyreDashboard
+                      tyres={tyres.map(toTyreDoc)}
+                      stock={tyres.map((t) => ({
+                        id: t.id || "",
+                        name: `${t.brand} ${t.model}`,
+                        quantity: 1,
+                        reorderLevel: 5,
+                        cost: t.purchaseDetails?.cost || 0,
+                        lastUpdated: new Date().toISOString().split("T")[0],
+                        location: t.location || "Warehouse",
+                      }))}
+                      assignments={tyres
+                        .filter((t) => t.installation?.vehicleId)
+                        .map((t) => ({
+                          tyreId: t.id || "",
+                          vehicleReg: t.installation?.vehicleId || "",
+                          position: t.installation?.position || "",
+                        }))}
+                    />
                   ) : (
                     <div className="p-6 text-center">
                       <p className="text-gray-500">No tyre data available for the dashboard.</p>

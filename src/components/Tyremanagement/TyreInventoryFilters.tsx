@@ -62,18 +62,18 @@ export const TyreInventoryFilters: React.FC<TyreInventoryFiltersProps> = ({
             className="w-full p-2 border rounded-lg"
           />
         </div>
-        
+
         {/* Add button */}
         {onAddStock && (
-          <button 
-            onClick={onClick}
+          <button
+            onClick={onAddStock}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Add New Tyre
           </button>
         )}
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Brand filter */}
         <div>
@@ -89,7 +89,7 @@ export const TyreInventoryFilters: React.FC<TyreInventoryFiltersProps> = ({
             ))}
           </select>
         </div>
-        
+
         {/* Location filter */}
         {locations.length > 0 && (
           <div>
@@ -106,7 +106,7 @@ export const TyreInventoryFilters: React.FC<TyreInventoryFiltersProps> = ({
             </select>
           </div>
         )}
-        
+
         {/* Status filter */}
         {statuses.length > 0 && (
           <div>
@@ -121,7 +121,7 @@ export const TyreInventoryFilters: React.FC<TyreInventoryFiltersProps> = ({
             </select>
           </div>
         )}
-        
+
         {/* Condition filter */}
         {conditions.length > 0 && (
           <div>
@@ -136,7 +136,7 @@ export const TyreInventoryFilters: React.FC<TyreInventoryFiltersProps> = ({
             </select>
           </div>
         )}
-        
+
         {/* Vehicle filter */}
         {vehicles.length > 0 && (
           <div>

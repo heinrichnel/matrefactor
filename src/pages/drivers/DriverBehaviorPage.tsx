@@ -20,7 +20,7 @@ import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 import SyncIndicator from "../../components/ui/SyncIndicator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 import { useAppContext } from "../../context/AppContext";
-import { useDriverBehavior } from "../../context/DriverBehaviorContext";
+import { useDriverBehavior } from "../../hooks/useDriverBehavior";
 import { DriverBehaviorEvent } from "../../types";
 
 /**
@@ -48,18 +48,16 @@ const DriverBehaviorPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("all");
   const [filterEventType, setFilterEventType] = useState("all");
-  const [showWebBookOnly, setShowWebBookOnly] = useState(false);
   const [dateRange] = useState<{ start: Date | null; end: Date | null }>({
     start: null,
     end: null,
   });
 
   // Get application context for data and operations
-  const { importDriverBehaviorEventsFromWebhook, isLoading, driverBehaviorEvents } =
-    useAppContext();
+  const { importDriverBehaviorEventsFromWebhook, isLoading } = useAppContext();
 
-  // Get driver behavior specific context with real-time updates from Firestore
-  const { events, webBookEvents, loading, error } = useDriverBehavior();
+  // Subscribe directly to driver behavior events (hook handles Firestore listeners)
+  const { events, loading, error } = useDriverBehavior({ autoSubscribe: true });
 
   // Subscribe to driver behavior events when the component mounts
   useEffect(() => {
@@ -69,16 +67,14 @@ const DriverBehaviorPage: React.FC = () => {
     // The useDriverBehavior hook already provides real-time data from Firestore
 
     // Check if we have any events, if not and we're online, trigger a sync
-    if (driverBehaviorEvents.length === 0 && events.length === 0 && navigator.onLine) {
+    if (events.length === 0 && navigator.onLine) {
       handleSyncNow();
     }
 
     // Log the number of events coming from the context
     console.log(`Real-time driver behavior events loaded: ${events.length}`);
-    console.log(`Web book events loaded: ${webBookEvents.length}`);
-
-    // Cleanup function is not needed as the subscription is managed by the DriverBehaviorContext
-  }, [driverBehaviorEvents.length, events.length, webBookEvents.length]);
+    // Cleanup function not needed (hook handles it)
+  }, [events.length]);
 
   // Handle initiating CAR from event
   const handleInitiateCAR = (event: DriverBehaviorEvent) => {
@@ -162,15 +158,18 @@ const DriverBehaviorPage: React.FC = () => {
 
   // Get unique event types for filtering
   const getUniqueEventTypes = (): string[] => {
-    const displayEvents = showWebBookOnly ? webBookEvents : events;
-    return [...new Set(displayEvents.map((ev: any) => ev.eventType).filter(Boolean))];
+    return Array.from(
+      new Set(
+        events
+          .map((ev: any) => ev.eventType)
+          .filter((v: any): v is string => typeof v === "string" && v.length > 0)
+      )
+    );
   };
 
   // Filter events based on search term and filters
   const getFilteredEvents = (): any[] => {
-    const displayEvents: any[] = showWebBookOnly ? webBookEvents : (driverBehaviorEvents as any[]);
-
-    return displayEvents.filter((event: any) => {
+    return events.filter((event: any) => {
       // Search term filter
       const matchesSearch =
         !searchTerm ||
@@ -334,18 +333,7 @@ const DriverBehaviorPage: React.FC = () => {
               </div>
 
               <div className="flex flex-wrap items-center justify-between mt-4 gap-4">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="webBookOnly"
-                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    checked={showWebBookOnly}
-                    onChange={(e) => setShowWebBookOnly(e.target.checked)}
-                  />
-                  <label htmlFor="webBookOnly" className="text-sm text-gray-700">
-                    Show Web-Book Events Only
-                  </label>
-                </div>
+                {/* Removed Web-Book only toggle – hook already provides filtered events */}
 
                 <Button
                   variant="outline"

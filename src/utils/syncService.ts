@@ -1,51 +1,48 @@
-
-import { db } from '../firebase';
 import {
-  enableNetwork,
-  disableNetwork,
-  collection,
-  doc,
-  onSnapshot,
-  updateDoc,
   addDoc,
-  serverTimestamp,
-  query,
-  where,
-  orderBy,
+  collection,
+  disableNetwork,
+  doc,
+  enableNetwork,
   getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
   Unsubscribe,
-  Timestamp
-} from 'firebase/firestore';
-import { cleanObjectForFirestore, convertTimestamps } from './firestoreUtils';
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { ClientOptions } from "openai";
+import { db } from "../firebase";
 import {
-  Trip,
+  ActionItem,
+  AuditLog,
+  CARReport,
   CostEntry,
   DieselConsumptionRecord,
   DriverBehaviorEvent,
-  AuditLog,
   MissedLoad,
-  ActionItem,
-  CARReport,
-  CLIENTS
-} from '../types';
-import { TyreInventoryItem } from './tyreConstants';
-import { Tyre } from '../types/workshop-tyre-inventory';
-import { JobCard, EnhancedJobCard } from '../types/workshop-job-card';
-import { ClientOptions } from 'openai';
+  Trip,
+} from "../types";
+import { EnhancedJobCard, JobCard } from "../types/workshop-job-card";
+import { Tyre } from "../types/workshop-tyre-inventory";
+import { cleanObjectForFirestore, convertTimestamps } from "./firestoreUtils";
+import { TyreInventoryItem } from "./tyreConstants";
 
 // Collection references
 // const tripsCollection = collection(db, 'trips'); // Unused
-const dieselCollection = collection(db, 'diesel');
-const driverBehaviorCollection = collection(db, 'driverBehaviorEvents');
-const auditLogsCollection = collection(db, 'auditLogs');
-const workshopInventoryCollection = collection(db, 'workshopInventory');
-const jobCardsCollection = collection(db, 'jobCards');
-const enhancedJobCardsCollection = collection(db, 'enhancedJobCards');
-const tyresCollection = collection(db, 'tyres');
+const dieselCollection = collection(db, "diesel");
+const driverBehaviorCollection = collection(db, "driverBehaviorEvents");
+const auditLogsCollection = collection(db, "auditLogs");
+const workshopInventoryCollection = collection(db, "workshopInventory");
+const jobCardsCollection = collection(db, "jobCards");
+const enhancedJobCardsCollection = collection(db, "enhancedJobCards");
+const tyresCollection = collection(db, "tyres");
 
 // Type for sync status
-export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error';
-export type ConnectionStatus = 'connected' | 'disconnected' | 'reconnecting';
+export type SyncStatus = "idle" | "syncing" | "success" | "error";
+export type ConnectionStatus = "connected" | "disconnected" | "reconnecting";
 
 // Interface for sync listeners
 interface SyncListeners {
@@ -72,8 +69,8 @@ export class SyncService {
   private jobCardUnsubscribes: Map<string, () => void> = new Map();
   private enhancedJobCardUnsubscribes: Map<string, () => void> = new Map();
   private tyreUnsubscribes: Map<string, () => void> = new Map();
-  public syncStatus: SyncStatus = 'idle';
-  public connectionStatus: ConnectionStatus = 'connected';
+  public syncStatus: SyncStatus = "idle";
+  public connectionStatus: ConnectionStatus = "connected";
   private pendingChanges: Map<string, any> = new Map();
   public isOnline: boolean = navigator.onLine;
   public lastSynced: Date | null = null;
@@ -81,12 +78,12 @@ export class SyncService {
 
   constructor() {
     // Listen for online/offline events
-    window.addEventListener('online', this.handleOnline);
-    window.addEventListener('offline', this.handleOffline);
+    window.addEventListener("online", this.handleOnline);
+    window.addEventListener("offline", this.handleOffline);
 
     // Initialize online status
     this.isOnline = navigator.onLine;
-    console.log(`SyncService initialized. Online status: ${this.isOnline ? 'online' : 'offline'}`);
+    console.log(`SyncService initialized. Online status: ${this.isOnline ? "online" : "offline"}`);
 
     // Setup a periodic connection check
     setInterval(() => this.checkConnection(), 60000); // Check every minute
@@ -95,7 +92,7 @@ export class SyncService {
   // Register data callbacks for all collections
   public registerDataCallbacks(callbacks: Record<string, (...args: any[]) => void>): void {
     this.dataCallbacks = { ...this.dataCallbacks, ...callbacks };
-    console.log('✅ Data callbacks registered:', Object.keys(callbacks).join(', '));
+    console.log("✅ Data callbacks registered:", Object.keys(callbacks).join(", "));
   }
 
   // Register listeners
@@ -107,7 +104,7 @@ export class SyncService {
   private async checkConnection(): Promise<void> {
     if (!this.isOnline && navigator.onLine) {
       // We were offline but now we appear to be online
-      console.log('Network connection detected - attempting to reconnect');
+      console.log("Network connection detected - attempting to reconnect");
       await this.handleOnline();
     } else if (this.isOnline && !navigator.onLine) {
       // We were online but now appear to be offline
@@ -117,10 +114,10 @@ export class SyncService {
 
   // Handle online event
   private handleOnline = async (): Promise<void> => {
-    console.log('🟢 Connection restored - syncing pending changes');
+    console.log("🟢 Connection restored - syncing pending changes");
     this.isOnline = true;
-    this.setConnectionStatus('reconnecting');
-    this.setSyncStatus('syncing');
+    this.setConnectionStatus("reconnecting");
+    this.setSyncStatus("syncing");
 
     try {
       // Enable Firestore network
@@ -128,26 +125,26 @@ export class SyncService {
 
       // Process any pending changes
       await this.processPendingChanges();
-      this.setSyncStatus('success');
-      this.setConnectionStatus('connected');
+      this.setSyncStatus("success");
+      this.setConnectionStatus("connected");
       this.lastSynced = new Date();
     } catch (error) {
-      console.error('Error syncing pending changes:', error);
-      this.setConnectionStatus('disconnected');
-      this.setSyncStatus('error');
+      console.error("Error syncing pending changes:", error);
+      this.setConnectionStatus("disconnected");
+      this.setSyncStatus("error");
     }
   };
 
   // Handle offline event
   private handleOffline = (): void => {
-    console.log('🔴 Connection lost - working offline');
+    console.log("🔴 Connection lost - working offline");
     this.isOnline = false;
-    this.setConnectionStatus('disconnected');
-    this.setSyncStatus('idle');
+    this.setConnectionStatus("disconnected");
+    this.setSyncStatus("idle");
 
     // Disable Firestore network to avoid unnecessary retries
-    disableNetwork(db).catch(error => {
-      console.error('Error disabling Firestore network:', error);
+    disableNetwork(db).catch((error) => {
+      console.error("Error disabling Firestore network:", error);
     });
   };
 
@@ -176,13 +173,13 @@ export class SyncService {
 
     for (const [key, change] of this.pendingChanges.entries()) {
       try {
-        const [collection, id] = key.split(':');
+        const [collection, id] = key.split(":");
         const docRef = doc(db, collection, id);
 
         // Add server timestamp
         const dataWithTimestamp = {
           ...change,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         };
 
         await updateDoc(docRef, dataWithTimestamp);
@@ -199,13 +196,16 @@ export class SyncService {
   // Subscribe to a trip's real-time updates
   public subscribeToTrip(tripId: string): void {
     // DEBUG ONLY - Validate context
-    console.log('🔍 subscribeToTrip called with tripId:', tripId);
-    console.log('🔍 this context available:', this !== undefined);
-    console.log('🔍 tripUnsubscribes available:', this?.tripUnsubscribes !== undefined);
+    console.log("🔍 subscribeToTrip called with tripId:", tripId);
+    console.log("🔍 this context available:", this !== undefined);
+    console.log("🔍 tripUnsubscribes available:", this?.tripUnsubscribes !== undefined);
 
     // Guard against undefined 'this'
     if (!this || !this.tripUnsubscribes) {
-      console.error('❌ ERROR: Missing context in subscribeToTrip - "this" is unavailable', new Error().stack);
+      console.error(
+        '❌ ERROR: Missing context in subscribeToTrip - "this" is unavailable',
+        new Error().stack
+      );
       return; // Abort to prevent crash
     }
 
@@ -214,7 +214,7 @@ export class SyncService {
       this.tripUnsubscribes.get(tripId)?.();
     }
 
-    const tripRef = doc(db, 'trips', tripId);
+    const tripRef = doc(db, "trips", tripId);
 
     const unsubscribe = onSnapshot(
       tripRef,
@@ -243,20 +243,20 @@ export class SyncService {
   // Unsubscribe from trips collection subscription
   public unsubscribeFromTrips(): void {
     // Unsubscribe from global trips listener if it exists
-    if (this.globalUnsubscribes.has('allTrips')) {
-      this.globalUnsubscribes.get('allTrips')?.();
-      this.globalUnsubscribes.delete('allTrips');
-      console.log('🔄 Unsubscribed from trips collection');
+    if (this.globalUnsubscribes.has("allTrips")) {
+      this.globalUnsubscribes.get("allTrips")?.();
+      this.globalUnsubscribes.delete("allTrips");
+      console.log("🔄 Unsubscribed from trips collection");
     }
   }
 
   // Unsubscribe from tyres collection subscription
   public unsubscribeFromAllTyres(): void {
     // Unsubscribe from global tyres listener if it exists
-    if (this.globalUnsubscribes.has('allTyres')) {
-      this.globalUnsubscribes.get('allTyres')?.();
-      this.globalUnsubscribes.delete('allTyres');
-      console.log('🔄 Unsubscribed from tyres collection');
+    if (this.globalUnsubscribes.has("allTyres")) {
+      this.globalUnsubscribes.get("allTyres")?.();
+      this.globalUnsubscribes.delete("allTyres");
+      console.log("🔄 Unsubscribed from tyres collection");
     }
   }
 
@@ -267,11 +267,11 @@ export class SyncService {
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to trips - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to trips - user not authenticated");
       return;
     }
 
-    const tripsQuery = query(collection(db, 'trips'), orderBy('startDate', 'desc'));
+    const tripsQuery = query(collection(db, "trips"), orderBy("startDate", "desc"));
 
     const unsubscribe = onSnapshot(
       tripsQuery,
@@ -279,22 +279,24 @@ export class SyncService {
         const trips: Trip[] = [];
 
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
           const data = convertTimestamps(change.doc.data());
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Trip added: ${id}`);
             trips.push({ id, ...data } as Trip);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Trip modified: ${id}`);
             trips.push({ id, ...data } as Trip);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Trip removed: ${id}`);
             // Removed trips will be filtered out when we rebuild the trips array
@@ -303,30 +305,32 @@ export class SyncService {
 
         // If we have added/modified/removed items, do a full rebuild of the trips array
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Global trips listener changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Global trips listener changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // For a complete refresh, get all current documents
           const currentTrips: Trip[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             currentTrips.push({ id: doc.id, ...data } as Trip);
           });
 
-          if (typeof this.dataCallbacks.setTrips === 'function') {
+          if (typeof this.dataCallbacks.setTrips === "function") {
             this.dataCallbacks.setTrips(currentTrips);
           } else {
-            console.warn('⚠️ setTrips callback not registered');
+            console.warn("⚠️ setTrips callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global trips listener:', error);
+        console.error("Error in global trips listener:", error);
         // Don't change connection status here to avoid false disconnections
       }
     );
 
-    this.globalUnsubscribes.set('allTrips', unsubscribe);
+    this.globalUnsubscribes.set("allTrips", unsubscribe);
   }
 
   // Subscribe to diesel records for a specific fleet
@@ -338,8 +342,8 @@ export class SyncService {
 
     const q = query(
       dieselCollection,
-      where('fleetNumber', '==', fleetNumber),
-      orderBy('date', 'desc')
+      where("fleetNumber", "==", fleetNumber),
+      orderBy("date", "desc")
     );
 
     const unsubscribe = onSnapshot(
@@ -351,7 +355,7 @@ export class SyncService {
           // Convert Firestore timestamps to ISO strings
           const dieselRecord = convertTimestamps(dieselData) as DieselConsumptionRecord;
 
-          if (change.type === 'added' || change.type === 'modified') {
+          if (change.type === "added" || change.type === "modified") {
             console.log(`🔄 Real-time update for diesel record ${change.doc.id}`);
 
             if (this.listeners.onDieselUpdate) {
@@ -377,8 +381,8 @@ export class SyncService {
 
     const q = query(
       driverBehaviorCollection,
-      where('driverName', '==', driverName),
-      orderBy('eventDate', 'desc')
+      where("driverName", "==", driverName),
+      orderBy("eventDate", "desc")
     );
 
     const unsubscribe = onSnapshot(
@@ -390,7 +394,7 @@ export class SyncService {
           // Convert Firestore timestamps to ISO strings
           const event = convertTimestamps(eventData) as DriverBehaviorEvent;
 
-          if (change.type === 'added' || change.type === 'modified') {
+          if (change.type === "added" || change.type === "modified") {
             console.log(`🔄 Real-time update for driver behavior event ${change.doc.id}`);
 
             if (this.listeners.onDriverBehaviorUpdate) {
@@ -410,153 +414,155 @@ export class SyncService {
   // Subscribe to all driver behavior events (global listener)
   public subscribeToAllDriverBehaviorEvents(): void {
     // Clear any existing global driver behavior listeners
-    if (this.globalUnsubscribes.has('allDriverBehavior')) {
-      this.globalUnsubscribes.get('allDriverBehavior')?.();
+    if (this.globalUnsubscribes.has("allDriverBehavior")) {
+      this.globalUnsubscribes.get("allDriverBehavior")?.();
     }
-    
+
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to driver behavior events - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to driver behavior events - user not authenticated");
       return;
     }
 
-    const eventsQuery = query(
-      collection(db, 'driverBehaviorEvents'),
-      orderBy('eventDate', 'desc')
-    );
+    const eventsQuery = query(collection(db, "driverBehaviorEvents"), orderBy("eventDate", "desc"));
 
     const unsubscribe = onSnapshot(
       eventsQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Driver behavior event added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Driver behavior event modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Driver behavior event removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Driver behavior changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Driver behavior changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const events: DriverBehaviorEvent[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             events.push({ id: doc.id, ...data } as DriverBehaviorEvent);
           });
 
-          if (typeof this.dataCallbacks.setDriverBehaviorEvents === 'function') {
+          if (typeof this.dataCallbacks.setDriverBehaviorEvents === "function") {
             this.dataCallbacks.setDriverBehaviorEvents(events);
           } else {
-            console.warn('⚠️ setDriverBehaviorEvents callback not registered');
+            console.warn("⚠️ setDriverBehaviorEvents callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global driver behavior listener:', error);
+        console.error("Error in global driver behavior listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allDriverBehavior', unsubscribe);
+    this.globalUnsubscribes.set("allDriverBehavior", unsubscribe);
   }
 
   // Subscribe to all diesel records (global listener)
   public subscribeToAllDieselRecords(): void {
     // Clear any existing global diesel listeners
-    if (this.globalUnsubscribes.has('allDiesel')) {
-      this.globalUnsubscribes.get('allDiesel')?.();
+    if (this.globalUnsubscribes.has("allDiesel")) {
+      this.globalUnsubscribes.get("allDiesel")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to diesel records - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to diesel records - user not authenticated");
       return;
     }
 
-    const recordsQuery = query(
-      collection(db, 'diesel'),
-      orderBy('date', 'desc')
-    );
+    const recordsQuery = query(collection(db, "diesel"), orderBy("date", "desc"));
 
     const unsubscribe = onSnapshot(
       recordsQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Diesel record added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Diesel record modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Diesel record removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Diesel records changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Diesel records changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const records: DieselConsumptionRecord[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             records.push({ id: doc.id, ...data } as DieselConsumptionRecord);
           });
 
-          if (typeof this.dataCallbacks.setDieselRecords === 'function') {
+          if (typeof this.dataCallbacks.setDieselRecords === "function") {
             this.dataCallbacks.setDieselRecords(records);
           } else {
-            console.warn('⚠️ setDieselRecords callback not registered');
+            console.warn("⚠️ setDieselRecords callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global diesel listener:', error);
+        console.error("Error in global diesel listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allDiesel', unsubscribe);
+    this.globalUnsubscribes.set("allDiesel", unsubscribe);
   }
 
   // Subscribe to audit logs
   public subscribeToAuditLogs(): void {
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to audit logs - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to audit logs - user not authenticated");
       return;
     }
 
     const unsubscribe = onSnapshot(
-      query(auditLogsCollection, orderBy('timestamp', 'desc')),
+      query(auditLogsCollection, orderBy("timestamp", "desc")),
       (snapshot) => {
         snapshot.docChanges().forEach((change) => {
           const logData = change.doc.data();
           const log = convertTimestamps(logData) as AuditLog;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             const auditLog = { ...log, id: change.doc.id };
-            if (typeof this.dataCallbacks.setAuditLogs === 'function') {
+            if (typeof this.dataCallbacks.setAuditLogs === "function") {
               // Get current audit logs and add the new one
               this.dataCallbacks.setAuditLogs((prevLogs: AuditLog[]) => [auditLog, ...prevLogs]);
             } else if (this.listeners.onAuditLogUpdate) {
@@ -570,13 +576,13 @@ export class SyncService {
       }
     );
 
-    this.auditLogUnsubscribes.set('all', unsubscribe);
+    this.auditLogUnsubscribes.set("all", unsubscribe);
   }
 
   // Update a trip with real-time sync
   public async updateTrip(tripId: string, data: Partial<Trip>): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore (remove undefined values)
       const cleanData = cleanObjectForFirestore(data);
@@ -584,12 +590,12 @@ export class SyncService {
       // Add updatedAt timestamp
       const updateData = {
         ...cleanData,
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       if (this.isOnline) {
         // Online - update directly
-        const tripRef = doc(db, 'trips', tripId);
+        const tripRef = doc(db, "trips", tripId);
         await updateDoc(tripRef, updateData);
         console.log(`✅ Trip ${tripId} updated with real-time sync`);
       } else {
@@ -601,18 +607,21 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error updating trip ${tripId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
 
   // Update a diesel record with real-time sync
-  public async updateDieselRecord(recordId: string, data: Partial<DieselConsumptionRecord>): Promise<void> {
+  public async updateDieselRecord(
+    recordId: string,
+    data: Partial<DieselConsumptionRecord>
+  ): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -620,12 +629,12 @@ export class SyncService {
       // Add updatedAt timestamp
       const updateData = {
         ...cleanData,
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       if (this.isOnline) {
         // Online - update directly
-        const recordRef = doc(db, 'diesel', recordId);
+        const recordRef = doc(db, "diesel", recordId);
         await updateDoc(recordRef, updateData);
         console.log(`✅ Diesel record ${recordId} updated with real-time sync`);
       } else {
@@ -637,18 +646,21 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error updating diesel record ${recordId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
 
   // Update a driver behavior event with real-time sync
-  public async updateDriverBehaviorEvent(eventId: string, data: Partial<DriverBehaviorEvent>): Promise<void> {
+  public async updateDriverBehaviorEvent(
+    eventId: string,
+    data: Partial<DriverBehaviorEvent>
+  ): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -656,12 +668,12 @@ export class SyncService {
       // Add updatedAt timestamp
       const updateData = {
         ...cleanData,
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       if (this.isOnline) {
         // Online - update directly
-        const eventRef = doc(db, 'driverBehaviorEvents', eventId);
+        const eventRef = doc(db, "driverBehaviorEvents", eventId);
         await updateDoc(eventRef, updateData);
         console.log(`✅ Driver behavior event ${eventId} updated with real-time sync`);
       } else {
@@ -673,10 +685,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error updating driver behavior event ${eventId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -684,11 +696,13 @@ export class SyncService {
   // Link diesel record to trip
   public async linkDieselToTrip(dieselId: string, tripId: string): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Get the diesel record
-      const dieselRef = doc(db, 'diesel', dieselId);
-      const dieselSnap = await getDocs(query(collection(db, 'diesel'), where('id', '==', dieselId)));
+      const dieselRef = doc(db, "diesel", dieselId);
+      const dieselSnap = await getDocs(
+        query(collection(db, "diesel"), where("id", "==", dieselId))
+      );
 
       if (dieselSnap.empty) {
         throw new Error(`Diesel record ${dieselId} not found`);
@@ -697,8 +711,8 @@ export class SyncService {
       const dieselData = dieselSnap.docs[0].data() as DieselConsumptionRecord;
 
       // Get the trip
-      const tripRef = doc(db, 'trips', tripId);
-      const tripSnap = await getDocs(query(collection(db, 'trips'), where('id', '==', tripId)));
+      const tripRef = doc(db, "trips", tripId);
+      const tripSnap = await getDocs(query(collection(db, "trips"), where("id", "==", tripId)));
 
       if (tripSnap.empty) {
         throw new Error(`Trip ${tripId} not found`);
@@ -709,13 +723,13 @@ export class SyncService {
       // Update diesel record with trip ID
       await updateDoc(dieselRef, {
         tripId,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       // Create a cost entry in the trip
-      const costEntry: Omit<CostEntry, 'id'> = {
+      const costEntry: Omit<CostEntry, "id"> = {
         tripId,
-        category: 'Diesel',
+        category: "Diesel",
         subCategory: `${dieselData.fuelStation} - ${dieselData.fleetNumber}`,
         amount: dieselData.totalCost,
         currency: dieselData.currency || tripData.revenueCurrency,
@@ -724,7 +738,7 @@ export class SyncService {
         notes: `Diesel: ${dieselData.litresFilled} liters at ${dieselData.fuelStation}`,
         attachments: [],
         isFlagged: false,
-        isSystemGenerated: false
+        isSystemGenerated: false,
       };
 
       // Add cost entry to trip
@@ -732,14 +746,14 @@ export class SyncService {
 
       await updateDoc(tripRef, {
         costs: updatedCosts,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       console.log(`✅ Diesel record ${dieselId} linked to trip ${tripId}`);
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error linking diesel to trip:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -748,370 +762,378 @@ export class SyncService {
   private storePendingChangesInLocalStorage(): void {
     try {
       const pendingChangesObj = Object.fromEntries(this.pendingChanges);
-      localStorage.setItem('pendingChanges', JSON.stringify(pendingChangesObj));
+      localStorage.setItem("pendingChanges", JSON.stringify(pendingChangesObj));
     } catch (error) {
-      console.error('Error storing pending changes in localStorage:', error);
+      console.error("Error storing pending changes in localStorage:", error);
     }
   }
 
   // Subscribe to all missed loads (global listener)
   public subscribeToAllMissedLoads(): void {
     // Clear any existing global missed loads listeners
-    if (this.globalUnsubscribes.has('allMissedLoads')) {
-      this.globalUnsubscribes.get('allMissedLoads')?.();
+    if (this.globalUnsubscribes.has("allMissedLoads")) {
+      this.globalUnsubscribes.get("allMissedLoads")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to missed loads - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to missed loads - user not authenticated");
       return;
     }
 
-    const missedLoadsQuery = query(
-      collection(db, 'missedLoads'),
-      orderBy('date', 'desc')
-    );
+    const missedLoadsQuery = query(collection(db, "missedLoads"), orderBy("date", "desc"));
 
     const unsubscribe = onSnapshot(
       missedLoadsQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Missed load added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Missed load modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Missed load removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Missed loads changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Missed loads changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const missedLoads: MissedLoad[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             missedLoads.push({ id: doc.id, ...data } as MissedLoad);
           });
 
-          if (typeof this.dataCallbacks.setMissedLoads === 'function') {
+          if (typeof this.dataCallbacks.setMissedLoads === "function") {
             this.dataCallbacks.setMissedLoads(missedLoads);
           } else {
-            console.warn('⚠️ setMissedLoads callback not registered');
+            console.warn("⚠️ setMissedLoads callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global missed loads listener:', error);
+        console.error("Error in global missed loads listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allMissedLoads', unsubscribe);
+    this.globalUnsubscribes.set("allMissedLoads", unsubscribe);
   }
 
   // Subscribe to all action items (global listener)
   public subscribeToAllActionItems(): void {
     // Clear any existing global action items listeners
-    if (this.globalUnsubscribes.has('allActionItems')) {
-      this.globalUnsubscribes.get('allActionItems')?.();
+    if (this.globalUnsubscribes.has("allActionItems")) {
+      this.globalUnsubscribes.get("allActionItems")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to action items - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to action items - user not authenticated");
       return;
     }
 
-    const actionItemsQuery = query(
-      collection(db, 'actionItems'),
-      orderBy('createdAt', 'desc')
-    );
+    const actionItemsQuery = query(collection(db, "actionItems"), orderBy("createdAt", "desc"));
 
     const unsubscribe = onSnapshot(
       actionItemsQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Action item added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Action item modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Action item removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Action items changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Action items changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const actionItems: ActionItem[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             actionItems.push({ id: doc.id, ...data } as ActionItem);
           });
 
-          if (typeof this.dataCallbacks.setActionItems === 'function') {
+          if (typeof this.dataCallbacks.setActionItems === "function") {
             this.dataCallbacks.setActionItems(actionItems);
           } else {
-            console.warn('⚠️ setActionItems callback not registered');
+            console.warn("⚠️ setActionItems callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global action items listener:', error);
+        console.error("Error in global action items listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allActionItems', unsubscribe);
+    this.globalUnsubscribes.set("allActionItems", unsubscribe);
   }
 
   // Subscribe to all clients (global listener)
   public subscribeToAllClients(): void {
     // Clear any existing global clients listeners
-    if (this.globalUnsubscribes.has('allClients')) {
-      this.globalUnsubscribes.get('allClients')?.();
+    if (this.globalUnsubscribes.has("allClients")) {
+      this.globalUnsubscribes.get("allClients")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to clients - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to clients - user not authenticated");
       return;
     }
 
-    const clientsQuery = query(
-      collection(db, 'clients'),
-      orderBy('name', 'asc')
-    );
+    const clientsQuery = query(collection(db, "clients"), orderBy("name", "asc"));
 
     const unsubscribe = onSnapshot(
       clientsQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Client added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Client modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Client removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Clients changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Clients changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const clients: ClientOptions[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             clients.push({ id: doc.id, ...data } as ClientOptions);
           });
 
-          if (typeof this.dataCallbacks.setClients === 'function') {
+          if (typeof this.dataCallbacks.setClients === "function") {
             this.dataCallbacks.setClients(clients);
           } else {
-            console.warn('⚠️ setClients callback not registered');
+            console.warn("⚠️ setClients callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global clients listener:', error);
+        console.error("Error in global clients listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allClients', unsubscribe);
+    this.globalUnsubscribes.set("allClients", unsubscribe);
   }
 
   // Subscribe to all CAR reports (global listener)
   public subscribeToAllCARReports(): void {
     // Clear any existing global CAR reports listeners
-    if (this.globalUnsubscribes.has('allCARReports')) {
-      this.globalUnsubscribes.get('allCARReports')?.();
+    if (this.globalUnsubscribes.has("allCARReports")) {
+      this.globalUnsubscribes.get("allCARReports")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to CAR reports - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to CAR reports - user not authenticated");
       return;
     }
 
-    const carReportsQuery = query(
-      collection(db, 'carReports'),
-      orderBy('createdAt', 'desc')
-    );
+    const carReportsQuery = query(collection(db, "carReports"), orderBy("createdAt", "desc"));
 
     const unsubscribe = onSnapshot(
       carReportsQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`CAR report added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`CAR report modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`CAR report removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 CAR reports changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 CAR reports changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const carReports: CARReport[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             carReports.push({ id: doc.id, ...data } as CARReport);
           });
 
-          if (typeof this.dataCallbacks.setCarReports === 'function') {
+          if (typeof this.dataCallbacks.setCarReports === "function") {
             this.dataCallbacks.setCarReports(carReports);
           } else {
-            console.warn('⚠️ setCarReports callback not registered');
+            console.warn("⚠️ setCarReports callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global CAR reports listener:', error);
+        console.error("Error in global CAR reports listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allCARReports', unsubscribe);
+    this.globalUnsubscribes.set("allCARReports", unsubscribe);
   }
 
   // Load pending changes from localStorage
   public loadPendingChangesFromLocalStorage(): void {
     try {
-      const pendingChangesJson = localStorage.getItem('pendingChanges');
+      const pendingChangesJson = localStorage.getItem("pendingChanges");
       if (pendingChangesJson) {
         const pendingChangesObj = JSON.parse(pendingChangesJson);
         this.pendingChanges = new Map(Object.entries(pendingChangesObj));
         console.log(`Loaded ${this.pendingChanges.size} pending changes from localStorage`);
       }
     } catch (error) {
-      console.error('Error loading pending changes from localStorage:', error);
+      console.error("Error loading pending changes from localStorage:", error);
     }
   }
 
   // Subscribe to all enhanced job cards (global listener)
   public subscribeToAllEnhancedJobCards(): void {
     // Clear any existing global enhanced job cards listeners
-    if (this.globalUnsubscribes.has('allEnhancedJobCards')) {
-      this.globalUnsubscribes.get('allEnhancedJobCards')?.();
+    if (this.globalUnsubscribes.has("allEnhancedJobCards")) {
+      this.globalUnsubscribes.get("allEnhancedJobCards")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to enhanced job cards - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to enhanced job cards - user not authenticated");
       return;
     }
 
     const enhancedJobCardsQuery = query(
       enhancedJobCardsCollection,
-      orderBy('workOrderInfo.date', 'desc')
+      orderBy("workOrderInfo.date", "desc")
     );
 
     const unsubscribe = onSnapshot(
       enhancedJobCardsQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Enhanced job card added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Enhanced job card modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Enhanced job card removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Enhanced job cards changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Enhanced job cards changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const enhancedJobCards: EnhancedJobCard[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             enhancedJobCards.push({ id: doc.id, ...data } as EnhancedJobCard);
           });
 
-          if (typeof this.dataCallbacks.setEnhancedJobCards === 'function') {
+          if (typeof this.dataCallbacks.setEnhancedJobCards === "function") {
             this.dataCallbacks.setEnhancedJobCards(enhancedJobCards);
           } else {
-            console.warn('⚠️ setEnhancedJobCards callback not registered');
+            console.warn("⚠️ setEnhancedJobCards callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global enhanced job cards listener:', error);
+        console.error("Error in global enhanced job cards listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allEnhancedJobCards', unsubscribe);
+    this.globalUnsubscribes.set("allEnhancedJobCards", unsubscribe);
   }
 
   // Unsubscribe from enhanced job cards collection subscription
   public unsubscribeFromAllEnhancedJobCards(): void {
     // Unsubscribe from global enhanced job cards listener if it exists
-    if (this.globalUnsubscribes.has('allEnhancedJobCards')) {
-      this.globalUnsubscribes.get('allEnhancedJobCards')?.();
-      this.globalUnsubscribes.delete('allEnhancedJobCards');
-      console.log('🔄 Unsubscribed from enhanced job cards collection');
+    if (this.globalUnsubscribes.has("allEnhancedJobCards")) {
+      this.globalUnsubscribes.get("allEnhancedJobCards")?.();
+      this.globalUnsubscribes.delete("allEnhancedJobCards");
+      console.log("🔄 Unsubscribed from enhanced job cards collection");
     }
   }
 
   // Add an enhanced job card
-  public async addEnhancedJobCard(data: Omit<EnhancedJobCard, 'id'>): Promise<string> {
+  public async addEnhancedJobCard(data: Omit<EnhancedJobCard, "id">): Promise<string> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -1120,11 +1142,11 @@ export class SyncService {
       const jobCardData = {
         ...cleanData,
         createdAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       let jobCardId: string;
-      
+
       if (this.isOnline) {
         // Online - add directly to Firestore
         const docRef = await addDoc(enhancedJobCardsCollection, jobCardData);
@@ -1140,19 +1162,22 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
       return jobCardId;
     } catch (error) {
       console.error(`Error adding enhanced job card:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
 
   // Update an enhanced job card
-  public async updateEnhancedJobCard(jobCardId: string, data: Partial<EnhancedJobCard>): Promise<void> {
+  public async updateEnhancedJobCard(
+    jobCardId: string,
+    data: Partial<EnhancedJobCard>
+  ): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -1160,12 +1185,12 @@ export class SyncService {
       // Add updatedAt timestamp
       const updateData = {
         ...cleanData,
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       if (this.isOnline) {
         // Online - update directly
-        const jobCardRef = doc(db, 'enhancedJobCards', jobCardId);
+        const jobCardRef = doc(db, "enhancedJobCards", jobCardId);
         await updateDoc(jobCardRef, updateData);
         console.log(`✅ Enhanced job card ${jobCardId} updated with real-time sync`);
       } else {
@@ -1177,10 +1202,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error updating enhanced job card ${jobCardId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1188,11 +1213,11 @@ export class SyncService {
   // Delete an enhanced job card
   public async deleteEnhancedJobCard(jobCardId: string): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       if (this.isOnline) {
         // Online - delete directly from Firestore
-        const jobCardRef = doc(db, 'enhancedJobCards', jobCardId);
+        const jobCardRef = doc(db, "enhancedJobCards", jobCardId);
         await updateDoc(jobCardRef, { deleted: true, updatedAt: serverTimestamp() });
         console.log(`✅ Enhanced job card ${jobCardId} marked as deleted`);
       } else {
@@ -1204,10 +1229,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error deleting enhanced job card ${jobCardId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1264,15 +1289,15 @@ export class SyncService {
     this.globalUnsubscribes.clear();
 
     // Remove event listeners
-    window.removeEventListener('online', this.handleOnline);
-    window.removeEventListener('offline', this.handleOffline);
+    window.removeEventListener("online", this.handleOnline);
+    window.removeEventListener("offline", this.handleOffline);
   }
 
   // Get connection status
   public getConnectionStatus(): ConnectionStatus {
     return this.connectionStatus;
   }
-  
+
   // Check if the user is authenticated
   private isAuthenticated(): boolean {
     // This is a simplified check that could be expanded based on your auth implementation
@@ -1287,10 +1312,10 @@ export class SyncService {
     try {
       // Example (assuming there's a global auth object or function):
       // return firebase.auth().currentUser != null;
-      
+
       // For now, we'll just return true as a fallback
       return true;
-      
+
       // In a real implementation, you'd want to check if the user is signed in:
       // const user = getAuth().currentUser;
       // return !!user;
@@ -1303,73 +1328,74 @@ export class SyncService {
   // Subscribe to all workshop inventory items (global listener)
   public subscribeToAllWorkshopInventory(): void {
     // Clear any existing global workshop inventory listeners
-    if (this.globalUnsubscribes.has('allWorkshopInventory')) {
-      this.globalUnsubscribes.get('allWorkshopInventory')?.();
+    if (this.globalUnsubscribes.has("allWorkshopInventory")) {
+      this.globalUnsubscribes.get("allWorkshopInventory")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to workshop inventory - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to workshop inventory - user not authenticated");
       return;
     }
 
-    const inventoryQuery = query(
-      workshopInventoryCollection,
-      orderBy('purchaseDate', 'desc')
-    );
+    const inventoryQuery = query(workshopInventoryCollection, orderBy("purchaseDate", "desc"));
 
     const unsubscribe = onSnapshot(
       inventoryQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Workshop inventory item added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Workshop inventory item modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Workshop inventory item removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Workshop inventory changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Workshop inventory changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const inventory: TyreInventoryItem[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             inventory.push({ id: doc.id, ...data } as TyreInventoryItem);
           });
 
-          if (typeof this.dataCallbacks.setWorkshopInventory === 'function') {
+          if (typeof this.dataCallbacks.setWorkshopInventory === "function") {
             this.dataCallbacks.setWorkshopInventory(inventory);
           } else {
-            console.warn('⚠️ setWorkshopInventory callback not registered');
+            console.warn("⚠️ setWorkshopInventory callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global workshop inventory listener:', error);
+        console.error("Error in global workshop inventory listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allWorkshopInventory', unsubscribe);
+    this.globalUnsubscribes.set("allWorkshopInventory", unsubscribe);
   }
 
   // Add a workshop inventory item
-  public async addWorkshopInventoryItem(data: Omit<TyreInventoryItem, 'id'>): Promise<string> {
+  public async addWorkshopInventoryItem(data: Omit<TyreInventoryItem, "id">): Promise<string> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -1378,11 +1404,11 @@ export class SyncService {
       const itemData = {
         ...cleanData,
         createdAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       let itemId: string;
-      
+
       if (this.isOnline) {
         // Online - add directly to Firestore
         const docRef = await addDoc(workshopInventoryCollection, itemData);
@@ -1398,19 +1424,22 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
       return itemId;
     } catch (error) {
       console.error(`Error adding workshop inventory item:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
-  
+
   // Update a workshop inventory item with real-time sync
-  public async updateWorkshopInventoryItem(itemId: string, data: Partial<TyreInventoryItem>): Promise<void> {
+  public async updateWorkshopInventoryItem(
+    itemId: string,
+    data: Partial<TyreInventoryItem>
+  ): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -1418,12 +1447,12 @@ export class SyncService {
       // Add updatedAt timestamp
       const updateData = {
         ...cleanData,
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       if (this.isOnline) {
         // Online - update directly
-        const inventoryRef = doc(db, 'workshopInventory', itemId);
+        const inventoryRef = doc(db, "workshopInventory", itemId);
         await updateDoc(inventoryRef, updateData);
         console.log(`✅ Workshop inventory item ${itemId} updated with real-time sync`);
       } else {
@@ -1435,10 +1464,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error updating workshop inventory item ${itemId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1446,11 +1475,11 @@ export class SyncService {
   // Delete a workshop inventory item
   public async deleteWorkshopInventoryItem(itemId: string): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       if (this.isOnline) {
         // Online - delete directly from Firestore
-        const itemRef = doc(db, 'workshopInventory', itemId);
+        const itemRef = doc(db, "workshopInventory", itemId);
         await updateDoc(itemRef, { deleted: true, updatedAt: serverTimestamp() });
         console.log(`✅ Workshop inventory item ${itemId} marked as deleted`);
       } else {
@@ -1462,10 +1491,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error deleting workshop inventory item ${itemId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1473,73 +1502,74 @@ export class SyncService {
   // Subscribe to all job cards (global listener)
   public subscribeToAllJobCards(): void {
     // Clear any existing global job cards listeners
-    if (this.globalUnsubscribes.has('allJobCards')) {
-      this.globalUnsubscribes.get('allJobCards')?.();
+    if (this.globalUnsubscribes.has("allJobCards")) {
+      this.globalUnsubscribes.get("allJobCards")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to job cards - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to job cards - user not authenticated");
       return;
     }
 
-    const jobCardsQuery = query(
-      jobCardsCollection,
-      orderBy('createdDate', 'desc')
-    );
+    const jobCardsQuery = query(jobCardsCollection, orderBy("createdDate", "desc"));
 
     const unsubscribe = onSnapshot(
       jobCardsQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Job card added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Job card modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Job card removed: ${id}`);
           }
         });
 
         if (added > 0 || modified > 0 || removed > 0) {
-          console.log(`🔄 Job cards changes: ${added} added, ${modified} modified, ${removed} removed`);
+          console.log(
+            `🔄 Job cards changes: ${added} added, ${modified} modified, ${removed} removed`
+          );
 
           // Get all current documents for a full refresh
           const jobCards: JobCard[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             jobCards.push({ id: doc.id, ...data } as JobCard);
           });
 
-          if (typeof this.dataCallbacks.setJobCards === 'function') {
+          if (typeof this.dataCallbacks.setJobCards === "function") {
             this.dataCallbacks.setJobCards(jobCards);
           } else {
-            console.warn('⚠️ setJobCards callback not registered');
+            console.warn("⚠️ setJobCards callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global job cards listener:', error);
+        console.error("Error in global job cards listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allJobCards', unsubscribe);
+    this.globalUnsubscribes.set("allJobCards", unsubscribe);
   }
 
   // Add a job card
-  public async addJobCard(data: Omit<JobCard, 'id'>): Promise<string> {
+  public async addJobCard(data: Omit<JobCard, "id">): Promise<string> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -1548,11 +1578,11 @@ export class SyncService {
       const jobCardData = {
         ...cleanData,
         createdAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       let jobCardId: string;
-      
+
       if (this.isOnline) {
         // Online - add directly to Firestore
         const docRef = await addDoc(jobCardsCollection, jobCardData);
@@ -1568,11 +1598,11 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
       return jobCardId;
     } catch (error) {
       console.error(`Error adding job card:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1580,7 +1610,7 @@ export class SyncService {
   // Update a job card
   public async updateJobCard(jobCardId: string, data: Partial<JobCard>): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -1588,12 +1618,12 @@ export class SyncService {
       // Add updatedAt timestamp
       const updateData = {
         ...cleanData,
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       if (this.isOnline) {
         // Online - update directly
-        const jobCardRef = doc(db, 'jobCards', jobCardId);
+        const jobCardRef = doc(db, "jobCards", jobCardId);
         await updateDoc(jobCardRef, updateData);
         console.log(`✅ Job card ${jobCardId} updated with real-time sync`);
       } else {
@@ -1605,10 +1635,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error updating job card ${jobCardId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1616,11 +1646,11 @@ export class SyncService {
   // Delete a job card
   public async deleteJobCard(jobCardId: string): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       if (this.isOnline) {
         // Online - delete directly from Firestore
-        const jobCardRef = doc(db, 'jobCards', jobCardId);
+        const jobCardRef = doc(db, "jobCards", jobCardId);
         await updateDoc(jobCardRef, { deleted: true, updatedAt: serverTimestamp() });
         console.log(`✅ Job card ${jobCardId} marked as deleted`);
       } else {
@@ -1632,10 +1662,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error deleting job card ${jobCardId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1643,38 +1673,37 @@ export class SyncService {
   // Subscribe to all tyres (global listener)
   public subscribeToAllTyres(): void {
     // Clear any existing global tyres listeners
-    if (this.globalUnsubscribes.has('allTyres')) {
-      this.globalUnsubscribes.get('allTyres')?.();
+    if (this.globalUnsubscribes.has("allTyres")) {
+      this.globalUnsubscribes.get("allTyres")?.();
     }
 
     // Check if user is authenticated before subscribing
     if (!this.isAuthenticated()) {
-      console.warn('⚠️ Cannot subscribe to tyres - user not authenticated');
+      console.warn("⚠️ Cannot subscribe to tyres - user not authenticated");
       return;
     }
 
-    const tyresQuery = query(
-      tyresCollection,
-      orderBy('installDetails.date', 'desc')
-    );
+    const tyresQuery = query(tyresCollection, orderBy("installDetails.date", "desc"));
 
     const unsubscribe = onSnapshot(
       tyresQuery,
       (snapshot) => {
         // Track changes for debugging
-        let added = 0, modified = 0, removed = 0;
+        let added = 0,
+          modified = 0,
+          removed = 0;
 
         // Process document changes
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
 
-          if (change.type === 'added') {
+          if (change.type === "added") {
             added++;
             console.log(`Tyre added: ${id}`);
-          } else if (change.type === 'modified') {
+          } else if (change.type === "modified") {
             modified++;
             console.log(`Tyre modified: ${id}`);
-          } else if (change.type === 'removed') {
+          } else if (change.type === "removed") {
             removed++;
             console.log(`Tyre removed: ${id}`);
           }
@@ -1685,31 +1714,31 @@ export class SyncService {
 
           // Get all current documents for a full refresh
           const tyres: Tyre[] = [];
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = convertTimestamps(doc.data());
             tyres.push({ id: doc.id, ...data } as Tyre);
           });
 
-          if (typeof this.dataCallbacks.setTyres === 'function') {
+          if (typeof this.dataCallbacks.setTyres === "function") {
             this.dataCallbacks.setTyres(tyres);
           } else {
-            console.warn('⚠️ setTyres callback not registered');
+            console.warn("⚠️ setTyres callback not registered");
           }
           this.lastSynced = new Date();
         }
       },
       (error) => {
-        console.error('Error in global tyres listener:', error);
+        console.error("Error in global tyres listener:", error);
       }
     );
 
-    this.globalUnsubscribes.set('allTyres', unsubscribe);
+    this.globalUnsubscribes.set("allTyres", unsubscribe);
   }
 
   // Add a tyre
-  public async addTyre(data: Omit<Tyre, 'id'>): Promise<string> {
+  public async addTyre(data: Omit<Tyre, "id">): Promise<string> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -1718,11 +1747,11 @@ export class SyncService {
       const tyreData = {
         ...cleanData,
         createdAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       let tyreId: string;
-      
+
       if (this.isOnline) {
         // Online - add directly to Firestore
         const docRef = await addDoc(tyresCollection, tyreData);
@@ -1738,11 +1767,11 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
       return tyreId;
     } catch (error) {
       console.error(`Error adding tyre:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1750,7 +1779,7 @@ export class SyncService {
   // Update a tyre
   public async updateTyre(tyreId: string, data: Partial<Tyre>): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(data);
@@ -1758,12 +1787,12 @@ export class SyncService {
       // Add updatedAt timestamp
       const updateData = {
         ...cleanData,
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       if (this.isOnline) {
         // Online - update directly
-        const tyreRef = doc(db, 'tyres', tyreId);
+        const tyreRef = doc(db, "tyres", tyreId);
         await updateDoc(tyreRef, updateData);
         console.log(`✅ Tyre ${tyreId} updated with real-time sync`);
       } else {
@@ -1775,10 +1804,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error updating tyre ${tyreId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1786,11 +1815,11 @@ export class SyncService {
   // Delete a tyre
   public async deleteTyre(tyreId: string): Promise<void> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       if (this.isOnline) {
         // Online - delete directly from Firestore
-        const tyreRef = doc(db, 'tyres', tyreId);
+        const tyreRef = doc(db, "tyres", tyreId);
         await updateDoc(tyreRef, { deleted: true, updatedAt: serverTimestamp() });
         console.log(`✅ Tyre ${tyreId} marked as deleted`);
       } else {
@@ -1802,10 +1831,10 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
     } catch (error) {
       console.error(`Error deleting tyre ${tyreId}:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
@@ -1813,7 +1842,7 @@ export class SyncService {
   // Add a tyre inspection
   public async addTyreInspection(tyreId: string, inspectionData: any): Promise<string> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(inspectionData);
@@ -1823,27 +1852,27 @@ export class SyncService {
         ...cleanData,
         tyreId,
         timestamp: this.isOnline ? serverTimestamp() : new Date().toISOString(),
-        createdAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        createdAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       };
 
       // Get the tyre to update its inspection history
-      const tyreRef = doc(db, 'tyres', tyreId);
-      const tyreSnap = await getDocs(query(collection(db, 'tyres'), where('id', '==', tyreId)));
+      const tyreRef = doc(db, "tyres", tyreId);
+      const tyreSnap = await getDocs(query(collection(db, "tyres"), where("id", "==", tyreId)));
 
       if (tyreSnap.empty) {
         throw new Error(`Tyre ${tyreId} not found`);
       }
 
       const tyreData = tyreSnap.docs[0].data() as Tyre;
-      
+
       // Create a new inspection ID
       const inspectionId = `insp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      
+
       // Add the inspection to the tyre's inspection history
       const inspectionHistory = tyreData.inspectionHistory || [];
       inspectionHistory.push({
         ...data,
-        id: inspectionId
+        id: inspectionId,
       });
 
       // Update the tyre with the new inspection history and current tread depth/pressure
@@ -1853,33 +1882,36 @@ export class SyncService {
         pressure: data.pressure,
         status: data.status,
         lastInspection: this.isOnline ? serverTimestamp() : new Date().toISOString(),
-        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString()
+        updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
       });
 
       console.log(`✅ Tyre inspection added with ID: ${inspectionId}`);
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
       return inspectionId;
     } catch (error) {
       console.error(`Error adding tyre inspection:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
-  
+
   // Add inventory item (alias for addWorkshopInventoryItem for consistency)
-  public async addInventoryItem(data: Omit<TyreInventoryItem, 'id'>): Promise<string> {
+  public async addInventoryItem(data: Omit<TyreInventoryItem, "id">): Promise<string> {
     return this.addWorkshopInventoryItem(data);
   }
-  
+
   // Update inventory item (alias for updateWorkshopInventoryItem for consistency)
-  public async updateInventoryItem(itemId: string, data: Partial<TyreInventoryItem>): Promise<void> {
+  public async updateInventoryItem(
+    itemId: string,
+    data: Partial<TyreInventoryItem>
+  ): Promise<void> {
     return this.updateWorkshopInventoryItem(itemId, data);
   }
-  
+
   // Add a reorder request for inventory items
   public async addReorderRequest(requestData: any): Promise<string> {
     try {
-      this.setSyncStatus('syncing');
+      this.setSyncStatus("syncing");
 
       // Clean data for Firestore
       const cleanData = cleanObjectForFirestore(requestData);
@@ -1889,14 +1921,14 @@ export class SyncService {
         ...cleanData,
         createdAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
         updatedAt: this.isOnline ? serverTimestamp() : new Date().toISOString(),
-        status: requestData.status || 'pending'
+        status: requestData.status || "pending",
       };
 
       let requestId: string;
-      
+
       if (this.isOnline) {
         // Online - add directly to Firestore
-        const docRef = await addDoc(collection(db, 'reorderRequests'), data);
+        const docRef = await addDoc(collection(db, "reorderRequests"), data);
         requestId = docRef.id;
         console.log(`✅ Reorder request added with ID: ${requestId}`);
       } else {
@@ -1909,33 +1941,32 @@ export class SyncService {
         this.storePendingChangesInLocalStorage();
       }
 
-      this.setSyncStatus('success');
+      this.setSyncStatus("success");
       return requestId;
     } catch (error) {
       console.error(`Error adding reorder request:`, error);
-      this.setSyncStatus('error');
+      this.setSyncStatus("error");
       throw error;
     }
   }
-  
+
   // Get tyres - helper method to provide current tyres via callback
   public getTyres(callback: (tyres: Tyre[]) => void): void {
-    const tyresQuery = query(
-      tyresCollection,
-      orderBy('installDetails.date', 'desc')
-    );
-    
-    getDocs(tyresQuery).then(snapshot => {
-      const tyres: Tyre[] = [];
-      snapshot.forEach(doc => {
-        const data = convertTimestamps(doc.data());
-        tyres.push({ id: doc.id, ...data } as Tyre);
+    const tyresQuery = query(tyresCollection, orderBy("installDetails.date", "desc"));
+
+    getDocs(tyresQuery)
+      .then((snapshot) => {
+        const tyres: Tyre[] = [];
+        snapshot.forEach((doc) => {
+          const data = convertTimestamps(doc.data());
+          tyres.push({ id: doc.id, ...data } as Tyre);
+        });
+        callback(tyres);
+      })
+      .catch((error) => {
+        console.error("Error getting tyres:", error);
+        callback([]);
       });
-      callback(tyres);
-    }).catch(error => {
-      console.error('Error getting tyres:', error);
-      callback([]);
-    });
   }
 }
 

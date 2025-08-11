@@ -17,7 +17,6 @@ import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-// Firestore interaction handled via offline query hook
 import useOfflineQuery from "../../hooks/useOfflineQuery";
 
 // Driver document interface (trimmed to fields we display)

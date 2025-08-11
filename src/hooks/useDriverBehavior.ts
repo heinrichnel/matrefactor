@@ -177,3 +177,5 @@ export function useDriverBehavior(options: UseDriverBehaviorOptions = {}) {
     getEventPath,
   };
 }
+
+export default useDriverBehavior;

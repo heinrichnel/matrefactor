@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { collection, getDocs } from 'firebase/firestore';
-import { firestore } from '../utils/firebaseConnectionHandler';
+import { firestore } from "@/firebase";
+import { tyreConverter } from "@/types/TyreFirestoreConverter";
+import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Define the Tyre interface based on your actual data structure
 export interface Tyre {
@@ -26,64 +27,91 @@ export function useTyres() {
   const [tyres, setTyres] = useState<Tyre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const unsubscribeRef = useRef<(() => void) | undefined>(undefined);
 
+  // Use Firestore to fetch tyres
   useEffect(() => {
-    // In a real implementation, fetch tyres from your API or database
-    // This is a placeholder implementation
-    const fetchTyres = async () => {
-      try {
-        setLoading(true);
-        // Mock data for demonstration
-        const mockTyres: Tyre[] = [
-          {
-            id: "1",
-            serialNumber: "TY-1234",
-            brand: "Bridgestone",
-            size: {
-              width: 315,
-              aspectRatio: 80,
-              rimDiameter: 22.5,
-              displayString: "315/80R22.5",
-            },
-            status: "new",
-            condition: {
-              treadDepth: 20,
-              status: "good",
-            },
-            kmRun: 0,
-          },
-          {
-            id: "2",
-            serialNumber: "TY-5678",
-            brand: "Michelin",
-            size: {
-              width: 385,
-              aspectRatio: 65,
-              rimDiameter: 22.5,
-              displayString: "385/65R22.5",
-            },
-            status: "in_service",
-            condition: {
-              treadDepth: 15,
-              status: "good",
-            },
-            kmRun: 5000,
-          },
-        ];
+    const tyresRef = collection(firestore, "tyres").withConverter(tyreConverter);
 
-        // Simulate API delay
-        setTimeout(() => {
-          setTyres(mockTyres);
+    try {
+      // Set up real-time listener
+      const unsubscribe = onSnapshot(
+        tyresRef,
+        (snapshot) => {
+          const tyresData: Tyre[] = snapshot.docs.map((docSnapshot) => ({
+            ...docSnapshot.data(),
+            id: docSnapshot.id, // This will override any id field that came from data()
+          }));
+          setTyres(tyresData);
           setLoading(false);
-        }, 500);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error("Failed to fetch tyres"));
-        setLoading(false);
-      }
-    };
+        },
+        (err) => {
+          setError(err);
+          setLoading(false);
+        }
+      );
 
-    fetchTyres();
+      // Store unsubscribe function
+      unsubscribeRef.current = unsubscribe;
+
+      // Cleanup on component unmount
+      return () => {
+        if (unsubscribeRef.current) {
+          unsubscribeRef.current();
+        }
+      };
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed to fetch tyres"));
+      setLoading(false);
+    }
   }, []);
 
-  return { tyres, loading, error };
+  // Add a new tyre
+  const addTyre = useCallback(async (tyreData: Omit<Tyre, "id">) => {
+    try {
+      const tyresRef = collection(firestore, "tyres").withConverter(tyreConverter);
+      await addDoc(tyresRef, tyreData);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed to add tyre"));
+      return false;
+    }
+  }, []);
+
+  // Update an existing tyre
+  const updateTyre = useCallback(async (id: string, tyreData: Partial<Tyre>) => {
+    try {
+      const tyreRef = doc(firestore, "tyres", id);
+      await updateDoc(tyreRef, tyreData);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed to update tyre"));
+      return false;
+    }
+  }, []);
+
+  // Delete a tyre
+  const deleteTyre = useCallback(async (id: string) => {
+    try {
+      const tyreRef = doc(firestore, "tyres", id);
+      await deleteDoc(tyreRef);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed to delete tyre"));
+      return false;
+    }
+  }, []);
+
+  // Memoize the return value for better performance
+  return useMemo(
+    () => ({
+      tyres,
+      loading,
+      error,
+      addTyre,
+      updateTyre,
+      deleteTyre,
+    }),
+    [tyres, loading, error, addTyre, updateTyre, deleteTyre]
+  );
 }

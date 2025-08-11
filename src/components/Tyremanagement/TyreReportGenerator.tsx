@@ -152,3 +152,5 @@ export const TyreReportGenerator: React.FC<TyreReportGeneratorProps> = ({ onGene
     </Card>
   );
 };
+
+export default TyreReportGenerator;

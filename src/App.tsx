@@ -1,17 +1,60 @@
 import React, { useEffect, useState } from "react";
 import AppRoutes from "./AppRoutes";
 
-// Context Providers
+// ---------- Context Providers ----------
 import { AppProvider } from "./context/AppContext";
 import { DriverBehaviorProvider } from "./context/DriverBehaviorContext";
 import { FlagsProvider } from "./context/FlagsContext";
 import { FleetAnalyticsProvider } from "./context/FleetAnalyticsContext";
+import { InventoryProvider } from "./context/InventoryContext";
 import { SyncProvider } from "./context/SyncContext";
+import { TaskHistoryProvider } from "./context/TaskHistoryContext";
 import { TripProvider } from "./context/TripContext";
+import { TripSelectionProvider } from "./context/TripSelectionContext";
+import { TyreProvider } from "./context/TyreContext";
 import { TyreReferenceDataProvider } from "./context/TyreReferenceDataContext";
 import { TyreStoresProvider } from "./context/TyreStoresContext";
 import { WialonProvider } from "./context/WialonProvider";
 import { WorkshopProvider } from "./context/WorkshopContext";
+
+// ---------- UI Providers ----------
+import AntDesignProvider from "./components/ui/AntDesignProvider";
+
+/**
+ * AppProviders component that wraps all the context providers in the application.
+ * This ensures a clean organization of the provider nesting structure.
+ */
+const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <AntDesignProvider>
+    <AppProvider>
+      <SyncProvider>
+        <WialonProvider>
+          <InventoryProvider>
+            <TripProvider>
+              <TaskHistoryProvider>
+                <TripSelectionProvider>
+                  <DriverBehaviorProvider>
+                    <WorkshopProvider>
+                      <FleetAnalyticsProvider>
+                        <FlagsProvider>
+                          <TyreStoresProvider>
+                            <TyreProvider>
+                              <TyreReferenceDataProvider>{children}</TyreReferenceDataProvider>
+                            </TyreProvider>
+                          </TyreStoresProvider>
+                        </FlagsProvider>
+                      </FleetAnalyticsProvider>
+                    </WorkshopProvider>
+                  </DriverBehaviorProvider>
+                </TripSelectionProvider>
+              </TaskHistoryProvider>
+            </TripProvider>
+          </InventoryProvider>
+        </WialonProvider>
+      </SyncProvider>
+    </AppProvider>
+  </AntDesignProvider>
+);
 
 // Error Handling
 import DeploymentFallback from "./components/DeploymentFallback";
@@ -128,56 +171,23 @@ const App: React.FC = () => {
     return <DeploymentFallback />;
   }
 
-  // Group context providers for better organization and performance
-  const CoreProviders = ({ children }: { children: React.ReactNode }) => (
-    <ErrorBoundary>
-      <AppProvider>
-        <SyncProvider>{children}</SyncProvider>
-      </AppProvider>
-    </ErrorBoundary>
-  );
-
-  // Group feature-specific providers
-  const FeatureProviders = ({ children }: { children: React.ReactNode }) => (
-    <WialonProvider>
-      <TripProvider>
-        <FleetAnalyticsProvider>
-          <FlagsProvider>{children}</FlagsProvider>
-        </FleetAnalyticsProvider>
-      </TripProvider>
-    </WialonProvider>
-  );
-
-  // Group data providers that might cause re-renders
-  const DataProviders = ({ children }: { children: React.ReactNode }) => (
-    <TyreStoresProvider>
-      <DriverBehaviorProvider>
-        <WorkshopProvider>
-          <TyreReferenceDataProvider>{children}</TyreReferenceDataProvider>
-        </WorkshopProvider>
-      </DriverBehaviorProvider>
-    </TyreStoresProvider>
-  );
-
   return (
-    <CoreProviders>
-      <FeatureProviders>
-        <DataProviders>
-          {/* Application alerts and notifications */}
-          <div className="fixed top-0 left-0 right-0 z-50 p-4">
-            <FirestoreConnectionError />
-            {connectionError && <FirestoreConnectionError error={connectionError} />}
-          </div>
+    <ErrorBoundary>
+      <AppProviders>
+        {/* Application alerts and notifications */}
+        <div className="fixed top-0 left-0 right-0 z-50 p-4">
+          <FirestoreConnectionError />
+          {connectionError && <FirestoreConnectionError error={connectionError} />}
+        </div>
 
-          <OfflineBanner />
+        <OfflineBanner />
 
-          {/* Main application routes and layout */}
-          <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex flex-col">
-            <AppRoutes />
-          </div>
-        </DataProviders>
-      </FeatureProviders>
-    </CoreProviders>
+        {/* Main application routes and layout */}
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex flex-col">
+          <AppRoutes />
+        </div>
+      </AppProviders>
+    </ErrorBoundary>
   );
 };
 
