@@ -2,7 +2,7 @@ import VehiclePositionDiagram from "@/components/Tyremanagement/VehiclePositionD
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/FormElements";
 import { useTyreReferenceData } from "@/context/TyreReferenceDataContext";
-import { Tyre } from "@/types/TyreModel";
+import { Tyre, TyreStoreLocation } from "@/types/TyreModel";
 import React, { useEffect, useState } from "react";
 
 interface TyreFormProps {
@@ -67,7 +67,7 @@ const TyreForm: React.FC<TyreFormProps> = ({
     kmRun: initialData.kmRun || 0,
     kmRunLimit: initialData.kmRunLimit || 60000,
     notes: initialData.notes || "",
-    location: initialData.location || { storeId: "", position: "" },
+    location: initialData.location || TyreStoreLocation.VICHELS_STORE,
   });
 
   // Form section management - used for inline forms and step navigation
@@ -485,8 +485,9 @@ const TyreForm: React.FC<TyreFormProps> = ({
                   </h3>
                   <VehiclePositionDiagram
                     vehicleType={formData.type as "standard" | "reefer" | "horse" | "interlink"}
+                    positions={vehicleTypePositions}
                     selectedPosition={formData.installation?.position as string}
-                    onPositionSelect={(position) => {
+                    onPositionClick={(position) => {
                       setFormData((prev) => ({
                         ...prev,
                         installation: {
@@ -646,7 +647,7 @@ const TyreForm: React.FC<TyreFormProps> = ({
               Cancel
             </Button>
           )}
-          <Button type="submit" loading={isSubmitting}>
+          <Button type="submit" isLoading={isSubmitting}>
             {editMode ? "Update Tyre" : "Save Tyre"}
           </Button>
         </div>
@@ -701,7 +702,7 @@ const TyreForm: React.FC<TyreFormProps> = ({
                 Cancel
               </Button>
             )}
-            <Button onClick={handleSubmit} loading={isSubmitting}>
+            <Button onClick={handleSubmit} isLoading={isSubmitting}>
               {editMode ? "Update Tyre" : "Save Tyre"}
             </Button>
           </>
