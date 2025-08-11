@@ -1,10 +1,29 @@
-import React from "react";
+import React, { useState, useCallback, useMemo } from "react";
 
-// The entire application will be contained within this single component.
-// All imports from external files are mocked below to make the code self-contained.
+/** ----------------------------------------------------------------
+ * Minimal local "icon" stubs so this file is fully self-contained.
+ * Each is just an SVG element that accepts className etc.
+ * ---------------------------------------------------------------- */
+type IconProps = React.SVGProps<SVGSVGElement> & { className?: string };
+const Icon: React.FC<IconProps> = (props) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...props} />
+);
 
-// --- Mocking External Dependencies for a runnable example ---
+const FileText = Icon;
+const Download = Icon;
+const TrendingUp = Icon;
+const Plus = Icon;
+const Archive = Icon;
+const Truck = Icon;
+const DollarSign = Icon;
+const Gauge = Icon;
+const Wrench = Icon;
+const Eye = Icon;
+const CircleDot = Icon;
 
+/** ----------------------------------------------------------------
+ * UI primitives (Button, Card, etc.) — local, no external imports
+ * ---------------------------------------------------------------- */
 interface ButtonProps {
   children: React.ReactNode;
   variant?: "outline" | "secondary" | "primary" | "ghost";
@@ -15,8 +34,6 @@ interface ButtonProps {
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
 }
-
-// Mocking shadcn/ui components
 const Button: React.FC<ButtonProps> = ({
   children,
   variant = "primary",
@@ -27,32 +44,26 @@ const Button: React.FC<ButtonProps> = ({
   disabled = false,
   type = "button",
 }) => {
-  const baseClasses =
+  const base =
     "flex items-center justify-center rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500";
-  const sizeClasses =
+  const sizeCls =
     size === "sm" ? "px-2.5 py-1.5 h-8" : size === "md" ? "px-4 py-2 h-10" : "px-6 py-3 h-12";
-  let variantClasses;
-  switch (variant) {
-    case "outline":
-      variantClasses = "border border-gray-300 text-gray-700 bg-white hover:bg-gray-50";
-      break;
-    case "secondary":
-      variantClasses = "bg-gray-100 text-gray-800 hover:bg-gray-200";
-      break;
-    case "primary":
-      variantClasses = "bg-blue-600 text-white hover:bg-blue-700";
-      break;
-    case "ghost":
-      variantClasses = "text-gray-800 hover:bg-gray-100";
-      break;
-    default:
-      variantClasses = "bg-blue-600 text-white hover:bg-blue-700";
-      break;
-  }
-  const disabledClasses = disabled ? "opacity-50 cursor-not-allowed" : "";
-  const combinedClasses = `${baseClasses} ${sizeClasses} ${variantClasses} ${className} ${disabledClasses}`;
+  const variantCls =
+    variant === "outline"
+      ? "border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+      : variant === "secondary"
+        ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+        : variant === "ghost"
+          ? "text-gray-800 hover:bg-gray-100"
+          : "bg-blue-600 text-white hover:bg-blue-700";
+  const disabledCls = disabled ? "opacity-50 cursor-not-allowed" : "";
   return (
-    <button className={combinedClasses} onClick={onClick} disabled={disabled} type={type}>
+    <button
+      className={`${base} ${sizeCls} ${variantCls} ${className} ${disabledCls}`}
+      onClick={onClick}
+      disabled={disabled}
+      type={type}
+    >
       {icon &&
         React.cloneElement(icon, { className: "w-4 h-4 mr-2" } as React.HTMLAttributes<SVGElement>)}
       {children}
@@ -69,6 +80,7 @@ const Card: React.FC<CardProps> = ({ children, className = "" }) => (
     {children}
   </div>
 );
+
 interface CardContentProps {
   children: React.ReactNode;
   className?: string;
@@ -76,6 +88,7 @@ interface CardContentProps {
 const CardContent: React.FC<CardContentProps> = ({ children, className = "" }) => (
   <div className={`p-6 ${className}`}>{children}</div>
 );
+
 interface CardHeaderProps {
   title: string;
 }
@@ -84,23 +97,13 @@ const CardHeader: React.FC<CardHeaderProps> = ({ title }) => (
     <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
   </div>
 );
+
 interface CardTitleProps {
   children: React.ReactNode;
   className?: string;
 }
 const CardTitle: React.FC<CardTitleProps> = ({ children, className = "" }) => (
   <h3 className={`text-xl font-semibold text-gray-900 ${className}`}>{children}</h3>
-);
-interface LinkProps {
-  children: React.ReactNode;
-  to: string;
-  className?: string;
-  title?: string;
-}
-const Link: React.FC<LinkProps> = ({ children, to, className, title }) => (
-  <a href={to} className={className} title={title}>
-    {children}
-  </a>
 );
 
 interface SelectProps {
@@ -122,9 +125,9 @@ const Select: React.FC<SelectProps> = ({ label, id, value, onChange, className, 
       onChange={onChange}
       className={`mt-1 block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${className}`}
     >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
         </option>
       ))}
     </select>
@@ -143,54 +146,9 @@ const Badge: React.FC<BadgeProps> = ({ children, className = "" }) => (
   </span>
 );
 
-interface VehicleSelectorProps {
-  value: string;
-  onChange: (value: string) => void;
-  label: string;
-  placeholder: string;
-  activeOnly?: boolean;
-  showDetails?: boolean;
-}
-const VehicleSelector: React.FC<VehicleSelectorProps> = ({
-  value,
-  onChange,
-  label,
-  placeholder,
-  activeOnly,
-  showDetails,
-}) => {
-  const filteredVehicles = activeOnly
-    ? mockFleetVehicles.filter((v) => v.fleetNo !== "V-003")
-    : mockFleetVehicles;
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-      >
-        <option value="">{placeholder}</option>
-        {filteredVehicles.map((v) => (
-          <option key={v.fleetNo} value={v.fleetNo}>
-            {v.regNo} - {v.make} {v.model}
-          </option>
-        ))}
-      </select>
-      {showDetails && value && (
-        <p className="mt-2 text-sm text-gray-500">
-          Selected: {mockFleetVehicles.find((v) => v.fleetNo === value)?.make}{" "}
-          {mockFleetVehicles.find((v) => v.fleetNo === value)?.model}
-        </p>
-      )}
-    </div>
-  );
-};
-
-// Mocking Firebase data structures
-// Firebase functionality is mocked directly in the hooks
-
-// --- Mock Data Structures and Hooks ---
+/** ----------------------------------------------------------------
+ * Mock data & types so the page can render standalone
+ * ---------------------------------------------------------------- */
 export interface TyreDoc {
   id: string;
   brand: string;
@@ -354,42 +312,35 @@ const mockTyreAssignments: TyreAssignment[] = [
   { tyreId: "tyre1", vehicleReg: "V-001", position: "Front-Left" },
 ];
 
-const mockTyreBrands = [
-  { id: "brand1", name: "Michelin" },
-  { id: "brand2", name: "Continental" },
-  { id: "brand3", name: "Goodyear" },
-];
-
 const mockFleetVehicles = [
   { fleetNo: "V-001", type: "horse", regNo: "XYZ-123", make: "Volvo", model: "FH16" },
   { fleetNo: "V-002", type: "interlink", regNo: "ABC-456", make: "Scania", model: "R-series" },
   { fleetNo: "V-003", type: "lmv", regNo: "LMN-789", make: "Toyota", model: "Hilux" },
 ];
 
-const useTyreReferenceData = () => ({ brands: mockTyreBrands });
-
-// Hook Implementations
-const useTyreInventory = () => {
+/** ----------------------------------------------------------------
+ * Hooks (mock implementations)
+ * ---------------------------------------------------------------- */
+export const useTyreInventory = () => {
   const [tyres, setTyres] = useState<TyreDoc[]>(mockTyreData);
-  const [loading] = useState(false); // Removed setLoading as it's unused
-  const [error] = useState<string | null>(null); // Removed setError as it's unused
+  const [loading] = useState(false);
+  const [error] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [brandFilter, setBrandFilter] = useState("all");
-  const [sizeFilter] = useState("all"); // Removed setSizeFilter as it's unused
+  const [sizeFilter] = useState("all");
 
   const addTyre = useCallback(async (data: TyreDoc) => {
-    console.log("Adding tyre:", data);
     const newTyre = { ...data, id: `tyre-${Date.now()}` };
-    setTyres((prev) => [...prev, newTyre]);
+    setTyres((prev: TyreDoc[]) => [...prev, newTyre]);
   }, []);
+
   const updateTyre = useCallback(async (id: string, data: Partial<TyreDoc>) => {
-    console.log("Updating tyre:", id, data);
-    setTyres((prev) => prev.map((t) => (t.id === id ? { ...t, ...data } : t)));
+    setTyres((prev: TyreDoc[]) => prev.map((t: TyreDoc) => (t.id === id ? { ...t, ...data } : t)));
   }, []);
 
   const filtered = useMemo(() => {
-    return tyres.filter((t) => {
+    return tyres.filter((t: TyreDoc) => {
       const matchesSearch =
         !searchTerm || t.serialNumber.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === "all" || t.status === statusFilter;
@@ -401,29 +352,31 @@ const useTyreInventory = () => {
 
   const uiRecords = useMemo(
     () =>
-      filtered.map((t) => ({
-        id: t.id,
-        tyreNumber: t.serialNumber || t.id,
-        manufacturer: t.brand,
-        condition:
-          t.status === "new"
-            ? "New"
-            : (t.treadDepth ?? 0) > 7
-              ? "Good"
-              : (t.treadDepth ?? 0) > 3
-                ? "Fair"
-                : "Poor",
-        status: t.status === "in_use" ? "In-Service" : t.status === "new" ? "In-Stock" : "Other",
-        vehicleAssignment: t.vehicleReg || "",
-        km: t.kmRun || 0,
-        kmLimit: t.kmRunLimit || 60000,
-        treadDepth: t.treadDepth || 0,
-        mountStatus: t.position ? "Mounted" : "Not Mounted",
-        axlePosition: t.position,
-        purchasePrice: t.purchasePrice,
-        size: t.size,
-        pattern: t.model, // Added missing properties
-      })),
+      filtered.map(
+        (t: TyreDoc): TyreInventoryUIRecord => ({
+          id: t.id,
+          tyreNumber: t.serialNumber || t.id,
+          manufacturer: t.brand,
+          condition:
+            t.status === "new"
+              ? "New"
+              : (t.treadDepth ?? 0) > 7
+                ? "Good"
+                : (t.treadDepth ?? 0) > 3
+                  ? "Fair"
+                  : "Poor",
+          status: t.status === "in_use" ? "In-Service" : t.status === "new" ? "In-Stock" : "Other",
+          vehicleAssignment: t.vehicleReg || "",
+          km: t.kmRun || 0,
+          kmLimit: t.kmRunLimit || 60000,
+          treadDepth: t.treadDepth || 0,
+          mountStatus: t.position ? "Mounted" : "Not Mounted",
+          axlePosition: t.position,
+          purchasePrice: t.purchasePrice,
+          size: t.size,
+          pattern: t.model,
+        })
+      ),
     [filtered]
   );
 
@@ -441,42 +394,41 @@ const useTyreInventory = () => {
     uiRecords,
     addTyre,
     updateTyre,
-    // deleteTyre, // (unused in this composite page component)
   };
 };
 
-const useStockInventory = () => {
+export const useStockInventory = () => {
   const [stock, setStock] = useState<StockItem[]>(mockStockData);
   const loading = false;
+
   const addStock = useCallback(async (item: StockItem) => {
-    console.log("Adding stock:", item);
     const newItem = { ...item, id: `stock-${Date.now()}` };
-    setStock((prev) => [...prev, newItem]);
+    setStock((prev: StockItem[]) => [...prev, newItem]);
   }, []);
+
   const updateStock = useCallback(async (id: string, changes: Partial<StockItem>) => {
-    console.log("Updating stock:", id, changes);
-    setStock((prev) => prev.map((s) => (s.id === id ? { ...s, ...changes } : s)));
+    setStock((prev: StockItem[]) =>
+      prev.map((s: StockItem) => (s.id === id ? { ...s, ...changes } : s))
+    );
   }, []);
+
   const deleteStock = useCallback(async (id: string) => {
-    console.log("Deleting stock:", id);
-    setStock((prev) => prev.filter((s) => s.id !== id));
+    setStock((prev: StockItem[]) => prev.filter((s: StockItem) => s.id !== id));
   }, []);
+
   return { stock, loading, addStock, updateStock, deleteStock };
 };
 
-// (Removed unused createTyrePositionsHook to reduce bundle size and clear lint warning)
-
-const useVehicleTyreStore = () => {
+export const useVehicleTyreStore = () => {
   const [assignments, setAssignments] = useState<TyreAssignment[]>(mockTyreAssignments);
-  const [loading] = useState(false); // Removed setLoading as it's unused
+  const [loading] = useState(false);
   const getAtPosition = useCallback(
     (reg: string, pos: string) =>
       assignments.find((a) => a.vehicleReg === reg && a.position === pos),
     [assignments]
   );
   const assignTyre = useCallback(async (assignment: TyreAssignment) => {
-    console.log("Assigning tyre:", assignment);
-    setAssignments((prev) => [
+    setAssignments((prev: TyreAssignment[]) => [
       ...prev.filter((a) => a.position !== assignment.position),
       assignment,
     ]);
@@ -484,49 +436,13 @@ const useVehicleTyreStore = () => {
   return { assignments, loading, getAtPosition, assignTyre };
 };
 
-// Mocking sub-components
-interface TyreFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: TyreDoc) => void;
-  initialData: TyreDoc;
-  editMode: boolean;
-}
-const TyreFormModal: React.FC<TyreFormModalProps> = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  initialData,
-  editMode,
-}) => {
-  if (!isOpen) return null;
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({ ...initialData, brand: "Goodyear", serialNumber: `TY-${Date.now()}` });
-  };
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
-      <div className="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full">
-        <h3 className="text-xl font-bold mb-4">{editMode ? "Edit Tyre" : "Add New Tyre"}</h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <p className="text-gray-600">
-            This is a mock form. Data will be logged to console on submit.
-          </p>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={onClose} type="button">
-              Cancel
-            </Button>
-            <Button type="submit">Save</Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-interface TyreInventoryStatsProps {
+/** ----------------------------------------------------------------
+ * Smaller UI blocks
+ * ---------------------------------------------------------------- */
+export interface TyreInventoryStatsProps {
   inventory: TyreInventoryUIRecord[];
 }
-const TyreInventoryStats: React.FC<TyreInventoryStatsProps> = ({ inventory }) => (
+export const TyreInventoryStats: React.FC<TyreInventoryStatsProps> = ({ inventory }) => (
   <Card>
     <CardContent>
       <div className="flex justify-between items-center">
@@ -543,14 +459,15 @@ const TyreInventoryStats: React.FC<TyreInventoryStatsProps> = ({ inventory }) =>
         <div className="p-4 bg-gray-50 rounded-lg">
           <p className="text-gray-500 text-sm">In-Service Tyres</p>
           <p className="text-xl font-bold text-gray-900">
-            {inventory.filter((item) => item.status === "In-Service").length}
+            {inventory.filter((i) => i.status === "In-Service").length}
           </p>
         </div>
       </div>
     </CardContent>
   </Card>
 );
-interface TyreDashboardProps {
+
+export interface TyreDashboardProps {
   tyres: TyreDoc[];
   stock: StockItem[];
   assignments: TyreAssignment[];
@@ -573,18 +490,23 @@ const TyreDashboard: React.FC<TyreDashboardProps> = ({ tyres, stock, assignments
   </div>
 );
 export default TyreDashboard;
-const TyreReports = () => (
+
+/** ----------------------------------------------------------------
+ * Reports / Analytics blocks (exported so they’re “used”)
+ * ---------------------------------------------------------------- */
+export const TyreReports = () => (
   <div className="p-6">
     <p className="text-gray-500">Placeholder for Summary Reports.</p>
   </div>
 );
-const TyrePerformanceReport = () => (
+
+export const TyrePerformanceReport = () => (
   <div className="p-6">
     <p className="text-gray-500">Placeholder for Performance Reports.</p>
   </div>
 );
 
-const TyreReportGenerator = () => {
+export const TyreReportGenerator = () => {
   const [reportOptions, setReportOptions] = useState({
     reportType: "inventory",
     dateRange: "last30",
@@ -616,25 +538,19 @@ const TyreReportGenerator = () => {
   ];
 
   const handleOptionChange = (option: keyof typeof reportOptions, value: string | boolean) => {
-    setReportOptions((prev) => ({
-      ...prev,
-      [option]: value,
-    }));
+    setReportOptions((prev) => ({ ...prev, [option]: value }));
   };
 
   const handleGenerateReport = () => {
     setIsGenerating(true);
-    // Simulate report generation with timeout
     setTimeout(() => {
       setIsGenerating(false);
-      console.log("Report generated:", reportOptions);
-      // Removed alert, replaced with a temporary message.
-      const messageElement = document.createElement("div");
-      messageElement.textContent = `Generated ${reportOptions.reportType} report for ${reportOptions.dateRange} as ${reportOptions.format}`;
-      messageElement.style.cssText =
+      const msg = document.createElement("div");
+      msg.textContent = `Generated ${reportOptions.reportType} report for ${reportOptions.dateRange} as ${reportOptions.format}`;
+      msg.style.cssText =
         "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:1px solid gray;z-index:1000;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);";
-      document.body.appendChild(messageElement);
-      setTimeout(() => document.body.removeChild(messageElement), 3000);
+      document.body.appendChild(msg);
+      setTimeout(() => document.body.removeChild(msg), 3000);
     }, 1500);
   };
 
@@ -687,7 +603,7 @@ const TyreReportGenerator = () => {
         <div className="flex justify-between mt-6">
           <Button
             variant="outline"
-            onClick={() => {}} // Empty function for mock preview
+            onClick={() => {}}
             icon={<FileText className="w-4 h-4" />}
             disabled={isGenerating}
             size="md"
@@ -715,8 +631,8 @@ const TyreReportGenerator = () => {
   );
 };
 
-const CombinedTyreReports = () => {
-  const [reportsSubTab, setReportsSubTab] = useState("summary");
+export const CombinedTyreReports = () => {
+  const [tab, setTab] = useState<"summary" | "performance" | "generator">("summary");
   return (
     <div className="space-y-6">
       <div className="mb-6 border-b border-gray-200">
@@ -724,8 +640,8 @@ const CombinedTyreReports = () => {
           <Button
             variant="secondary"
             size="sm"
-            className={`${reportsSubTab === "summary" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-600"} rounded-none px-2 py-1 h-auto`}
-            onClick={() => setReportsSubTab("summary")}
+            className={`${tab === "summary" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-600"} rounded-none px-2 py-1 h-auto`}
+            onClick={() => setTab("summary")}
             icon={<FileText className="w-4 h-4 mr-2" />}
           >
             Summary Reports
@@ -733,8 +649,8 @@ const CombinedTyreReports = () => {
           <Button
             variant="secondary"
             size="sm"
-            className={`${reportsSubTab === "performance" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-600"} rounded-none px-2 py-1 h-auto`}
-            onClick={() => setReportsSubTab("performance")}
+            className={`${tab === "performance" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-600"} rounded-none px-2 py-1 h-auto`}
+            onClick={() => setTab("performance")}
             icon={<TrendingUp className="w-4 h-4 mr-2" />}
           >
             Performance Reports
@@ -742,36 +658,31 @@ const CombinedTyreReports = () => {
           <Button
             variant="secondary"
             size="sm"
-            className={`${reportsSubTab === "generator" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-600"} rounded-none px-2 py-1 h-auto`}
-            onClick={() => setReportsSubTab("generator")}
+            className={`${tab === "generator" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-600"} rounded-none px-2 py-1 h-auto`}
+            onClick={() => setTab("generator")}
             icon={<Download className="w-4 h-4 mr-2" />}
           >
             Report Generator
           </Button>
         </div>
       </div>
-      {reportsSubTab === "summary" && <TyreReports />}
-      {reportsSubTab === "performance" && <TyrePerformanceReport />}
-      {reportsSubTab === "generator" && <TyreReportGenerator />}
+      {tab === "summary" && <TyreReports />}
+      {tab === "performance" && <TyrePerformanceReport />}
+      {tab === "generator" && <TyreReportGenerator />}
     </div>
   );
 };
 
-interface StockInventoryDashboardProps {
+/** ----------------------------------------------------------------
+ * Stock inventory widget
+ * ---------------------------------------------------------------- */
+export interface StockInventoryDashboardProps {
   stock: StockItem[];
 }
-const StockInventoryDashboard: React.FC<StockInventoryDashboardProps> = ({ stock }) => {
+export const StockInventoryDashboard: React.FC<StockInventoryDashboardProps> = ({ stock }) => {
   const { deleteStock } = useStockInventory();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editItem, setEditItem] = useState<StockItem | null>(null);
-  const handleAddSubmit = (data: StockItem) => {
-    console.log("Submitting new stock:", data);
-    setShowAddForm(false);
-  };
-  const handleEditSubmit = (data: StockItem) => {
-    console.log("Submitting edit:", data);
-    setEditItem(null);
-  };
 
   interface StockItemFormModalProps {
     isOpen: boolean;
@@ -790,7 +701,16 @@ const StockInventoryDashboard: React.FC<StockInventoryDashboardProps> = ({ stock
     if (!isOpen) return null;
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      onSubmit({ ...(initialData as StockItem), name: "New Item", quantity: 10 });
+      onSubmit({
+        ...(initialData as StockItem),
+        name: "New Item",
+        quantity: 10,
+        id: initialData?.id ?? `stock-${Date.now()}`,
+        reorderLevel: 0,
+        cost: 0,
+        lastUpdated: new Date().toISOString(),
+        location: "Warehouse",
+      });
     };
     return (
       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
@@ -810,6 +730,15 @@ const StockInventoryDashboard: React.FC<StockInventoryDashboardProps> = ({ stock
         </div>
       </div>
     );
+  };
+
+  const handleAddSubmit = (data: StockItem) => {
+    console.log("Submitting new stock:", data);
+    setShowAddForm(false);
+  };
+  const handleEditSubmit = (data: StockItem) => {
+    console.log("Submitting edit:", data);
+    setEditItem(null);
   };
 
   return (
@@ -875,6 +804,7 @@ const StockInventoryDashboard: React.FC<StockInventoryDashboardProps> = ({ stock
           </div>
         </CardContent>
       </Card>
+
       {showAddForm && (
         <StockItemFormModal
           isOpen={showAddForm}
@@ -897,70 +827,49 @@ const StockInventoryDashboard: React.FC<StockInventoryDashboardProps> = ({ stock
   );
 };
 
-interface CombinedTyreAnalyticsProps {
-  uiRecords: TyreInventoryUIRecord[];
+/** ----------------------------------------------------------------
+ * Vehicle tyre view (exported)
+ * ---------------------------------------------------------------- */
+interface VehicleSelectorProps {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+  placeholder: string;
+  activeOnly?: boolean;
+  showDetails?: boolean;
 }
-const CombinedTyreAnalytics: React.FC<CombinedTyreAnalyticsProps> = ({ uiRecords }) => {
-  const totalTyres = uiRecords.length;
-  const inService = uiRecords.filter((t) => t.status === "In-Service").length;
-  const totalValue = uiRecords.reduce((sum, item) => sum + item.purchasePrice, 0);
-  const averageTreadDepth =
-    totalTyres > 0
-      ? (uiRecords.reduce((sum, item) => sum + item.treadDepth, 0) / totalTyres).toFixed(1)
-      : "0";
-
+const VehicleSelector: React.FC<VehicleSelectorProps> = ({
+  value,
+  onChange,
+  label,
+  placeholder,
+  activeOnly,
+  showDetails,
+}) => {
+  const filteredVehicles = activeOnly
+    ? mockFleetVehicles.filter((v) => v.fleetNo !== "V-003")
+    : mockFleetVehicles;
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Tyre Analytics</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-white">
-          <CardContent className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Tyres</p>
-              <p className="mt-1 text-2xl font-bold text-gray-900">{totalTyres}</p>
-            </div>
-            <Archive className="h-8 w-8 text-blue-500" />
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">In Service</p>
-              <p className="mt-1 text-2xl font-bold text-gray-900">{inService}</p>
-            </div>
-            <Truck className="h-8 w-8 text-green-500" />
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Value</p>
-              <p className="mt-1 text-2xl font-bold text-gray-900">
-                R{totalValue.toLocaleString()}
-              </p>
-            </div>
-            <DollarSign className="h-8 w-8 text-gray-500" />
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Avg. Tread Depth</p>
-              <p className="mt-1 text-2xl font-bold text-gray-900">{averageTreadDepth} mm</p>
-            </div>
-            <Gauge className="h-8 w-8 text-amber-500" />
-          </CardContent>
-        </Card>
-      </div>
-      <Card>
-        <CardHeader title="Analytics and Trends" />
-        <CardContent>
-          <p className="text-gray-500">
-            Placeholder for charts and detailed analytics. You could use a library like Chart.js or
-            Recharts here to visualize data on wear rates, tyre lifespan, and costs.
-          </p>
-        </CardContent>
-      </Card>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+      >
+        <option value="">{placeholder}</option>
+        {filteredVehicles.map((v) => (
+          <option key={v.fleetNo} value={v.fleetNo}>
+            {v.regNo} - {v.make} {v.model}
+          </option>
+        ))}
+      </select>
+      {showDetails && value && (
+        <p className="mt-2 text-sm text-gray-500">
+          Selected: {mockFleetVehicles.find((v) => v.fleetNo === value)?.make}{" "}
+          {mockFleetVehicles.find((v) => v.fleetNo === value)?.model}
+        </p>
+      )}
     </div>
   );
 };
@@ -974,11 +883,14 @@ const getVehicleTyreConfiguration = (vehicleId: string) => {
   };
 };
 
-interface VehicleTyreViewProps {
+export interface VehicleTyreViewProps {
   selectedVehicle: string;
   onVehicleSelect: (vehicleId: string) => void;
 }
-const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({ selectedVehicle, onVehicleSelect }) => {
+export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
+  selectedVehicle,
+  onVehicleSelect,
+}) => {
   const [selectedTyre, setSelectedTyre] = useState<TyreDoc | null>(null);
   const { tyres: allTyres } = useTyreInventory();
   const vehicleTyres = allTyres.filter((t) => t.vehicleReg === selectedVehicle);
@@ -987,10 +899,10 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({ selectedVehicle, onVe
   const getTyreDetailsFromTyre = (tyre: TyreDoc) => ({
     brand: tyre.brand,
     model: tyre.model,
-    pattern: tyre.model, // Assuming model and pattern are the same for mock
+    pattern: tyre.model,
     size: tyre.size,
     treadDepth: tyre.treadDepth,
-    odometerAtFitment: tyre.kmRun, // Mocking odometer for now
+    odometerAtFitment: tyre.kmRun,
     tyreCode: tyre.serialNumber,
   });
 
@@ -1032,7 +944,7 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({ selectedVehicle, onVe
             label="Select Vehicle for Tyre View"
             placeholder="Choose a vehicle to view tyre details..."
             activeOnly={false}
-            showDetails={true}
+            showDetails
           />
         </div>
       </div>
@@ -1040,7 +952,7 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({ selectedVehicle, onVe
       {selectedVehicle && tyreConfig && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
-            <CardHeader title="Tyre Layout"></CardHeader>
+            <CardHeader title="Tyre Layout" />
             <CardContent>
               <table className="w-full text-sm text-left">
                 <thead>
@@ -1055,7 +967,7 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({ selectedVehicle, onVe
                   </tr>
                 </thead>
                 <tbody>
-                  {tyreConfig.positions.map((pos) => {
+                  {tyreConfig.positions.map((pos: any) => {
                     const tyreAtPos = getTyreAtPosition(pos.name);
                     const fullTyreData = allTyres.find(
                       (t) => t.position === pos.name && t.vehicleReg === selectedVehicle
@@ -1208,4 +1120,70 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({ selectedVehicle, onVe
   );
 };
 
-// End of previously duplicated TyreDashboard page component (removed to avoid redeclaration)
+/** ----------------------------------------------------------------
+ * Analytics summary (exported)
+ * ---------------------------------------------------------------- */
+export interface CombinedTyreAnalyticsProps {
+  uiRecords: TyreInventoryUIRecord[];
+}
+export const CombinedTyreAnalytics: React.FC<CombinedTyreAnalyticsProps> = ({ uiRecords }) => {
+  const totalTyres = uiRecords.length;
+  const inService = uiRecords.filter((t) => t.status === "In-Service").length;
+  const totalValue = uiRecords.reduce((sum, item) => sum + item.purchasePrice, 0);
+  const averageTreadDepth =
+    totalTyres > 0
+      ? (uiRecords.reduce((s, i) => s + i.treadDepth, 0) / totalTyres).toFixed(1)
+      : "0";
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold">Tyre Analytics</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-white">
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total Tyres</p>
+              <p className="mt-1 text-2xl font-bold text-gray-900">{totalTyres}</p>
+            </div>
+            <Archive className="h-8 w-8" />
+          </CardContent>
+        </Card>
+        <Card className="bg-white">
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">In Service</p>
+              <p className="mt-1 text-2xl font-bold text-gray-900">{inService}</p>
+            </div>
+            <Truck className="h-8 w-8" />
+          </CardContent>
+        </Card>
+        <Card className="bg-white">
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total Value</p>
+              <p className="mt-1 text-2xl font-bold text-gray-900">
+                R{totalValue.toLocaleString()}
+              </p>
+            </div>
+            <DollarSign className="h-8 w-8" />
+          </CardContent>
+        </Card>
+        <Card className="bg-white">
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Avg. Tread Depth</p>
+              <p className="mt-1 text-2xl font-bold text-gray-900">{averageTreadDepth} mm</p>
+            </div>
+            <Gauge className="h-8 w-8" />
+          </CardContent>
+        </Card>
+      </div>
+      <Card>
+        <CardHeader title="Analytics and Trends" />
+        <CardContent>
+          <p className="text-gray-500">Placeholder for charts and detailed analytics.</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
