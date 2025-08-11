@@ -1,8 +1,8 @@
 import { BarChart, Download, Filter, PieChart, Plus, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import Button from "../ui/Button";
-import { Card, CardContent } from "../ui/Card";
-import SyncIndicator from "../ui/SyncIndicator";
+import Button from "../../components/ui/Button";
+import { Card, CardContent } from "../../components/ui/Card";
+import SyncIndicator from "../../components/ui/SyncIndicator";
 
 interface TyreRecord {
   id: string;
@@ -532,10 +532,16 @@ const TyreInventoryDashboard: React.FC<TyreInventoryDashboardProps> = ({
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-blue-600 hover:text-blue-900 mr-3" onClick={() => onViewTyreDetail && onViewTyreDetail(tyre.id)}>
+                      <button
+                        className="text-blue-600 hover:text-blue-900 mr-3"
+                        onClick={() => onViewTyreDetail && onViewTyreDetail(tyre.id)}
+                      >
                         View
                       </button>
-                      <button className="text-indigo-600 hover:text-indigo-900" onClick={() => onEditTyre && onEditTyre(tyre.id)}>
+                      <button
+                        className="text-indigo-600 hover:text-indigo-900"
+                        onClick={() => onEditTyre && onEditTyre(tyre.id)}
+                      >
                         Edit
                       </button>
                     </td>

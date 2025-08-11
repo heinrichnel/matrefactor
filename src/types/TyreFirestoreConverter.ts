@@ -1,12 +1,12 @@
-import { FirestoreDataConverter, Timestamp } from 'firebase/firestore';
-import { Tyre } from './TyreModel';
+import { FirestoreDataConverter, Timestamp } from "firebase/firestore";
+import { Tyre } from "../components/Models/Tyre/TyreModel";
 
 export const tyreConverter: FirestoreDataConverter<Tyre> = {
   toFirestore(tyre: Tyre) {
     return {
       ...tyre,
       createdAt: tyre.createdAt ?? Timestamp.now(),
-      updatedAt: Timestamp.now()
+      updatedAt: Timestamp.now(),
     };
   },
   fromFirestore(snapshot, options) {

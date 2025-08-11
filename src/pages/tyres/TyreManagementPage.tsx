@@ -1,3 +1,4 @@
+import { useTyreReferenceData } from "@/context/TyreReferenceDataContext";
 import {
   AlertCircle,
   Archive,
@@ -21,8 +22,6 @@ import { Link } from "react-router-dom";
 import TyreFormModal from "../../components/Models/Tyre/TyreFormModal";
 import { Button } from "../../components/ui/Button";
 import { Card, CardContent, CardHeader } from "../../components/ui/Card";
-// Using the Tyre type directly from tyreData.ts instead of TyreModel
-import { useTyreReferenceData } from "@/context/TyreReferenceDataContext";
 
 // Import all necessary Enums and Types from your tyreData.ts file
 // Ensure this path is correct relative to TyreManagementPage.tsx
@@ -47,7 +46,7 @@ import { TyreCostAnalysis } from "../../components/Tyremanagement/TyreCostAnalys
 import { TyreInventoryStats } from "../../components/Tyremanagement/TyreInventoryStats";
 import TyrePerformanceReport from "../../components/Tyremanagement/TyrePerformanceReport";
 import { TyreReportGenerator } from "../../components/Tyremanagement/TyreReportGenerator";
-import { TyreReports } from "../../components/Tyremanagement/TyreReports";
+import { TyreReports } from "../../components/Tyremanagement/TyreReports"; // Correct named import
 import TyreDashboard from "./TyreDashboard";
 
 // Define tabs for navigation

@@ -231,6 +231,7 @@ const TyreStores = lazy(() => import("./pages/tyres/TyreStores"));
 const VehicleTyreView = lazy(() => import("./pages/tyres/VehicleTyreView"));
 const TyreMobilePage = lazy(() => import("./pages/mobile/TyreMobilePage"));
 const VehicleTyreViewA = lazy(() => import("./pages/tyres/VehicleTyreViewA"));
+const TyreInventoryDashboard = lazy(() => import("./pages/tyres/TyreInventoryDashboard"));
 
 /* -----------------------------
  * Analytics
@@ -449,6 +450,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="vehicle-view" element={withSuspense(VehicleTyreView)} />
           <Route path="mobile" element={withSuspense(TyreMobilePage)} />
           <Route path="vehicle-view-a" element={withSuspense(VehicleTyreViewA)} />
+          {/* Newly added inventory dashboard route to use TyreInventoryDashboard */}
+          <Route path="inventory" element={withSuspense(TyreInventoryDashboard)} />
         </Route>
 
         {/* Analytics */}

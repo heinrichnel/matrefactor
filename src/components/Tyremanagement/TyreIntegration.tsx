@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { TyreInspection, useTyreInspections } from "../../hooks/useTyreInspections";
 import { useTyres } from "../../hooks/useTyres";
 import TyreDashboard from "../../pages/tyres/TyreDashboard";
+import TyreInventoryDashboard from "../../pages/tyres/TyreInventoryDashboard";
 import TyreManagementView from "../../pages/tyres/TyreManagementView";
 import TyreInspectionModal from "../Models/Trips/TyreInspectionModal"; // jou bestaande
-import TyreInventoryDashboard from "../tyres/TyreInventoryDashboard";
 import Button from "../ui/Button";
 
 const TyreIntegration: React.FC = () => {

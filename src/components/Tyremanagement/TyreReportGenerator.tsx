@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/FormElements';
-import { FileText, Download } from 'lucide-react';
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Select } from "@/components/ui/FormElements";
+import { Download, FileText } from "lucide-react";
+import React, { useState } from "react";
 
 interface TyreReportGeneratorProps {
   onGenerateReport: (type: string, dateRange: string, brand: string) => void;
@@ -16,32 +16,32 @@ interface ReportOptions {
 }
 
 const reportTypes = [
-  { value: 'inventory', label: 'Inventory Report' },
-  { value: 'wear', label: 'Wear Analysis Report' },
-  { value: 'cost', label: 'Cost Analysis Report' },
-  { value: 'maintenance', label: 'Maintenance History Report' },
-  { value: 'performance', label: 'Performance Comparison Report' },
+  { value: "inventory", label: "Inventory Report" },
+  { value: "wear", label: "Wear Analysis Report" },
+  { value: "cost", label: "Cost Analysis Report" },
+  { value: "maintenance", label: "Maintenance History Report" },
+  { value: "performance", label: "Performance Comparison Report" },
 ];
 
 const dateRanges = [
-  { value: 'last30', label: 'Last 30 Days' },
-  { value: 'last90', label: 'Last 90 Days' },
-  { value: 'last180', label: 'Last 180 Days' },
-  { value: 'lastYear', label: 'Last Year' },
-  { value: 'allTime', label: 'All Time' },
+  { value: "last30", label: "Last 30 Days" },
+  { value: "last90", label: "Last 90 Days" },
+  { value: "last180", label: "Last 180 Days" },
+  { value: "lastYear", label: "Last Year" },
+  { value: "allTime", label: "All Time" },
 ];
 
 const reportFormats = [
-  { value: 'pdf', label: 'PDF Document' },
-  { value: 'excel', label: 'Excel Spreadsheet' },
-  { value: 'csv', label: 'CSV File' },
+  { value: "pdf", label: "PDF Document" },
+  { value: "excel", label: "Excel Spreadsheet" },
+  { value: "csv", label: "CSV File" },
 ];
 
 export const TyreReportGenerator: React.FC<TyreReportGeneratorProps> = ({ onGenerateReport }) => {
   const [reportOptions, setReportOptions] = useState<ReportOptions>({
-    reportType: 'inventory',
-    dateRange: 'last30',
-    format: 'pdf',
+    reportType: "inventory",
+    dateRange: "last30",
+    format: "pdf",
     includeScrapped: false,
   });
   const [isGenerating, setIsGenerating] = useState(false);
@@ -55,12 +55,12 @@ export const TyreReportGenerator: React.FC<TyreReportGeneratorProps> = ({ onGene
 
   const handleGenerateReport = () => {
     setIsGenerating(true);
-    
+
     // Call the provided callback function
     onGenerateReport(
-      reportOptions.reportType, 
-      reportOptions.dateRange, 
-      'All Brands' // In a real implementation, this would be a selected brand
+      reportOptions.reportType,
+      reportOptions.dateRange,
+      "All Brands" // In a real implementation, this would be a selected brand
     );
 
     // Simulate report generation with timeout
@@ -79,70 +79,55 @@ export const TyreReportGenerator: React.FC<TyreReportGeneratorProps> = ({ onGene
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
           <Select
+            label={<span>Report Type</span>}
             id="reportType"
             value={reportOptions.reportType}
-            onChange={(e) => handleOptionChange('reportType', e.target.value)}
+            onChange={(e) => handleOptionChange("reportType", e.target.value)}
             className="w-full"
-          >
-            {reportTypes.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </Select>
+            options={reportTypes}
+          />
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
           <Select
+            label={<span>Date Range</span>}
             id="dateRange"
             value={reportOptions.dateRange}
-            onChange={(e) => handleOptionChange('dateRange', e.target.value)}
+            onChange={(e) => handleOptionChange("dateRange", e.target.value)}
             className="w-full"
-          >
-            {dateRanges.map((range) => (
-              <option key={range.value} value={range.value}>
-                {range.label}
-              </option>
-            ))}
-          </Select>
+            options={dateRanges}
+          />
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Format</label>
           <Select
+            label={<span>Format</span>}
             id="format"
             value={reportOptions.format}
-            onChange={(e) => handleOptionChange('format', e.target.value)}
+            onChange={(e) => handleOptionChange("format", e.target.value)}
             className="w-full"
-          >
-            {reportFormats.map((format) => (
-              <option key={format.value} value={format.value}>
-                {format.label}
-              </option>
-            ))}
-          </Select>
+            options={reportFormats}
+          />
         </div>
-        
+
         <div className="flex items-center">
           <input
             id="includeScrapped"
             type="checkbox"
             className="h-4 w-4 text-blue-600 border-gray-300 rounded"
             checked={reportOptions.includeScrapped}
-            onChange={(e) => handleOptionChange('includeScrapped', e.target.checked)}
+            onChange={(e) => handleOptionChange("includeScrapped", e.target.checked)}
           />
           <label htmlFor="includeScrapped" className="ml-2 text-sm text-gray-700">
             Include scrapped tyres
           </label>
         </div>
-        
+
         <div className="flex justify-between mt-6">
-          <Button 
+          <Button
             variant="outline"
-            onClick={() => alert('Preview not available in this version')}
+            onClick={() => alert("Preview not available in this version")}
             icon={<FileText className="w-4 h-4" />}
             disabled={isGenerating}
           >
@@ -159,7 +144,7 @@ export const TyreReportGenerator: React.FC<TyreReportGeneratorProps> = ({ onGene
                 Generating...
               </>
             ) : (
-              'Generate Report'
+              "Generate Report"
             )}
           </Button>
         </div>
