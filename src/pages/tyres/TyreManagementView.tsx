@@ -135,8 +135,8 @@ interface TyreManagementViewProps {
 const TyreManagementView: React.FC<TyreManagementViewProps> = ({ activeTab = "inventory" }) => {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const [activeTabState, setActiveTab] = useState(activeTab);
+  const [tyres, setTyres] = useState<TyreInventoryItem[]>(mockTyres);
   /* eslint-enable @typescript-eslint/no-unused-vars */
-  const [tyres, _setTyres] = useState<TyreInventoryItem[]>(mockTyres);
   const [expandedTyre, setExpandedTyre] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     brand: "",

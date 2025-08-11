@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/badge";
-import { buildVehicleTyreStore, mappingData, TyreMappingRow } from "../../data/tyreMappingData";
+import { mappingData, TyreMappingRow } from "../../data/tyreMappingData";
 
 interface VehicleView {
   registrationNo: string;
@@ -19,13 +19,9 @@ const TyreFleetMap: React.FC = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBy, setFilterBy] = useState<"all" | "complete" | "incomplete">("all");
-  const [_vehicleTyreStore, setVehicleTyreStore] = useState<any>(null);
+  // Removed unused _vehicleTyreStore state (previously held buildVehicleTyreStore result)
 
   useEffect(() => {
-    // Build the vehicle tyre store from mapping data
-    const store = buildVehicleTyreStore();
-    setVehicleTyreStore(store);
-
     // Group mapping data by vehicle
     const vehicleGroups = mappingData.reduce(
       (acc, row) => {
@@ -110,8 +106,9 @@ const TyreFleetMap: React.FC = () => {
           return (
             <div
               key={index}
-              className={`p-3 rounded-lg border-2 transition-all hover:shadow-md ${status === "mounted" ? "border-green-300 bg-green-50" : "border-red-300 bg-red-50"
-                }`}
+              className={`p-3 rounded-lg border-2 transition-all hover:shadow-md ${
+                status === "mounted" ? "border-green-300 bg-green-50" : "border-red-300 bg-red-50"
+              }`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-gray-600">{tyre.TyrePosDescription}</span>
@@ -296,10 +293,11 @@ const TyreFleetMap: React.FC = () => {
                     {vehicle.tyres.slice(0, 12).map((tyre, index) => (
                       <div
                         key={index}
-                        className={`h-6 w-6 rounded border-2 ${getTyreStatus(tyre.TyreCode) === "mounted"
+                        className={`h-6 w-6 rounded border-2 ${
+                          getTyreStatus(tyre.TyreCode) === "mounted"
                             ? "bg-green-200 border-green-400"
                             : "bg-red-200 border-red-400"
-                          }`}
+                        }`}
                         title={`${tyre.TyrePosDescription}: ${tyre.TyreCode || "Empty"}`}
                       />
                     ))}

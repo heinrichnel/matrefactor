@@ -18,13 +18,16 @@ const DriverProfiles: React.FC = () => {
 
   // Filter drivers based on search term and status filter
   const filteredDrivers = (drivers || []).filter((driver) => {
-    const matchesSearch =
-      driver.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const search = searchTerm.toLowerCase();
+    const firstName = (driver.firstName || "").toLowerCase();
+    const lastName = (driver.lastName || "").toLowerCase();
+    const id = (driver.id || "").toLowerCase();
+    const status = (driver.status || "").toLowerCase();
 
-    const matchesStatus =
-      filterStatus === "all" || driver.status.toLowerCase() === filterStatus.toLowerCase();
+    const matchesSearch =
+      firstName.includes(search) || lastName.includes(search) || id.includes(search);
+
+    const matchesStatus = filterStatus === "all" || status === filterStatus.toLowerCase();
 
     return matchesSearch && matchesStatus;
   });

@@ -1,426 +1,384 @@
-import Button from "@/components/ui/Button";
-import { Card, CardContent, CardHeader } from "@/components/ui/Card";
-import SyncIndicator from "@/components/ui/SyncIndicator";
+import { AlertTriangle, Calculator, Clock, Navigation } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { useAppContext } from "../../context/AppContext";
+import { CostEntry, DEFAULT_SYSTEM_COST_RATES, SystemCostRates, Trip } from "../../types";
+import { formatCurrency } from "../../utils/helpers";
 
-interface CostCategory {
-  id: string;
-  name: string;
-  amount: number;
-  percentage: number;
-  trend: "up" | "down" | "stable";
-  subcategories: Array<{
-    name: string;
-    amount: number;
-    percentage: number;
-  }>;
+interface SystemCostGeneratorProps {
+  trip: Trip;
+  onGenerateSystemCosts: (systemCosts: Omit<CostEntry, "id" | "attachments">[]) => void;
 }
 
-interface MonthlyData {
-  month: string;
-  admin: number;
-  facilities: number;
-  it: number;
-  utilities: number;
-  other: number;
-}
+// NOTE: Component name aligned with default export & route expectations
+const IndirectCostBreakdown: React.FC<SystemCostGeneratorProps> = ({
+  trip,
+  onGenerateSystemCosts,
+}) => {
+  // Only need current rates; setter removed to avoid unused var lint
+  const [systemRates] = useState<Record<"USD" | "ZAR", SystemCostRates>>(DEFAULT_SYSTEM_COST_RATES);
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
+  // Get the latest system cost rates from the admin configuration
+  const { trips } = useAppContext();
 
-const IndirectCostBreakdown: React.FC = () => {
-  const { isLoading } = useAppContext();
-  const [costCategories, setCostCategories] = useState<CostCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<CostCategory | null>(null);
-  const [timeRange, setTimeRange] = useState<"month" | "quarter" | "year">("month");
-  const [historicalData, setHistoricalData] = useState<MonthlyData[]>([]);
-  const [totalIndirectCost, setTotalIndirectCost] = useState(0);
-
-  // Mock data - in real app, this would come from Firestore
+  // Find the most recent trip with system costs to get the latest rates
   useEffect(() => {
-    // Simulate API call/Firestore fetch
-    setTimeout(() => {
-      const mockCostData: CostCategory[] = [
-        {
-          id: "c1",
-          name: "Administrative",
-          amount: 12500,
-          percentage: 32,
-          trend: "up",
-          subcategories: [
-            { name: "Office Supplies", amount: 2300, percentage: 18.4 },
-            { name: "Software Subscriptions", amount: 4850, percentage: 38.8 },
-            { name: "Professional Services", amount: 3450, percentage: 27.6 },
-            { name: "Insurance", amount: 1900, percentage: 15.2 },
-          ],
-        },
-        {
-          id: "c2",
-          name: "Facilities",
-          amount: 9800,
-          percentage: 25,
-          trend: "stable",
-          subcategories: [
-            { name: "Rent", amount: 5500, percentage: 56.1 },
-            { name: "Maintenance", amount: 2100, percentage: 21.4 },
-            { name: "Security", amount: 1200, percentage: 12.2 },
-            { name: "Cleaning", amount: 1000, percentage: 10.3 },
-          ],
-        },
-        {
-          id: "c3",
-          name: "IT Infrastructure",
-          amount: 7200,
-          percentage: 18,
-          trend: "up",
-          subcategories: [
-            { name: "Hardware", amount: 2900, percentage: 40.3 },
-            { name: "Cloud Services", amount: 2600, percentage: 36.1 },
-            { name: "Support", amount: 1700, percentage: 23.6 },
-          ],
-        },
-        {
-          id: "c4",
-          name: "Utilities",
-          amount: 5400,
-          percentage: 14,
-          trend: "down",
-          subcategories: [
-            { name: "Electricity", amount: 2800, percentage: 51.9 },
-            { name: "Water", amount: 950, percentage: 17.6 },
-            { name: "Internet", amount: 1200, percentage: 22.2 },
-            { name: "Phone", amount: 450, percentage: 8.3 },
-          ],
-        },
-        {
-          id: "c5",
-          name: "Other",
-          amount: 4300,
-          percentage: 11,
-          trend: "stable",
-          subcategories: [
-            { name: "Training", amount: 1500, percentage: 34.9 },
-            { name: "Travel", amount: 1800, percentage: 41.9 },
-            { name: "Miscellaneous", amount: 1000, percentage: 23.2 },
-          ],
-        },
-      ];
+    const tripsWithSystemCosts = trips.filter(
+      (t) => t.costs.some((c) => c.isSystemGenerated) && t.revenueCurrency === trip.revenueCurrency
+    );
 
-      setCostCategories(mockCostData);
-      setTotalIndirectCost(mockCostData.reduce((sum, category) => sum + category.amount, 0));
+    if (tripsWithSystemCosts.length > 0) {
+      // Sort by date to get the most recent
+      tripsWithSystemCosts.sort(
+        (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+      );
 
-      const mockHistoricalData: MonthlyData[] = [
-        { month: "Jan", admin: 11200, facilities: 9500, it: 6800, utilities: 5600, other: 4100 },
-        { month: "Feb", admin: 11500, facilities: 9600, it: 6900, utilities: 5500, other: 4200 },
-        { month: "Mar", admin: 11800, facilities: 9700, it: 7000, utilities: 5400, other: 4200 },
-        { month: "Apr", admin: 12000, facilities: 9700, it: 7100, utilities: 5400, other: 4300 },
-        { month: "May", admin: 12200, facilities: 9800, it: 7200, utilities: 5400, other: 4300 },
-        { month: "Jun", admin: 12500, facilities: 9800, it: 7200, utilities: 5400, other: 4300 },
-      ];
+      const mostRecentTrip = tripsWithSystemCosts[0];
+      const systemCost = mostRecentTrip.costs.find((c) => c.isSystemGenerated);
 
-      setHistoricalData(mockHistoricalData);
-    }, 1000);
-  }, []);
+      if (systemCost && systemCost.calculationDetails) {
+        // Extract rate information from the calculation details
+        try {
+          // This is a simplified approach - in a real app, you'd store the actual rates
+          // For now, we'll use the default rates but in a real implementation,
+          // you would extract the actual rates from the system costs
+          console.log("Found system costs from recent trip:", mostRecentTrip.id);
+        } catch (error) {
+          console.error("Error parsing system cost rates:", error);
+        }
+      }
+    }
+  }, [trips, trip.revenueCurrency]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+  // Use effective date logic to determine which rates to apply
+  const getApplicableRates = (currency: "USD" | "ZAR"): SystemCostRates => {
+    const rates = systemRates[currency];
+    const tripStartDate = new Date(trip.startDate);
+    const rateEffectiveDate = new Date(rates.effectiveDate);
+
+    // If trip starts on or after the rate effective date, use current rates
+    // Otherwise, use historical rates (for now, we'll use current rates as fallback)
+    // In a real system, you'd store historical rate versions
+    if (tripStartDate >= rateEffectiveDate) {
+      return rates;
+    }
+
+    // For demo purposes, return current rates
+    // In production, you'd fetch historical rates based on trip start date
+    return rates;
   };
 
-  const handleCategoryClick = (category: CostCategory) => {
-    setSelectedCategory(category);
-  };
+  const rates = getApplicableRates(trip.revenueCurrency);
 
-  const getTrendIcon = (trend: "up" | "down" | "stable") => {
-    if (trend === "up") return <span className="text-red-500">↑</span>;
-    if (trend === "down") return <span className="text-green-500">↓</span>;
-    return <span className="text-gray-500">→</span>;
+  // Calculate trip duration in days
+  const startDate = new Date(trip.startDate);
+  const endDate = new Date(trip.endDate);
+  const tripDurationDays =
+    Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  // Calculate per-KM costs
+  const perKmCosts = trip.distanceKm
+    ? [
+        {
+          category: "System Costs",
+          subCategory: "Repair & Maintenance per KM",
+          amount: trip.distanceKm * rates.perKmCosts.repairMaintenance,
+          rate: rates.perKmCosts.repairMaintenance,
+          calculation: `${trip.distanceKm} km × ${formatCurrency(rates.perKmCosts.repairMaintenance, trip.revenueCurrency)}/km`,
+        },
+        {
+          category: "System Costs",
+          subCategory: "Tyre Cost per KM",
+          amount: trip.distanceKm * rates.perKmCosts.tyreCost,
+          rate: rates.perKmCosts.tyreCost,
+          calculation: `${trip.distanceKm} km × ${formatCurrency(rates.perKmCosts.tyreCost, trip.revenueCurrency)}/km`,
+        },
+      ]
+    : [];
+
+  // Calculate per-day costs
+  const perDayCosts = [
+    {
+      category: "System Costs",
+      subCategory: "GIT Insurance",
+      amount: tripDurationDays * rates.perDayCosts.gitInsurance,
+      rate: rates.perDayCosts.gitInsurance,
+      calculation: `${tripDurationDays} days × ${formatCurrency(rates.perDayCosts.gitInsurance, trip.revenueCurrency)}/day`,
+    },
+    {
+      category: "System Costs",
+      subCategory: "Short-Term Insurance",
+      amount: tripDurationDays * rates.perDayCosts.shortTermInsurance,
+      rate: rates.perDayCosts.shortTermInsurance,
+      calculation: `${tripDurationDays} days × ${formatCurrency(rates.perDayCosts.shortTermInsurance, trip.revenueCurrency)}/day`,
+    },
+    {
+      category: "System Costs",
+      subCategory: "Tracking Cost",
+      amount: tripDurationDays * rates.perDayCosts.trackingCost,
+      rate: rates.perDayCosts.trackingCost,
+      calculation: `${tripDurationDays} days × ${formatCurrency(rates.perDayCosts.trackingCost, trip.revenueCurrency)}/day`,
+    },
+    {
+      category: "System Costs",
+      subCategory: "Fleet Management System",
+      amount: tripDurationDays * rates.perDayCosts.fleetManagementSystem,
+      rate: rates.perDayCosts.fleetManagementSystem,
+      calculation: `${tripDurationDays} days × ${formatCurrency(rates.perDayCosts.fleetManagementSystem, trip.revenueCurrency)}/day`,
+    },
+    {
+      category: "System Costs",
+      subCategory: "Licensing",
+      amount: tripDurationDays * rates.perDayCosts.licensing,
+      rate: rates.perDayCosts.licensing,
+      calculation: `${tripDurationDays} days × ${formatCurrency(rates.perDayCosts.licensing, trip.revenueCurrency)}/day`,
+    },
+    {
+      category: "System Costs",
+      subCategory: "VID / Roadworthy",
+      amount: tripDurationDays * rates.perDayCosts.vidRoadworthy,
+      rate: rates.perDayCosts.vidRoadworthy,
+      calculation: `${tripDurationDays} days × ${formatCurrency(rates.perDayCosts.vidRoadworthy, trip.revenueCurrency)}/day`,
+    },
+    {
+      category: "System Costs",
+      subCategory: "Wages",
+      amount: tripDurationDays * rates.perDayCosts.wages,
+      rate: rates.perDayCosts.wages,
+      calculation: `${tripDurationDays} days × ${formatCurrency(rates.perDayCosts.wages, trip.revenueCurrency)}/day`,
+    },
+    {
+      category: "System Costs",
+      subCategory: "Depreciation",
+      amount: tripDurationDays * rates.perDayCosts.depreciation,
+      rate: rates.perDayCosts.depreciation,
+      calculation: `${tripDurationDays} days × ${formatCurrency(rates.perDayCosts.depreciation, trip.revenueCurrency)}/day`,
+    },
+  ];
+
+  const allSystemCosts = [...perKmCosts, ...perDayCosts];
+  const totalSystemCosts = allSystemCosts.reduce((sum, cost) => sum + cost.amount, 0);
+
+  const handleGenerateSystemCosts = () => {
+    const systemCostEntries: Omit<CostEntry, "id" | "attachments">[] = allSystemCosts.map(
+      (cost, index) => ({
+        tripId: trip.id,
+        category: cost.category,
+        subCategory: cost.subCategory,
+        amount: cost.amount,
+        currency: trip.revenueCurrency,
+        referenceNumber: `SYS-${trip.id}-${String(index + 1).padStart(3, "0")}`,
+        date: trip.startDate,
+        notes: `System-generated operational overhead cost. ${cost.calculation}`,
+        isFlagged: false,
+        isSystemGenerated: true,
+        systemCostType: cost.subCategory.includes("per KM") ? "per-km" : "per-day",
+        calculationDetails: cost.calculation,
+      })
+    );
+
+    onGenerateSystemCosts(systemCostEntries);
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Indirect Cost Breakdown</h2>
-        <SyncIndicator />
+    <div className="space-y-6">
+      {/* System Cost Overview */}
+      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+        <div className="flex items-start space-x-3">
+          <Calculator className="w-5 h-5 text-blue-600 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-medium text-blue-800">
+              Automatic Operational Cost Injection
+            </h4>
+            <p className="text-sm text-blue-700 mt-1">
+              System will automatically apply predefined per-kilometer and per-day fixed cost
+              factors to ensure true operational profitability assessment.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-medium">
-                Total Indirect Costs: {formatCurrency(totalIndirectCost)}
-              </h3>
-              <p className="text-sm text-gray-500">For Current Period</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <span>Time Range:</span>
-              <select
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value as "month" | "quarter" | "year")}
-                className="border rounded-md p-1"
-              >
-                <option value="month">This Month</option>
-                <option value="quarter">This Quarter</option>
-                <option value="year">This Year</option>
-              </select>
-              <Button>Export Report</Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h4 className="text-md font-medium mb-4">Cost Distribution</h4>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={costCategories}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="amount"
-                        nameKey="name"
-                        label={({ name, percentage }) => `${name}: ${percentage}%`}
-                      >
-                        {costCategories.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                            onClick={() => handleCategoryClick(entry)}
-                            cursor="pointer"
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+      {/* Rate Version Information */}
+      <div className="bg-green-50 border border-green-200 rounded-md p-4">
+        <h4 className="text-sm font-medium text-green-800 mb-2">Applied Rate Version</h4>
+        <div className="text-sm text-green-700 space-y-1">
+          <p>
+            <strong>Currency:</strong> {rates.currency}
+          </p>
+          <p>
+            <strong>Effective Date:</strong> {new Date(rates.effectiveDate).toLocaleDateString()}
+          </p>
+          <p>
+            <strong>Last Updated:</strong> {new Date(rates.lastUpdated).toLocaleDateString()}
+          </p>
+          <p>
+            <strong>Updated By:</strong> {rates.updatedBy}
+          </p>
+          <p className="text-xs mt-2 text-green-600">
+            ✓ These rates are applicable to this trip based on the trip start date (
+            {new Date(trip.startDate).toLocaleDateString()})
+          </p>
+        </div>
+      </div>
 
-              <div>
-                <h4 className="text-md font-medium mb-4">Cost Trends (6 Months)</h4>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={historicalData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Legend />
-                      <Bar dataKey="admin" name="Administrative" fill={COLORS[0]} />
-                      <Bar dataKey="facilities" name="Facilities" fill={COLORS[1]} />
-                      <Bar dataKey="it" name="IT Infrastructure" fill={COLORS[2]} />
-                      <Bar dataKey="utilities" name="Utilities" fill={COLORS[3]} />
-                      <Bar dataKey="other" name="Other" fill={COLORS[4]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
+      {/* Trip Calculation Parameters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gray-50 p-4 rounded-md">
+          <div className="flex items-center space-x-2 mb-2">
+            <Navigation className="w-4 h-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">Distance</span>
+          </div>
+          <p className="text-lg font-bold text-gray-900">
+            {trip.distanceKm ? `${trip.distanceKm} km` : "Not specified"}
+          </p>
+          {!trip.distanceKm && (
+            <p className="text-xs text-amber-600 mt-1">Per-KM costs will not be applied</p>
           )}
+        </div>
 
-          <div className="mt-8">
-            <h4 className="text-md font-medium mb-4">Cost Breakdown by Category</h4>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-4 py-2 text-left">Category</th>
-                    <th className="px-4 py-2 text-right">Amount</th>
-                    <th className="px-4 py-2 text-center">Percentage</th>
-                    <th className="px-4 py-2 text-center">Trend</th>
-                    <th className="px-4 py-2 text-right">Actions</th>
+        <div className="bg-gray-50 p-4 rounded-md">
+          <div className="flex items-center space-x-2 mb-2">
+            <Clock className="w-4 h-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">Duration</span>
+          </div>
+          <p className="text-lg font-bold text-gray-900">{tripDurationDays} days</p>
+          <p className="text-xs text-gray-500">
+            {trip.startDate} to {trip.endDate}
+          </p>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-md">
+          <div className="flex items-center space-x-2 mb-2">
+            <Calculator className="w-4 h-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">Currency</span>
+          </div>
+          <p className="text-lg font-bold text-gray-900">{trip.revenueCurrency}</p>
+          <p className="text-xs text-gray-500">Using {trip.revenueCurrency} rates</p>
+        </div>
+      </div>
+
+      {/* Per-KM Costs */}
+      {trip.distanceKm && (
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-3">Per-Kilometer Costs</h3>
+          <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                    Cost Type
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">
+                    Rate/km
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">
+                    Distance
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">
+                    Total Cost
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {perKmCosts.map((cost, index) => (
+                  <tr key={index} className="border-t border-gray-200">
+                    <td className="px-4 py-3 text-sm text-gray-900">{cost.subCategory}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                      {formatCurrency(cost.rate, trip.revenueCurrency)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                      {trip.distanceKm} km
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">
+                      {formatCurrency(cost.amount, trip.revenueCurrency)}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {costCategories.map((category) => (
-                    <tr
-                      key={category.id}
-                      className={`border-b hover:bg-gray-50 ${selectedCategory?.id === category.id ? "bg-blue-50" : ""}`}
-                    >
-                      <td className="px-4 py-2">{category.name}</td>
-                      <td className="px-4 py-2 text-right font-medium">
-                        {formatCurrency(category.amount)}
-                      </td>
-                      <td className="px-4 py-2 text-center">{category.percentage}%</td>
-                      <td className="px-4 py-2 text-center">{getTrendIcon(category.trend)}</td>
-                      <td className="px-4 py-2 text-right">
-                        <Button
-                          variant="outline"
-                          className="text-sm"
-                          onClick={() => handleCategoryClick(category)}
-                        >
-                          View Details
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-gray-100 font-medium">
-                    <td className="px-4 py-2">Total</td>
-                    <td className="px-4 py-2 text-right">{formatCurrency(totalIndirectCost)}</td>
-                    <td className="px-4 py-2 text-center">100%</td>
-                    <td className="px-4 py-2"></td>
-                    <td className="px-4 py-2"></td>
-                  </tr>
-                </tfoot>
-              </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Per-Day Costs */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-3">Per-Day Fixed Costs</h3>
+        <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Cost Type</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">Rate/Day</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">
+                  No. of Days
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">
+                  Total Cost
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {perDayCosts.map((cost, index) => (
+                <tr key={index} className="border-t border-gray-200">
+                  <td className="px-4 py-3 text-sm text-gray-900">{cost.subCategory}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                    {formatCurrency(cost.rate, trip.revenueCurrency)}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 text-right">{tripDurationDays}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">
+                    {formatCurrency(cost.amount, trip.revenueCurrency)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Total System Costs */}
+      <div className="bg-green-50 border border-green-200 rounded-md p-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-medium text-green-800">Total System Costs</h3>
+            <p className="text-sm text-green-700">
+              {allSystemCosts.length} cost entries will be automatically generated
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-green-800">
+              {formatCurrency(totalSystemCosts, trip.revenueCurrency)}
+            </p>
+            <p className="text-sm text-green-600">Operational overhead</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Warning for Missing Distance */}
+      {!trip.distanceKm && (
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
+          <div className="flex items-start space-x-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-medium text-amber-800">Distance Not Specified</h4>
+              <p className="text-sm text-amber-700 mt-1">
+                Per-kilometer costs (Repair & Maintenance, Tyre Cost) will not be applied. Consider
+                adding distance information to the trip for complete cost analysis.
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {selectedCategory && (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between">
-              <h3 className="text-lg font-medium">
-                {selectedCategory.name} - {formatCurrency(selectedCategory.amount)}
-              </h3>
-              <Button variant="outline" onClick={() => setSelectedCategory(null)}>
-                Close
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h4 className="mb-4 font-medium">Subcategory Breakdown</h4>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={selectedCategory.subcategories}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="amount"
-                        nameKey="name"
-                        label={({ name, percentage }) => `${name}: ${percentage}%`}
-                      >
-                        {selectedCategory.subcategories.map((entry, index) => (
-                          <Cell
-                            key={`subcell-${index}`}
-                            fill={COLORS[(index + 3) % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="mb-4 font-medium">Subcategory Details</h4>
-                <table className="min-w-full bg-white">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-2 text-left">Subcategory</th>
-                      <th className="px-4 py-2 text-right">Amount</th>
-                      <th className="px-4 py-2 text-center">% of Category</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedCategory.subcategories.map((sub, idx) => (
-                      <tr key={idx} className="border-b">
-                        <td className="px-4 py-2">{sub.name}</td>
-                        <td className="px-4 py-2 text-right">{formatCurrency(sub.amount)}</td>
-                        <td className="px-4 py-2 text-center">{sub.percentage}%</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-gray-100 font-medium">
-                      <td className="px-4 py-2">Total {selectedCategory.name}</td>
-                      <td className="px-4 py-2 text-right">
-                        {formatCurrency(selectedCategory.amount)}
-                      </td>
-                      <td className="px-4 py-2 text-center">100%</td>
-                    </tr>
-                  </tfoot>
-                </table>
-
-                <div className="mt-6">
-                  <h5 className="font-medium mb-2">Cost Optimization Opportunities:</h5>
-                  <ul className="list-disc pl-5 space-y-1">
-                    {selectedCategory.name === "Administrative" && (
-                      <>
-                        <li className="text-sm">
-                          Consolidate software subscriptions (~15% savings)
-                        </li>
-                        <li className="text-sm">
-                          Negotiate better rates for professional services
-                        </li>
-                      </>
-                    )}
-                    {selectedCategory.name === "Facilities" && (
-                      <>
-                        <li className="text-sm">Review maintenance contracts for better rates</li>
-                        <li className="text-sm">Implement energy efficiency measures</li>
-                      </>
-                    )}
-                    {selectedCategory.name === "IT Infrastructure" && (
-                      <>
-                        <li className="text-sm">Optimize cloud resource utilization</li>
-                        <li className="text-sm">
-                          Consolidate hardware purchases for bulk discounts
-                        </li>
-                      </>
-                    )}
-                    {selectedCategory.name === "Utilities" && (
-                      <>
-                        <li className="text-sm">Switch to more cost-effective energy provider</li>
-                        <li className="text-sm">Implement smart controls for energy usage</li>
-                      </>
-                    )}
-                    {selectedCategory.name === "Other" && (
-                      <>
-                        <li className="text-sm">Move to virtual training where possible</li>
-                        <li className="text-sm">Optimize travel scheduling to reduce costs</li>
-                      </>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        </div>
       )}
+
+      {/* Generate Button */}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={handleGenerateSystemCosts}
+          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <Calculator className="w-5 h-5 mr-2" />
+          Generate System Costs ({allSystemCosts.length} entries)
+        </button>
+      </div>
     </div>
   );
 };

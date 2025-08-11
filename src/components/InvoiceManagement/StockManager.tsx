@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardContent } from '../ui/Card';
-import Button from '../ui/Button';
-import SyncIndicator from '../ui/SyncIndicator';
-import { useAppContext } from '../../context/AppContext';
-import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import * as XLSX from 'xlsx';
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
+import { useAppContext } from "../../context/AppContext";
+import { db } from "../../firebase";
+import Button from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import SyncIndicator from "../ui/SyncIndicator";
 
 interface StockItem {
   id: string;
@@ -32,27 +32,28 @@ const StockManager: React.FC = () => {
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<StockItem[]>([]);
   const [filters, setFilters] = useState<Filter>({
-    category: '',
-    supplier: '',
+    category: "",
+    supplier: "",
     belowReorder: false,
   });
   const [categories, setCategories] = useState<string[]>([]);
   const [suppliers, setSuppliers] = useState<string[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newItem, setNewItem] = useState<Partial<StockItem>>({
-    name: '',
-    sku: '',
-    category: '',
+    name: "",
+    sku: "",
+    category: "",
     quantity: 0,
     reorderLevel: 10,
-    supplier: '',
-    location: '',
+    supplier: "",
+    location: "",
     lastOrderDate: null,
     unitCost: 0,
-    notes: ''
+    notes: "",
   });
   const [syncing, setSyncing] = useState(false);
-  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   // Fetch stock items from Firestore
   useEffect(() => {
@@ -62,74 +63,74 @@ const StockManager: React.FC = () => {
       // Mock data - in a real app this would be from Firestore
       const mockData: StockItem[] = [
         {
-          id: '1',
-          name: 'Brake Pads',
-          sku: 'BP-1001',
-          category: 'Brakes',
+          id: "1",
+          name: "Brake Pads",
+          sku: "BP-1001",
+          category: "Brakes",
           quantity: 24,
           reorderLevel: 10,
-          supplier: 'AutoParts Inc',
-          location: 'Warehouse A, Shelf 3',
-          lastOrderDate: '2023-09-15',
-          unitCost: 45.99
+          supplier: "AutoParts Inc",
+          location: "Warehouse A, Shelf 3",
+          lastOrderDate: "2023-09-15",
+          unitCost: 45.99,
         },
         {
-          id: '2',
-          name: 'Engine Oil Filter',
-          sku: 'OF-2002',
-          category: 'Filters',
+          id: "2",
+          name: "Engine Oil Filter",
+          sku: "OF-2002",
+          category: "Filters",
           quantity: 8,
           reorderLevel: 15,
-          supplier: 'FilterMaster',
-          location: 'Warehouse B, Shelf 2',
-          lastOrderDate: '2023-10-01',
-          unitCost: 12.50
+          supplier: "FilterMaster",
+          location: "Warehouse B, Shelf 2",
+          lastOrderDate: "2023-10-01",
+          unitCost: 12.5,
         },
         {
-          id: '3',
-          name: 'Headlight Assembly',
-          sku: 'HL-3003',
-          category: 'Lighting',
+          id: "3",
+          name: "Headlight Assembly",
+          sku: "HL-3003",
+          category: "Lighting",
           quantity: 6,
           reorderLevel: 5,
-          supplier: 'LightBright Co',
-          location: 'Warehouse A, Shelf 7',
-          lastOrderDate: '2023-08-22',
-          unitCost: 89.95
+          supplier: "LightBright Co",
+          location: "Warehouse A, Shelf 7",
+          lastOrderDate: "2023-08-22",
+          unitCost: 89.95,
         },
         {
-          id: '4',
-          name: 'Windshield Wipers',
-          sku: 'WW-4004',
-          category: 'Exterior',
+          id: "4",
+          name: "Windshield Wipers",
+          sku: "WW-4004",
+          category: "Exterior",
           quantity: 3,
           reorderLevel: 8,
-          supplier: 'ClearView',
-          location: 'Warehouse C, Shelf 1',
-          lastOrderDate: '2023-09-10',
-          unitCost: 21.75
+          supplier: "ClearView",
+          location: "Warehouse C, Shelf 1",
+          lastOrderDate: "2023-09-10",
+          unitCost: 21.75,
         },
         {
-          id: '5',
-          name: 'Air Filter',
-          sku: 'AF-5005',
-          category: 'Filters',
+          id: "5",
+          name: "Air Filter",
+          sku: "AF-5005",
+          category: "Filters",
           quantity: 12,
           reorderLevel: 10,
-          supplier: 'FilterMaster',
-          location: 'Warehouse B, Shelf 3',
-          lastOrderDate: '2023-10-05',
-          unitCost: 18.25
-        }
+          supplier: "FilterMaster",
+          location: "Warehouse B, Shelf 3",
+          lastOrderDate: "2023-10-05",
+          unitCost: 18.25,
+        },
       ];
-      
+
       setStockItems(mockData);
       setFilteredItems(mockData);
-      
+
       // Extract unique categories and suppliers for filter dropdowns
-      const uniqueCategories = [...new Set(mockData.map(item => item.category))];
-      const uniqueSuppliers = [...new Set(mockData.map(item => item.supplier))];
-      
+      const uniqueCategories = [...new Set(mockData.map((item) => item.category))];
+      const uniqueSuppliers = [...new Set(mockData.map((item) => item.supplier))];
+
       setCategories(uniqueCategories);
       setSuppliers(uniqueSuppliers);
       setSyncing(false);
@@ -142,269 +143,313 @@ const StockManager: React.FC = () => {
   // Apply filters to stock items
   useEffect(() => {
     let results = [...stockItems];
-    
+
     if (filters.category) {
-      results = results.filter(item => item.category === filters.category);
+      results = results.filter((item) => item.category === filters.category);
     }
-    
+
     if (filters.supplier) {
-      results = results.filter(item => item.supplier === filters.supplier);
+      results = results.filter((item) => item.supplier === filters.supplier);
     }
-    
+
     if (filters.belowReorder) {
-      results = results.filter(item => item.quantity < item.reorderLevel);
+      results = results.filter((item) => item.quantity < item.reorderLevel);
     }
-    
+
     setFilteredItems(results);
   }, [filters, stockItems]);
 
   // Handle filter changes
   const handleFilterChange = (field: keyof Filter, value: string | boolean) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   // Handle new item form changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setNewItem(prev => ({
+    setNewItem((prev) => ({
       ...prev,
-      [name]: name === 'quantity' || name === 'reorderLevel' || name === 'unitCost' 
-        ? parseFloat(value) 
-        : value
+      [name]:
+        name === "quantity" || name === "reorderLevel" || name === "unitCost"
+          ? parseFloat(value)
+          : value,
     }));
   };
 
   // Add new stock item
-  const handleAddItem = () => {
-    // In a real app, this would add the item to Firestore
-    const newId = (stockItems.length + 1).toString();
-    const itemToAdd = {
-      ...newItem,
-      id: newId
-    } as StockItem;
-    
-    setStockItems(prev => [...prev, itemToAdd]);
-    setIsAddModalOpen(false);
+  const resetNewItem = () => {
     setNewItem({
-      name: '',
-      sku: '',
-      category: '',
+      name: "",
+      sku: "",
+      category: "",
       quantity: 0,
       reorderLevel: 10,
-      supplier: '',
-      location: '',
+      supplier: "",
+      location: "",
       lastOrderDate: null,
       unitCost: 0,
-      notes: ''
+      notes: "",
     });
-    
-    // Show success notification
-    setNotification({
-      show: true,
-      message: 'Stock item added successfully',
-      type: 'success'
-    });
-    
-    setTimeout(() => {
-      setNotification({ show: false, message: '', type: '' });
-    }, 3000);
+    setEditingItemId(null);
+  };
+
+  const handleAddItem = () => {
+    const newId = (stockItems.length + 1).toString();
+    const itemToAdd = { ...newItem, id: newId } as StockItem;
+    setStockItems((prev) => [...prev, itemToAdd]);
+    setIsAddModalOpen(false);
+    resetNewItem();
+    setNotification({ show: true, message: "Stock item added successfully", type: "success" });
+    setTimeout(() => setNotification({ show: false, message: "", type: "" }), 3000);
+  };
+
+  const handleEditItem = (item: StockItem) => {
+    setEditingItemId(item.id);
+    setNewItem({ ...item });
+    setIsAddModalOpen(true);
+  };
+
+  const handleUpdateItem = () => {
+    if (!editingItemId) return;
+    setStockItems((prev) =>
+      prev.map((i) =>
+        i.id === editingItemId ? { ...(newItem as StockItem), id: editingItemId } : i
+      )
+    );
+    setIsAddModalOpen(false);
+    setNotification({ show: true, message: "Stock item updated successfully", type: "success" });
+    setTimeout(() => setNotification({ show: false, message: "", type: "" }), 3000);
+    resetNewItem();
+  };
+
+  const handleDeleteItem = (id: string) => {
+    if (!window.confirm("Delete this stock item?")) return;
+    setStockItems((prev) => prev.filter((i) => i.id !== id));
+    setNotification({ show: true, message: "Stock item deleted", type: "success" });
+    setTimeout(() => setNotification({ show: false, message: "", type: "" }), 3000);
   };
 
   // Export stock items as CSV
   const handleExport = () => {
-    const headers = ['Name', 'SKU', 'Category', 'Quantity', 'Reorder Level', 'Supplier', 'Location', 'Last Order Date', 'Unit Cost', 'Notes'];
-    
+    const headers = [
+      "Name",
+      "SKU",
+      "Category",
+      "Quantity",
+      "Reorder Level",
+      "Supplier",
+      "Location",
+      "Last Order Date",
+      "Unit Cost",
+      "Notes",
+    ];
+
     const csvContent = [
-      headers.join(','),
-      ...filteredItems.map(item => [
-        item.name,
-        item.sku,
-        item.category,
-        item.quantity,
-        item.reorderLevel,
-        item.supplier,
-        item.location,
-        item.lastOrderDate || '',
-        item.unitCost,
-        item.notes || ''
-      ].join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+      headers.join(","),
+      ...filteredItems.map((item) =>
+        [
+          item.name,
+          item.sku,
+          item.category,
+          item.quantity,
+          item.reorderLevel,
+          item.supplier,
+          item.location,
+          item.lastOrderDate || "",
+          item.unitCost,
+          item.notes || "",
+        ].join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.setAttribute('hidden', '');
-    a.setAttribute('href', url);
-    a.setAttribute('download', 'stock_inventory.csv');
+    const a = document.createElement("a");
+    a.setAttribute("hidden", "");
+    a.setAttribute("href", url);
+    a.setAttribute("download", "stock_inventory.csv");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
 
     // Show success notification
   };
-  
+
   // Export stock items as Excel
   const handleExportExcel = () => {
     try {
       // Prepare data for Excel export
-      const excelData = filteredItems.map(item => ({
-        'Name': item.name,
-        'SKU': item.sku,
-        'Category': item.category,
-        'Quantity': item.quantity,
-        'Reorder Level': item.reorderLevel,
-        'Supplier': item.supplier,
-        'Location': item.location,
-        'Last Order Date': item.lastOrderDate || '',
-        'Unit Cost': item.unitCost,
-        'Stock Value': item.quantity * item.unitCost,
-        'Notes': item.notes || ''
+      const excelData = filteredItems.map((item) => ({
+        Name: item.name,
+        SKU: item.sku,
+        Category: item.category,
+        Quantity: item.quantity,
+        "Reorder Level": item.reorderLevel,
+        Supplier: item.supplier,
+        Location: item.location,
+        "Last Order Date": item.lastOrderDate || "",
+        "Unit Cost": item.unitCost,
+        "Stock Value": item.quantity * item.unitCost,
+        Notes: item.notes || "",
       }));
-      
+
       // Create workbook and worksheet
       const ws = XLSX.utils.json_to_sheet(excelData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
-      
+      XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+
       // Add some styling to headers
-      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+      const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
       for (let C = range.s.c; C <= range.e.c; ++C) {
-        const address = XLSX.utils.encode_col(C) + '1';
+        const address = XLSX.utils.encode_col(C) + "1";
         if (!ws[address]) continue;
         ws[address].s = {
           font: { bold: true },
-          fill: { fgColor: { rgb: "EFEFEF" } }
+          fill: { fgColor: { rgb: "EFEFEF" } },
         };
       }
-      
+
       // Save to file
-      XLSX.writeFile(wb, `inventory_stock_${new Date().toISOString().split('T')[0]}.xlsx`);
-      
+      XLSX.writeFile(wb, `inventory_stock_${new Date().toISOString().split("T")[0]}.xlsx`);
+
       // Show success notification
-      alert('Excel file exported successfully!');
+      alert("Excel file exported successfully!");
     } catch (error) {
-      console.error('Failed to export Excel file:', error);
-      alert('Failed to export Excel file. Please try again.');
+      console.error("Failed to export Excel file:", error);
+      alert("Failed to export Excel file. Please try again.");
     }
   };
-  
+
   // Import stock items from CSV or Excel
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
-    
+
     reader.onload = async (event) => {
       try {
         const data = event.target?.result;
         let parsedData: Partial<StockItem>[] = [];
-        
-        if (file.name.endsWith('.csv')) {
+
+        if (file.name.endsWith(".csv")) {
           // Handle CSV import
           const text = data as string;
-          const rows = text.split('\n');
-          const headers = rows[0].split(',').map(h => h.trim());
-          
+          const rows = text.split("\n");
+          const headers = rows[0].split(",").map((h) => h.trim());
+
           // Map CSV rows to StockItem objects
-          parsedData = rows.slice(1).map(row => {
-            if (!row.trim()) return {}; // Skip empty rows
-            
-            const values = row.split(',').map(v => v.trim());
-            const item: Partial<StockItem> = {};
-            
-            headers.forEach((header, index) => {
-              if (index < values.length) {
-                const value = values[index];
-                // Convert numeric values
-                if (header === 'Quantity' || header === 'Reorder Level' || header === 'Unit Cost') {
-                  item[header.toLowerCase().replace(' ', '') as keyof StockItem] = parseFloat(value) as any;
-                } else {
-                  item[header.toLowerCase().replace(' ', '') as keyof StockItem] = value as any;
+          parsedData = rows
+            .slice(1)
+            .map((row) => {
+              if (!row.trim()) return {}; // Skip empty rows
+
+              const values = row.split(",").map((v) => v.trim());
+              const item: Partial<StockItem> = {};
+
+              headers.forEach((header, index) => {
+                if (index < values.length) {
+                  const value = values[index];
+                  // Convert numeric values
+                  if (
+                    header === "Quantity" ||
+                    header === "Reorder Level" ||
+                    header === "Unit Cost"
+                  ) {
+                    item[header.toLowerCase().replace(" ", "") as keyof StockItem] = parseFloat(
+                      value
+                    ) as any;
+                  } else {
+                    item[header.toLowerCase().replace(" ", "") as keyof StockItem] = value as any;
+                  }
                 }
-              }
-            });
-            
-            return item;
-          }).filter(item => Object.keys(item).length > 0);
+              });
+
+              return item;
+            })
+            .filter((item) => Object.keys(item).length > 0);
         } else {
           // Handle Excel import
-          const workbook = XLSX.read(data, { type: 'binary' });
+          const workbook = XLSX.read(data, { type: "binary" });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const excelData = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet);
-          
+
           // Map Excel rows to StockItem objects
-          parsedData = excelData.map(row => {
+          parsedData = excelData.map((row) => {
             const item: Partial<StockItem> = {
-              name: String(row['Name'] || row['name'] || ''),
-              sku: String(row['SKU'] || row['sku'] || ''),
-              category: String(row['Category'] || row['category'] || ''),
-              quantity: Number(row['Quantity'] || row['quantity'] || 0),
-              reorderLevel: Number(row['Reorder Level'] || row['reorderLevel'] || 10),
-              supplier: String(row['Supplier'] || row['supplier'] || ''),
-              location: String(row['Location'] || row['location'] || ''),
-              lastOrderDate: row['Last Order Date'] || row['lastOrderDate'] || null,
-              unitCost: Number(row['Unit Cost'] || row['unitCost'] || 0),
-              notes: row['Notes'] || row['notes'] || ''
+              name: String(row["Name"] || row["name"] || ""),
+              sku: String(row["SKU"] || row["sku"] || ""),
+              category: String(row["Category"] || row["category"] || ""),
+              quantity: Number(row["Quantity"] || row["quantity"] || 0),
+              reorderLevel: Number(row["Reorder Level"] || row["reorderLevel"] || 10),
+              supplier: String(row["Supplier"] || row["supplier"] || ""),
+              location: String(row["Location"] || row["location"] || ""),
+              lastOrderDate: row["Last Order Date"] || row["lastOrderDate"] || null,
+              unitCost: Number(row["Unit Cost"] || row["unitCost"] || 0),
+              notes: row["Notes"] || row["notes"] || "",
             };
             return item;
           });
         }
-        
+
         // Validate the data
         if (parsedData.length === 0) {
-          throw new Error('No valid data found in the file');
+          throw new Error("No valid data found in the file");
         }
-        
+
         // Add the imported items to Firestore
         let added = 0;
         let updated = 0;
         let skipped = 0;
-        
+
         for (const item of parsedData) {
           if (!item.name || !item.sku) {
             skipped++;
             continue; // Skip items without required fields
           }
-          
+
           // Check if item with same SKU exists
-          const existingItemIndex = stockItems.findIndex(i => i.sku === item.sku);
-          
+          const existingItemIndex = stockItems.findIndex((i) => i.sku === item.sku);
+
           if (existingItemIndex >= 0) {
             // Update existing item
             const existingItem = stockItems[existingItemIndex];
-            await updateDoc(doc(db, 'inventory', existingItem.id), {
+            await updateDoc(doc(db, "inventory", existingItem.id), {
               ...item,
-              updatedAt: new Date().toISOString()
+              updatedAt: new Date().toISOString(),
             });
             updated++;
           } else {
             // Add new item
-            await addDoc(collection(db, 'inventory'), {
+            await addDoc(collection(db, "inventory"), {
               ...item,
               createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
+              updatedAt: new Date().toISOString(),
             });
             added++;
           }
         }
-        
-        alert(`Import successful: ${added} items added, ${updated} items updated, ${skipped} items skipped.`);
-        
+
+        alert(
+          `Import successful: ${added} items added, ${updated} items updated, ${skipped} items skipped.`
+        );
+
         // Reset the input field so the same file can be imported again if needed
-        e.target.value = '';
+        e.target.value = "";
       } catch (error) {
-        console.error('Error importing file:', error);
-        alert(`Error importing file: ${(error as Error).message || 'Unknown error'}`);
-        e.target.value = '';
+        console.error("Error importing file:", error);
+        alert(`Error importing file: ${(error as Error).message || "Unknown error"}`);
+        e.target.value = "";
       }
     };
-    
-    if (file.name.endsWith('.csv')) {
+
+    if (file.name.endsWith(".csv")) {
       reader.readAsText(file);
     } else {
       reader.readAsBinaryString(file);
@@ -417,43 +462,36 @@ const StockManager: React.FC = () => {
         <h2 className="text-xl font-semibold">Stock Management</h2>
         <div className="flex items-center space-x-2">
           {syncing ? <SyncIndicator /> : null}
-          <Button 
-            onClick={() => setIsAddModalOpen(true)}
-            variant="primary"
-          >
+          <Button onClick={() => setIsAddModalOpen(true)} variant="primary">
             Add New Item
           </Button>
-          <Button 
-            onClick={handleExport}
-            variant="secondary"
-          >
+          <Button onClick={handleExport} variant="secondary">
             Export CSV
           </Button>
-          <Button 
-            onClick={handleExportExcel}
-            variant="secondary"
-          >
+          <Button onClick={handleExportExcel} variant="secondary">
             Export Excel
           </Button>
           <label className="cursor-pointer px-3 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200">
             Import CSV/Excel
-            <input 
-              type="file" 
-              className="hidden" 
+            <input
+              type="file"
+              className="hidden"
               accept=".csv,.xlsx,.xls"
               onChange={handleFileImport}
             />
           </label>
         </div>
       </div>
-      
+
       {/* Notification */}
       {notification.show && (
-        <div className={`p-3 rounded-md ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <div
+          className={`p-3 rounded-md ${notification.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+        >
           {notification.message}
         </div>
       )}
-      
+
       {/* Filters */}
       <Card>
         <CardHeader className="pb-0">
@@ -466,11 +504,13 @@ const StockManager: React.FC = () => {
               <select
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 value={filters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
+                onChange={(e) => handleFilterChange("category", e.target.value)}
               >
                 <option value="">All Categories</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -479,11 +519,13 @@ const StockManager: React.FC = () => {
               <select
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 value={filters.supplier}
-                onChange={(e) => handleFilterChange('supplier', e.target.value)}
+                onChange={(e) => handleFilterChange("supplier", e.target.value)}
               >
                 <option value="">All Suppliers</option>
-                {suppliers.map(sup => (
-                  <option key={sup} value={sup}>{sup}</option>
+                {suppliers.map((sup) => (
+                  <option key={sup} value={sup}>
+                    {sup}
+                  </option>
                 ))}
               </select>
             </div>
@@ -492,7 +534,7 @@ const StockManager: React.FC = () => {
                 type="checkbox"
                 id="belowReorder"
                 checked={filters.belowReorder}
-                onChange={(e) => handleFilterChange('belowReorder', e.target.checked)}
+                onChange={(e) => handleFilterChange("belowReorder", e.target.checked)}
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
               <label htmlFor="belowReorder" className="ml-2 text-sm font-medium text-gray-700">
@@ -502,7 +544,7 @@ const StockManager: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Stock Items Table */}
       <Card>
         <CardHeader className="pb-0">
@@ -513,50 +555,84 @@ const StockManager: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    SKU
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quantity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Supplier
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Value
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-4 text-center">Loading inventory data...</td>
+                    <td colSpan={8} className="px-6 py-4 text-center">
+                      Loading inventory data...
+                    </td>
                   </tr>
                 ) : filteredItems.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-4 text-center">No items found matching your filters</td>
+                    <td colSpan={8} className="px-6 py-4 text-center">
+                      No items found matching your filters
+                    </td>
                   </tr>
                 ) : (
-                  filteredItems.map(item => (
+                  filteredItems.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{item.sku}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{item.category}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          item.quantity <= 0 ? 'bg-red-100 text-red-800' : 
-                          item.quantity < item.reorderLevel ? 'bg-yellow-100 text-yellow-800' : 
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {item.quantity <= 0 ? 'Out of Stock' : 
-                           item.quantity < item.reorderLevel ? 'Low Stock' : 
-                           'In Stock'}
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            item.quantity <= 0
+                              ? "bg-red-100 text-red-800"
+                              : item.quantity < item.reorderLevel
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {item.quantity <= 0
+                            ? "Out of Stock"
+                            : item.quantity < item.reorderLevel
+                              ? "Low Stock"
+                              : "In Stock"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">{item.supplier}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">${(item.quantity * item.unitCost).toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        ${(item.quantity * item.unitCost).toFixed(2)}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-indigo-600 hover:text-indigo-900 mr-3" onClick={onClick}>
+                        <button
+                          className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          onClick={() => handleEditItem(item)}
+                        >
                           Edit
                         </button>
-                        <button className="text-red-600 hover:text-red-900" onClick={onClick}>
+                        <button
+                          className="text-red-600 hover:text-red-900"
+                          onClick={() => handleDeleteItem(item.id)}
+                        >
                           Delete
                         </button>
                       </td>
@@ -568,7 +644,7 @@ const StockManager: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Add Item Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -606,7 +682,7 @@ const StockManager: React.FC = () => {
                   list="categories"
                 />
                 <datalist id="categories">
-                  {categories.map(cat => (
+                  {categories.map((cat) => (
                     <option key={cat} value={cat} />
                   ))}
                 </datalist>
@@ -622,7 +698,9 @@ const StockManager: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reorder Level
+                </label>
                 <input
                   type="number"
                   name="reorderLevel"
@@ -642,7 +720,7 @@ const StockManager: React.FC = () => {
                   list="suppliers"
                 />
                 <datalist id="suppliers">
-                  {suppliers.map(sup => (
+                  {suppliers.map((sup) => (
                     <option key={sup} value={sup} />
                   ))}
                 </datalist>
@@ -658,7 +736,9 @@ const StockManager: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Unit Cost ($)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Unit Cost ($)
+                </label>
                 <input
                   type="number"
                   name="unitCost"
@@ -678,21 +758,34 @@ const StockManager: React.FC = () => {
                 />
               </div>
             </div>
-            
+
             <div className="mt-6 flex justify-end gap-3">
-              <Button 
-                onClick={() => setIsAddModalOpen(false)}
+              <Button
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  resetNewItem();
+                }}
                 variant="secondary"
               >
                 Cancel
               </Button>
-              <Button 
-                onClick={handleAddItem}
-                variant="primary"
-                disabled={!newItem.name || !newItem.sku}
-              >
-                Add Item
-              </Button>
+              {editingItemId ? (
+                <Button
+                  onClick={handleUpdateItem}
+                  variant="primary"
+                  disabled={!newItem.name || !newItem.sku}
+                >
+                  Save Changes
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleAddItem}
+                  variant="primary"
+                  disabled={!newItem.name || !newItem.sku}
+                >
+                  Add Item
+                </Button>
+              )}
             </div>
           </div>
         </div>

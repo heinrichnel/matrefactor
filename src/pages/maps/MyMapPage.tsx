@@ -1,5 +1,5 @@
+import { Globe2, Info, Map, RefreshCw, Route, Satellite, Truck } from "lucide-react";
 import React, { lazy, Suspense, useMemo, useState } from "react";
-import { Map, Truck, Globe2, Satellite, Info, RefreshCw, Route } from "lucide-react";
 
 /**
  * Adjust import paths if your folders differ.
@@ -139,7 +139,7 @@ const MapsSuitePage: React.FC = () => {
                   style={{ height: "100%" }}
                   initialZoom={6}
                   initialCenter={{ lat: -22.5597, lng: 17.0832 }}
-                  onVehicleSelect={(vehicleId, props) => {
+                  onVehicleSelect={(vehicleId: string, props?: VehicleProps) => {
                     setSelectedVehicleId(vehicleId);
                     setSelectedVehicleProps(props ?? null);
                   }}
@@ -162,7 +162,9 @@ const MapsSuitePage: React.FC = () => {
                     showPlacesSearch={true}
                     showRoutes={false} // flip to true if you pass 2+ locations
                     defaultIconType="default"
-                    onLocationSelect={(loc) => console.debug("Selected location", loc)}
+                    onLocationSelect={(loc: { lat: number; lng: number; label?: string }) =>
+                      console.debug("Selected location", loc)
+                    }
                   />
                 </div>
               )}

@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/Button';
-import { VehicleSelector } from '@/components/common/VehicleSelector';
-import { CircleDot, Wrench, Eye } from "lucide-react";
+import { VehicleSelector } from "@/components/common/VehicleSelector";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import {
+  getTyreConditionColor,
   getTyresByVehicle,
   getTyreStatusColor,
-  getTyreConditionColor,
   getVehicleTyreConfiguration,
-  Tyre
+  Tyre,
 } from "@/data/tyreData";
 import { FLEET_VEHICLES } from "@/data/vehicles";
-import type { FleetTyreMapping, TyreAllocation } from '@/types/tyre';
+import type { FleetTyreMapping, TyreAllocation } from "@/types/tyre";
+import { CircleDot, Eye, Wrench } from "lucide-react";
+import React, { useState } from "react";
 
 interface VehicleTyreViewProps {
   selectedVehicle: string;
@@ -21,28 +21,45 @@ interface VehicleTyreViewProps {
 
 export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
   selectedVehicle,
-  onVehicleSelect
+  onVehicleSelect,
 }) => {
   const [selectedTyre, setSelectedTyre] = useState<Tyre | null>(null);
 
-  const vehicle = FLEET_VEHICLES.find(v => v.fleetNo === selectedVehicle);
+  const vehicle = FLEET_VEHICLES.find((v) => v.fleetNo === selectedVehicle);
   const vehicleTyres = selectedVehicle ? getTyresByVehicle(selectedVehicle) : [];
   // derive mapping of permitted positions for this vehicle
-  const tyreConfig: FleetTyreMapping | null = getVehicleTyreConfiguration(selectedVehicle);
+  // getVehicleTyreConfiguration currently returns a simple structure without fleetNumber/vehicleType.
+  // We adapt it to FleetTyreMapping shape for this view.
+  const rawConfig = getVehicleTyreConfiguration(selectedVehicle);
+  const tyreConfig: FleetTyreMapping | null = rawConfig
+    ? {
+        fleetNumber: selectedVehicle,
+        vehicleType: vehicle?.type || "unknown",
+        positions: (rawConfig.positions as any[]).map((p) => ({
+          position: p.id || p.position || "SP",
+          // additional fields left undefined
+        })),
+      }
+    : null;
 
   // const getTyreAtPosition = (position: string) => {
   //   return getTyreByPosition(selectedVehicle, position);
   // };
 
-
   const getVehicleTypeLabel = (type: string) => {
     switch (type) {
-      case 'horse': return 'Horse (Truck Tractor)';
-      case 'interlink': return 'Interlink';
-      case 'reefer': return 'Reefer';
-      case 'lmv': return 'LMV';
-      case 'special': return 'Special Configuration';
-      default: return 'Unknown Type';
+      case "horse":
+        return "Horse (Truck Tractor)";
+      case "interlink":
+        return "Interlink";
+      case "reefer":
+        return "Reefer";
+      case "lmv":
+        return "LMV";
+      case "special":
+        return "Special Configuration";
+      default:
+        return "Unknown Type";
     }
   };
 
@@ -65,8 +82,7 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Visual Vehicle Diagram */}
           <Card>
-            <CardHeader title="Tyre Layout">
-            </CardHeader>
+            <CardHeader title="Tyre Layout"></CardHeader>
             <CardContent>
               <table className="w-full text-sm text-left">
                 <thead>
@@ -84,12 +100,12 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                   {tyreConfig.positions.map((pos: TyreAllocation) => (
                     <tr key={pos.position} className="border-t">
                       <td className="px-2 py-1">{pos.position}</td>
-                      <td className="px-2 py-1">{pos.tyreCode || 'Empty'}</td>
-                      <td className="px-2 py-1">{pos.brand || '-'}</td>
-                      <td className="px-2 py-1">{pos.pattern || '-'}</td>
-                      <td className="px-2 py-1">{pos.size || '-'}</td>
-                      <td className="px-2 py-1">{pos.treadDepth ?? '-'}</td>
-                      <td className="px-2 py-1">{pos.odometerAtFitment ?? '-'}</td>
+                      <td className="px-2 py-1">{pos.tyreCode || "Empty"}</td>
+                      <td className="px-2 py-1">{pos.brand || "-"}</td>
+                      <td className="px-2 py-1">{pos.pattern || "-"}</td>
+                      <td className="px-2 py-1">{pos.size || "-"}</td>
+                      <td className="px-2 py-1">{pos.treadDepth ?? "-"}</td>
+                      <td className="px-2 py-1">{pos.odometerAtFitment ?? "-"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -101,7 +117,9 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
           <Card>
             <CardHeader>
               <CardTitle>
-                {selectedTyre ? `Tyre Details - ${selectedTyre.installation.position}` : 'Tyre Information'}
+                {selectedTyre
+                  ? `Tyre Details - ${selectedTyre.installation.position}`
+                  : "Tyre Information"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -109,11 +127,13 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-lg">{selectedTyre.brand} {selectedTyre.model}</h3>
+                      <h3 className="font-semibold text-lg">
+                        {selectedTyre.brand} {selectedTyre.model}
+                      </h3>
                       <p className="text-gray-600">{selectedTyre.pattern} Pattern</p>
                     </div>
                     <Badge className={getTyreConditionColor(selectedTyre.condition.status)}>
-                      {selectedTyre.condition.status.replace('_', ' ').toUpperCase()}
+                      {selectedTyre.condition.status.replace("_", " ").toUpperCase()}
                     </Badge>
                   </div>
 
@@ -121,19 +141,42 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                     <div>
                       <h4 className="font-medium mb-2">Specifications</h4>
                       <div className="space-y-1">
-                        <p><span className="text-gray-500">Size:</span> {selectedTyre.size.width}/{selectedTyre.size.aspectRatio}R{selectedTyre.size.rimDiameter}</p>
-                        <p><span className="text-gray-500">Load Index:</span> {selectedTyre.loadIndex}</p>
-                        <p><span className="text-gray-500">Speed Rating:</span> {selectedTyre.speedRating}</p>
-                        <p><span className="text-gray-500">Type:</span> {selectedTyre.type}</p>
+                        <p>
+                          <span className="text-gray-500">Size:</span> {selectedTyre.size.width}/
+                          {selectedTyre.size.aspectRatio}R{selectedTyre.size.rimDiameter}
+                        </p>
+                        <p>
+                          <span className="text-gray-500">Load Index:</span>{" "}
+                          {selectedTyre.loadIndex}
+                        </p>
+                        <p>
+                          <span className="text-gray-500">Speed Rating:</span>{" "}
+                          {selectedTyre.speedRating}
+                        </p>
+                        <p>
+                          <span className="text-gray-500">Type:</span> {selectedTyre.type}
+                        </p>
                       </div>
                     </div>
                     <div>
                       <h4 className="font-medium mb-2">Current Condition</h4>
                       <div className="space-y-1">
-                        <p><span className="text-gray-500">Tread Depth:</span> {selectedTyre.condition.treadDepth}mm</p>
-                        <p><span className="text-gray-500">Pressure:</span> {selectedTyre.condition.pressure} PSI</p>
-                        <p><span className="text-gray-500">Temperature:</span> {selectedTyre.condition.temperature}°C</p>
-                        <p><span className="text-gray-500">Last Inspection:</span> {selectedTyre.condition.lastInspectionDate}</p>
+                        <p>
+                          <span className="text-gray-500">Tread Depth:</span>{" "}
+                          {selectedTyre.condition.treadDepth}mm
+                        </p>
+                        <p>
+                          <span className="text-gray-500">Pressure:</span>{" "}
+                          {selectedTyre.condition.pressure} PSI
+                        </p>
+                        <p>
+                          <span className="text-gray-500">Temperature:</span>{" "}
+                          {selectedTyre.condition.temperature}°C
+                        </p>
+                        <p>
+                          <span className="text-gray-500">Last Inspection:</span>{" "}
+                          {selectedTyre.condition.lastInspectionDate}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -141,21 +184,52 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                   <div className="border-t pt-4">
                     <h4 className="font-medium mb-2">Installation Details</h4>
                     <div className="text-sm space-y-1">
-                      <p><span className="text-gray-500">Installed:</span> {selectedTyre.installation.installationDate}</p>
-                      <p><span className="text-gray-500">Mileage at Install:</span> {selectedTyre.installation.mileageAtInstallation.toLocaleString()} km</p>
-                      <p><span className="text-gray-500">Miles Run:</span> {selectedTyre.milesRun.toLocaleString()}</p>
-                      <p><span className="text-gray-500">Serial Number:</span> {selectedTyre.serialNumber}</p>
-                      <p><span className="text-gray-500">DOT Code:</span> {selectedTyre.dotCode}</p>
+                      <p>
+                        <span className="text-gray-500">Installed:</span>{" "}
+                        {selectedTyre.installation.installationDate}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">Mileage at Install:</span>{" "}
+                        {selectedTyre.installation.mileageAtInstallation.toLocaleString()} km
+                      </p>
+                      <p>
+                        <span className="text-gray-500">Distance Run:</span>{" "}
+                        {(
+                          selectedTyre.kmRun ??
+                          (selectedTyre as any).milesRun ??
+                          0
+                        ).toLocaleString()}{" "}
+                        km
+                      </p>
+                      <p>
+                        <span className="text-gray-500">Serial Number:</span>{" "}
+                        {selectedTyre.serialNumber}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">DOT Code:</span> {selectedTyre.dotCode}
+                      </p>
                     </div>
                   </div>
 
                   <div className="border-t pt-4">
                     <h4 className="font-medium mb-2">Purchase Information</h4>
                     <div className="text-sm space-y-1">
-                      <p><span className="text-gray-500">Cost:</span> R{selectedTyre.purchaseDetails.cost.toLocaleString()}</p>
-                      <p><span className="text-gray-500">Supplier:</span> {selectedTyre.purchaseDetails.supplier}</p>
-                      <p><span className="text-gray-500">Purchase Date:</span> {selectedTyre.purchaseDetails.date}</p>
-                      <p><span className="text-gray-500">Warranty:</span> {selectedTyre.purchaseDetails.warranty}</p>
+                      <p>
+                        <span className="text-gray-500">Cost:</span> R
+                        {selectedTyre.purchaseDetails.cost.toLocaleString()}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">Supplier:</span>{" "}
+                        {selectedTyre.purchaseDetails.supplier}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">Purchase Date:</span>{" "}
+                        {selectedTyre.purchaseDetails.date}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">Warranty:</span>{" "}
+                        {selectedTyre.purchaseDetails.warranty}
+                      </p>
                     </div>
                   </div>
 
@@ -176,9 +250,14 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                   <p>Click on a tyre position above to view details</p>
                   {tyreConfig && (
                     <div className="mt-4 text-sm">
-                      <p><strong>{getVehicleTypeLabel(tyreConfig.vehicleType)}</strong></p>
+                      <p>
+                        <strong>{getVehicleTypeLabel(tyreConfig.vehicleType)}</strong>
+                      </p>
                       <p>{tyreConfig.positions.length} tyre positions</p>
-                      <p>{tyreConfig.positions.filter(p => p.position === 'SP').length} spare tyre(s)</p>
+                      <p>
+                        {tyreConfig.positions.filter((p) => p.position === "SP").length} spare
+                        tyre(s)
+                      </p>
                     </div>
                   )}
                 </div>
@@ -195,24 +274,32 @@ export const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {vehicleTyres.map(tyre => (
-                <div key={tyre.id} className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
-                     onClick={() => setSelectedTyre(tyre)}>
+              {vehicleTyres.map((tyre) => (
+                <div
+                  key={tyre.id}
+                  className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
+                  onClick={() => setSelectedTyre(tyre)}
+                >
                   <div className="flex justify-between items-center">
                     <div>
-                      <h4 className="font-medium">{tyre.brand} {tyre.model}</h4>
-                      <p className="text-sm text-gray-600">Position: {tyre.installation.position} | Pattern: {tyre.pattern}</p>
+                      <h4 className="font-medium">
+                        {tyre.brand} {tyre.model}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Position: {tyre.installation.position} | Pattern: {tyre.pattern}
+                      </p>
                       <p className="text-xs text-gray-500">
-                        Tread: {tyre.condition.treadDepth}mm | Pressure: {tyre.condition.pressure} PSI |
-                        Miles: {tyre.milesRun.toLocaleString()}
+                        Tread: {tyre.condition.treadDepth}mm | Pressure: {tyre.condition.pressure}{" "}
+                        PSI | Distance:{" "}
+                        {(tyre.kmRun ?? (tyre as any).milesRun ?? 0).toLocaleString()} km
                       </p>
                     </div>
                     <div className="text-right space-y-1">
                       <Badge className={getTyreConditionColor(tyre.condition.status)}>
-                        {tyre.condition.status.replace('_', ' ').toUpperCase()}
+                        {tyre.condition.status.replace("_", " ").toUpperCase()}
                       </Badge>
                       <Badge className={getTyreStatusColor(tyre.status)}>
-                        {tyre.status.replace('_', ' ').toUpperCase()}
+                        {tyre.status.replace("_", " ").toUpperCase()}
                       </Badge>
                     </div>
                   </div>

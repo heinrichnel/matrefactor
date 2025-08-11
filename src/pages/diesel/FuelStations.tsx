@@ -1,34 +1,48 @@
-import React, { useState } from 'react';
-import { 
-  Card, 
-  Typography, 
-  Row, 
-  Col, 
-  Table, 
-  Button, 
-  Space,
-  Input,
-  Tag,
-  Rate,
-  Modal,
-  Form,
-  InputNumber,
-  Switch,
-  message,
-  Select,
-  Divider
-} from 'antd';
 import {
-  EnvironmentOutlined,
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  StarOutlined,
-  ClockCircleOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined
-} from '@ant-design/icons';
+  ClockCircleOutlined,
+  CloseCircleOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EnvironmentOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  StarOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Rate,
+  Row,
+  Select,
+  Space,
+  Switch,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  Timestamp,
+  updateDoc,
+} from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { db } from "../../firebase";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -49,99 +63,41 @@ interface FuelStation {
   hasCardAccess: boolean;
   operatingHours: string;
   services: string[];
-  lastUpdated: string;
-  status: 'active' | 'inactive' | 'maintenance';
+  lastUpdated: string; // ISO string for UI display
+  status: "active" | "inactive" | "maintenance";
 }
 
 const FuelStations: React.FC = () => {
-  const [fuelStations, setFuelStations] = useState<FuelStation[]>([
-    {
-      id: '1',
-      name: 'Shell Travel Center',
-      brand: 'Shell',
-      address: '1234 Highway 95 North',
-      city: 'Las Vegas',
-      state: 'NV',
-      zipCode: '89115',
-      phone: '(555) 123-4567',
-      pricePerLiter: 1.25,
-      rating: 4.5,
-      isPreferred: true,
-      hasCardAccess: true,
-      operatingHours: '24/7',
-      services: ['Diesel', 'DEF', 'Truck Wash', 'Restaurant'],
-      lastUpdated: '2023-11-20',
-      status: 'active'
-    },
-    {
-      id: '2',
-      name: 'Chevron Truck Stop',
-      brand: 'Chevron',
-      address: '5678 Main Street',
-      city: 'Reno',
-      state: 'NV',
-      zipCode: '89501',
-      phone: '(555) 234-5678',
-      pricePerLiter: 1.28,
-      rating: 4.2,
-      isPreferred: false,
-      hasCardAccess: true,
-      operatingHours: '5:00 AM - 11:00 PM',
-      services: ['Diesel', 'DEF', 'Convenience Store'],
-      lastUpdated: '2023-11-19',
-      status: 'active'
-    },
-    {
-      id: '3',
-      name: 'BP Energy Station',
-      brand: 'BP',
-      address: '9012 Route 66',
-      city: 'Flagstaff',
-      state: 'AZ',
-      zipCode: '86001',
-      phone: '(555) 345-6789',
-      pricePerLiter: 1.23,
-      rating: 4.7,
-      isPreferred: true,
-      hasCardAccess: false,
-      operatingHours: '6:00 AM - 10:00 PM',
-      services: ['Diesel', 'DEF', 'Truck Parking', 'ATM'],
-      lastUpdated: '2023-11-18',
-      status: 'active'
-    },
-    {
-      id: '4',
-      name: 'Exxon Service Center',
-      brand: 'Exxon',
-      address: '3456 Interstate 80',
-      city: 'Salt Lake City',
-      state: 'UT',
-      zipCode: '84101',
-      phone: '(555) 456-7890',
-      pricePerLiter: 1.30,
-      rating: 3.8,
-      isPreferred: false,
-      hasCardAccess: true,
-      operatingHours: '24/7',
-      services: ['Diesel', 'Truck Repair'],
-      lastUpdated: '2023-11-17',
-      status: 'maintenance'
-    }
-  ]);
+  // Firestore-backed fuel stations
+  const [fuelStations, setFuelStations] = useState<FuelStation[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [subscribing, setSubscribing] = useState<boolean>(false);
 
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingStation, setEditingStation] = useState<FuelStation | null>(null);
   const [form] = Form.useForm();
 
   const getStatusTag = (status: string) => {
     switch (status) {
-      case 'active':
-        return <Tag icon={<CheckCircleOutlined />} color="success">Active</Tag>;
-      case 'inactive':
-        return <Tag icon={<CloseCircleOutlined />} color="default">Inactive</Tag>;
-      case 'maintenance':
-        return <Tag icon={<ClockCircleOutlined />} color="warning">Maintenance</Tag>;
+      case "active":
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="success">
+            Active
+          </Tag>
+        );
+      case "inactive":
+        return (
+          <Tag icon={<CloseCircleOutlined />} color="default">
+            Inactive
+          </Tag>
+        );
+      case "maintenance":
+        return (
+          <Tag icon={<ClockCircleOutlined />} color="warning">
+            Maintenance
+          </Tag>
+        );
       default:
         return <Tag color="default">{status}</Tag>;
     }
@@ -149,40 +105,93 @@ const FuelStations: React.FC = () => {
 
   const getBrandColor = (brand: string) => {
     switch (brand.toLowerCase()) {
-      case 'shell':
-        return '#FFD700';
-      case 'chevron':
-        return '#0066CC';
-      case 'bp':
-        return '#00A651';
-      case 'exxon':
-        return '#FF0000';
+      case "shell":
+        return "#FFD700";
+      case "chevron":
+        return "#0066CC";
+      case "bp":
+        return "#00A651";
+      case "exxon":
+        return "#FF0000";
       default:
-        return '#1890ff';
+        return "#1890ff";
     }
   };
 
-  const handleAddEdit = (values: any) => {
-    const newStation: FuelStation = {
-      id: editingStation ? editingStation.id : Date.now().toString(),
-      ...values,
-      lastUpdated: new Date().toISOString().split('T')[0],
-      services: values.services || []
-    };
+  // Subscribe to Firestore collection
+  useEffect(() => {
+    if (subscribing) return; // avoid double subscription
+    setSubscribing(true);
+    const q = query(collection(db, "fuelStations"), orderBy("name"));
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const data: FuelStation[] = snap.docs.map((d) => {
+          const raw = d.data() as any;
+          // Convert Firestore Timestamp to ISO string if present
+          let lastUpdated: string = new Date().toISOString().split("T")[0];
+          if (raw.lastUpdated instanceof Timestamp) {
+            lastUpdated = raw.lastUpdated.toDate().toISOString().split("T")[0];
+          } else if (typeof raw.lastUpdated === "string") {
+            lastUpdated = raw.lastUpdated;
+          }
+          return {
+            id: d.id,
+            name: raw.name || "Unnamed",
+            brand: raw.brand || "Other",
+            address: raw.address || "",
+            city: raw.city || "",
+            state: raw.state || "",
+            zipCode: raw.zipCode || "",
+            phone: raw.phone || "",
+            pricePerLiter: Number(raw.pricePerLiter) || 0,
+            rating: Number(raw.rating) || 0,
+            isPreferred: !!raw.isPreferred,
+            hasCardAccess: !!raw.hasCardAccess,
+            operatingHours: raw.operatingHours || "",
+            services: Array.isArray(raw.services) ? raw.services : [],
+            lastUpdated,
+            status: raw.status || "active",
+          } as FuelStation;
+        });
+        setFuelStations(data);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error loading fuel stations:", err);
+        message.error("Failed to load fuel stations");
+        setLoading(false);
+      }
+    );
+    return () => unsub();
+  }, [subscribing]);
 
-    if (editingStation) {
-      setFuelStations(prev => prev.map(station => 
-        station.id === editingStation.id ? newStation : station
-      ));
-      message.success('Fuel station updated successfully');
-    } else {
-      setFuelStations(prev => [...prev, newStation]);
-      message.success('Fuel station added successfully');
+  const handleAddEdit = async (values: any) => {
+    try {
+      if (editingStation) {
+        await updateDoc(doc(db, "fuelStations", editingStation.id), {
+          ...values,
+          services: values.services || [],
+          lastUpdated: serverTimestamp(),
+        });
+        message.success("Fuel station updated successfully");
+      } else {
+        await addDoc(collection(db, "fuelStations"), {
+          ...values,
+          services: values.services || [],
+          isPreferred: !!values.isPreferred,
+          hasCardAccess: !!values.hasCardAccess,
+          lastUpdated: serverTimestamp(),
+        });
+        message.success("Fuel station added successfully");
+      }
+      setIsModalVisible(false);
+      setEditingStation(null);
+      form.resetFields();
+    } catch (err) {
+      console.error("Error saving fuel station:", err);
+      message.error("Failed to save fuel station");
     }
-
-    setIsModalVisible(false);
-    setEditingStation(null);
-    form.resetFields();
   };
 
   const handleEdit = (station: FuelStation) => {
@@ -191,129 +200,141 @@ const FuelStations: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (id: string) => {
-    setFuelStations(prev => prev.filter(station => station.id !== id));
-    message.success('Fuel station deleted successfully');
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "fuelStations", id));
+      message.success("Fuel station deleted successfully");
+    } catch (err) {
+      console.error("Error deleting fuel station:", err);
+      message.error("Failed to delete fuel station");
+    }
   };
 
-  const togglePreferred = (id: string) => {
-    setFuelStations(prev => prev.map(station => 
-      station.id === id 
-        ? { ...station, isPreferred: !station.isPreferred }
-        : station
-    ));
+  const togglePreferred = async (id: string) => {
+    const target = fuelStations.find((f) => f.id === id);
+    if (!target) return;
+    try {
+      await updateDoc(doc(db, "fuelStations", id), {
+        isPreferred: !target.isPreferred,
+        lastUpdated: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("Error updating preferred status:", err);
+      message.error("Failed to update preferred status");
+    }
   };
 
-  const filteredStations = fuelStations.filter(station =>
-    station.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    station.brand.toLowerCase().includes(searchText.toLowerCase()) ||
-    station.address.toLowerCase().includes(searchText.toLowerCase()) ||
-    station.city.toLowerCase().includes(searchText.toLowerCase())
+  const filteredStations = fuelStations.filter(
+    (station) =>
+      station.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      station.brand.toLowerCase().includes(searchText.toLowerCase()) ||
+      station.address.toLowerCase().includes(searchText.toLowerCase()) ||
+      station.city.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const columns = [
+  const columns: ColumnsType<FuelStation> = [
     {
-      title: 'Station Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Station Name",
+      dataIndex: "name",
+      key: "name",
       sorter: (a: FuelStation, b: FuelStation) => a.name.localeCompare(b.name),
       render: (text: string, record: FuelStation) => (
         <Space direction="vertical" size="small">
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
             <Text strong>{text}</Text>
-            {record.isPreferred && (
-              <StarOutlined style={{ color: '#faad14', marginLeft: '8px' }} />
-            )}
+            {record.isPreferred && <StarOutlined style={{ color: "#faad14", marginLeft: "8px" }} />}
           </div>
           <Tag color={getBrandColor(record.brand)}>{record.brand}</Tag>
         </Space>
       ),
     },
     {
-      title: 'Location',
-      key: 'location',
+      title: "Location",
+      key: "location",
       render: (_: any, record: FuelStation) => (
         <Space direction="vertical" size="small">
           <Text>{record.address}</Text>
-          <Text type="secondary">{record.city}, {record.state} {record.zipCode}</Text>
+          <Text type="secondary">
+            {record.city}, {record.state} {record.zipCode}
+          </Text>
         </Space>
       ),
       sorter: (a: FuelStation, b: FuelStation) => a.city.localeCompare(b.city),
     },
     {
-      title: 'Price/L',
-      dataIndex: 'pricePerLiter',
-      key: 'pricePerLiter',
+      title: "Price/L",
+      dataIndex: "pricePerLiter",
+      key: "pricePerLiter",
       render: (text: number) => `$${text.toFixed(3)}`,
       sorter: (a: FuelStation, b: FuelStation) => a.pricePerLiter - b.pricePerLiter,
     },
     {
-      title: 'Rating',
-      dataIndex: 'rating',
-      key: 'rating',
+      title: "Rating",
+      dataIndex: "rating",
+      key: "rating",
       render: (text: number) => <Rate disabled defaultValue={text} allowHalf />,
       sorter: (a: FuelStation, b: FuelStation) => a.rating - b.rating,
     },
     {
-      title: 'Hours',
-      dataIndex: 'operatingHours',
-      key: 'operatingHours',
+      title: "Hours",
+      dataIndex: "operatingHours",
+      key: "operatingHours",
     },
     {
-      title: 'Card Access',
-      dataIndex: 'hasCardAccess',
-      key: 'hasCardAccess',
-      render: (text: boolean) => (
-        text ? 
-          <Tag icon={<CheckCircleOutlined />} color="success">Yes</Tag> : 
-          <Tag icon={<CloseCircleOutlined />} color="default">No</Tag>
-      ),
+      title: "Card Access",
+      dataIndex: "hasCardAccess",
+      key: "hasCardAccess",
+      render: (text: boolean) =>
+        text ? (
+          <Tag icon={<CheckCircleOutlined />} color="success">
+            Yes
+          </Tag>
+        ) : (
+          <Tag icon={<CloseCircleOutlined />} color="default">
+            No
+          </Tag>
+        ),
       filters: [
-        { text: 'Has Card Access', value: true },
-        { text: 'No Card Access', value: false },
+        { text: "Has Card Access", value: true },
+        { text: "No Card Access", value: false },
       ],
-      onFilter: (value: boolean, record: FuelStation) => record.hasCardAccess === value,
+      onFilter: (value, record) => record.hasCardAccess === (value === true || value === "true"),
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
       render: (text: string) => getStatusTag(text),
       filters: [
-        { text: 'Active', value: 'active' },
-        { text: 'Inactive', value: 'inactive' },
-        { text: 'Maintenance', value: 'maintenance' },
+        { text: "Active", value: "active" },
+        { text: "Inactive", value: "inactive" },
+        { text: "Maintenance", value: "maintenance" },
       ],
-      onFilter: (value: string, record: FuelStation) => record.status === value,
+      onFilter: (value, record) => record.status === value,
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       render: (_: any, record: FuelStation) => (
         <Space size="small">
-          <Button 
-            icon={<EyeOutlined />} 
-            type="link"
-            size="small"
-            title="View Details"
-          />
-          <Button 
-            icon={<EditOutlined />} 
+          <Button icon={<EyeOutlined />} type="link" size="small" title="View Details" />
+          <Button
+            icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
             type="link"
             size="small"
             title="Edit"
           />
-          <Button 
-            icon={<StarOutlined />} 
+          <Button
+            icon={<StarOutlined />}
             onClick={() => togglePreferred(record.id)}
             type="link"
             size="small"
-            style={{ color: record.isPreferred ? '#faad14' : '#d9d9d9' }}
-            title={record.isPreferred ? 'Remove from Preferred' : 'Add to Preferred'}
+            style={{ color: record.isPreferred ? "#faad14" : "#d9d9d9" }}
+            title={record.isPreferred ? "Remove from Preferred" : "Add to Preferred"}
           />
-          <Button 
-            icon={<DeleteOutlined />} 
+          <Button
+            icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.id)}
             type="link"
             danger
@@ -326,17 +347,28 @@ const FuelStations: React.FC = () => {
   ];
 
   // Calculate summary statistics
-  const preferredStations = fuelStations.filter(station => station.isPreferred).length;
-  const avgPrice = fuelStations.reduce((sum, station) => sum + station.pricePerLiter, 0) / fuelStations.length;
-  const avgRating = fuelStations.reduce((sum, station) => sum + station.rating, 0) / fuelStations.length;
+  const preferredStations = fuelStations.filter((station) => station.isPreferred).length;
+  const avgPrice = fuelStations.length
+    ? fuelStations.reduce((sum, station) => sum + station.pricePerLiter, 0) / fuelStations.length
+    : 0;
+  const avgRating = fuelStations.length
+    ? fuelStations.reduce((sum, station) => sum + station.rating, 0) / fuelStations.length
+    : 0;
 
   return (
     <div className="fuel-stations-page">
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "24px",
+          }}
+        >
           <div>
             <Title level={3}>
-              <EnvironmentOutlined style={{ marginRight: '8px' }} />
+              <EnvironmentOutlined style={{ marginRight: "8px" }} />
               Fuel Stations
             </Title>
             <Text type="secondary">
@@ -344,22 +376,18 @@ const FuelStations: React.FC = () => {
             </Text>
           </div>
           <Space>
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />}
-              onClick={() => setIsModalVisible(true)}
-            >
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
               Add Station
             </Button>
           </Space>
         </div>
 
-        <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
           <Col xs={24} sm={12} md={6}>
             <Card>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: "center" }}>
                 <Text type="secondary">Total Stations</Text>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1890ff' }}>
+                <div style={{ fontSize: "24px", fontWeight: "bold", color: "#1890ff" }}>
                   {fuelStations.length}
                 </div>
               </div>
@@ -367,9 +395,9 @@ const FuelStations: React.FC = () => {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Card>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: "center" }}>
                 <Text type="secondary">Preferred Stations</Text>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#faad14' }}>
+                <div style={{ fontSize: "24px", fontWeight: "bold", color: "#faad14" }}>
                   {preferredStations}
                 </div>
               </div>
@@ -377,9 +405,9 @@ const FuelStations: React.FC = () => {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Card>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: "center" }}>
                 <Text type="secondary">Avg. Price</Text>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#52c41a' }}>
+                <div style={{ fontSize: "24px", fontWeight: "bold", color: "#52c41a" }}>
                   ${avgPrice.toFixed(3)}
                 </div>
               </div>
@@ -387,9 +415,9 @@ const FuelStations: React.FC = () => {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Card>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: "center" }}>
                 <Text type="secondary">Avg. Rating</Text>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#722ed1' }}>
+                <div style={{ fontSize: "24px", fontWeight: "bold", color: "#722ed1" }}>
                   {avgRating.toFixed(1)} ⭐
                 </div>
               </div>
@@ -397,7 +425,7 @@ const FuelStations: React.FC = () => {
           </Col>
         </Row>
 
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: "16px" }}>
           <Search
             placeholder="Search stations..."
             value={searchText}
@@ -409,10 +437,11 @@ const FuelStations: React.FC = () => {
 
         <Divider orientation="left">Station Directory</Divider>
 
-        <Table 
-          dataSource={filteredStations} 
-          columns={columns} 
+        <Table
+          dataSource={filteredStations}
+          columns={columns}
           rowKey="id"
+          loading={loading}
           pagination={{ pageSize: 10 }}
           expandable={{
             expandedRowRender: (record) => (
@@ -424,8 +453,10 @@ const FuelStations: React.FC = () => {
                       <Text>📞 {record.phone}</Text>
                       <Text strong>Services:</Text>
                       <Space wrap>
-                        {record.services.map(service => (
-                          <Tag key={service} color="blue">{service}</Tag>
+                        {record.services.map((service) => (
+                          <Tag key={service} color="blue">
+                            {service}
+                          </Tag>
                         ))}
                       </Space>
                     </Space>
@@ -445,7 +476,7 @@ const FuelStations: React.FC = () => {
         />
 
         <Modal
-          title={editingStation ? 'Edit Fuel Station' : 'Add Fuel Station'}
+          title={editingStation ? "Edit Fuel Station" : "Add Fuel Station"}
           open={isModalVisible}
           onCancel={() => {
             setIsModalVisible(false);
@@ -455,17 +486,13 @@ const FuelStations: React.FC = () => {
           footer={null}
           width={800}
         >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleAddEdit}
-          >
+          <Form form={form} layout="vertical" onFinish={handleAddEdit}>
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
                   name="name"
                   label="Station Name"
-                  rules={[{ required: true, message: 'Please enter station name' }]}
+                  rules={[{ required: true, message: "Please enter station name" }]}
                 >
                   <Input placeholder="e.g., Shell Travel Center" />
                 </Form.Item>
@@ -474,7 +501,7 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="brand"
                   label="Brand"
-                  rules={[{ required: true, message: 'Please select a brand' }]}
+                  rules={[{ required: true, message: "Please select a brand" }]}
                 >
                   <Select placeholder="Select brand">
                     <Option value="Shell">Shell</Option>
@@ -490,7 +517,7 @@ const FuelStations: React.FC = () => {
             <Form.Item
               name="address"
               label="Address"
-              rules={[{ required: true, message: 'Please enter address' }]}
+              rules={[{ required: true, message: "Please enter address" }]}
             >
               <Input placeholder="Street address" />
             </Form.Item>
@@ -500,7 +527,7 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="city"
                   label="City"
-                  rules={[{ required: true, message: 'Please enter city' }]}
+                  rules={[{ required: true, message: "Please enter city" }]}
                 >
                   <Input placeholder="City" />
                 </Form.Item>
@@ -509,7 +536,7 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="state"
                   label="State"
-                  rules={[{ required: true, message: 'Please enter state' }]}
+                  rules={[{ required: true, message: "Please enter state" }]}
                 >
                   <Input placeholder="State" />
                 </Form.Item>
@@ -518,7 +545,7 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="zipCode"
                   label="ZIP Code"
-                  rules={[{ required: true, message: 'Please enter ZIP code' }]}
+                  rules={[{ required: true, message: "Please enter ZIP code" }]}
                 >
                   <Input placeholder="ZIP Code" />
                 </Form.Item>
@@ -530,7 +557,7 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="phone"
                   label="Phone"
-                  rules={[{ required: true, message: 'Please enter phone number' }]}
+                  rules={[{ required: true, message: "Please enter phone number" }]}
                 >
                   <Input placeholder="(555) 123-4567" />
                 </Form.Item>
@@ -539,11 +566,11 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="pricePerLiter"
                   label="Price per Liter ($)"
-                  rules={[{ required: true, message: 'Please enter price' }]}
+                  rules={[{ required: true, message: "Please enter price" }]}
                 >
-                  <InputNumber 
-                    style={{ width: '100%' }} 
-                    min={0} 
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={0}
                     precision={3}
                     placeholder="1.250"
                   />
@@ -556,7 +583,7 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="operatingHours"
                   label="Operating Hours"
-                  rules={[{ required: true, message: 'Please enter operating hours' }]}
+                  rules={[{ required: true, message: "Please enter operating hours" }]}
                 >
                   <Input placeholder="e.g., 24/7 or 6:00 AM - 10:00 PM" />
                 </Form.Item>
@@ -565,11 +592,11 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="rating"
                   label="Rating"
-                  rules={[{ required: true, message: 'Please provide a rating' }]}
+                  rules={[{ required: true, message: "Please provide a rating" }]}
                 >
-                  <InputNumber 
-                    style={{ width: '100%' }} 
-                    min={1} 
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={1}
                     max={5}
                     step={0.1}
                     precision={1}
@@ -594,7 +621,7 @@ const FuelStations: React.FC = () => {
                 <Form.Item
                   name="status"
                   label="Status"
-                  rules={[{ required: true, message: 'Please select status' }]}
+                  rules={[{ required: true, message: "Please select status" }]}
                 >
                   <Select placeholder="Select status">
                     <Option value="active">Active</Option>
@@ -605,10 +632,7 @@ const FuelStations: React.FC = () => {
               </Col>
             </Row>
 
-            <Form.Item
-              name="services"
-              label="Services"
-            >
+            <Form.Item name="services" label="Services">
               <Select mode="multiple" placeholder="Select available services">
                 <Option value="Diesel">Diesel</Option>
                 <Option value="DEF">DEF (Diesel Exhaust Fluid)</Option>
@@ -624,13 +648,15 @@ const FuelStations: React.FC = () => {
             <Form.Item>
               <Space>
                 <Button type="primary" htmlType="submit">
-                  {editingStation ? 'Update' : 'Add'} Station
+                  {editingStation ? "Update" : "Add"} Station
                 </Button>
-                <Button onClick={() => {
-                  setIsModalVisible(false);
-                  setEditingStation(null);
-                  form.resetFields();
-                }}>
+                <Button
+                  onClick={() => {
+                    setIsModalVisible(false);
+                    setEditingStation(null);
+                    form.resetFields();
+                  }}
+                >
                   Cancel
                 </Button>
               </Space>

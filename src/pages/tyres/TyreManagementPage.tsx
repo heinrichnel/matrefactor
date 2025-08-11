@@ -154,9 +154,8 @@ const TyreManagementPage: React.FC = () => {
     "summary"
   );
 
-  const { brands } = useTyreReferenceData(); // Corrected: Removed TYRE_BRANDS as it's not on the context type
-  const { currentUser } = useAuth();
-  const userId = currentUser?.uid;
+  const { brands } = useTyreReferenceData();
+  const [brandFilter, setBrandFilter] = useState<string>("all");
 
   // Define defaultNewTyre using Enum members and ensuring all required fields are present
   // This is wrapped in useMemo to prevent re-creation on every render, which is good practice.
@@ -267,8 +266,8 @@ const TyreManagementPage: React.FC = () => {
     const matchesSearch = !searchQuery || searchableText.includes(searchQuery.toLowerCase());
     // Directly compare with filterStatus, which is now TyreStatus or null
     const matchesFilter = !filterStatus || tyre.status === filterStatus;
-
-    return matchesSearch && matchesFilter;
+    const matchesBrand = brandFilter === "all" || tyre.brand === brandFilter;
+    return matchesSearch && matchesFilter && matchesBrand;
   });
 
   // Convert tyres to inventory format for TyreInventoryStats
@@ -328,14 +327,10 @@ const TyreManagementPage: React.FC = () => {
       // Reference to the tyre document
       const tyreRef = doc(db, "tyres", data.id);
 
-      // Create a copy of the data without the id
-      const { id, ...dataWithoutId } = data; // Destructuring 'id' out
-
-      // Update the document
-      await updateDoc(tyreRef, {
-        ...dataWithoutId,
-        updatedAt: serverTimestamp(),
-      });
+      // Create a shallow copy without id field for update
+      const dataWithoutId = { ...data } as any;
+      delete (dataWithoutId as any).id;
+      await updateDoc(tyreRef, { ...dataWithoutId, updatedAt: serverTimestamp() });
 
       // Update the tyre in the local state
       setTyres((prevTyres) => prevTyres.map((tyre) => (tyre.id === data.id ? data : tyre)));
@@ -600,7 +595,7 @@ const TyreManagementPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button
                     variant={filterStatus === null ? "primary" : "outline"}
                     size="sm"
@@ -643,6 +638,20 @@ const TyreManagementPage: React.FC = () => {
                   >
                     Scrapped
                   </Button>
+                  {brands?.length ? (
+                    <select
+                      value={brandFilter}
+                      onChange={(e) => setBrandFilter(e.target.value)}
+                      className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                    >
+                      <option value="all">All Brands</option>
+                      {brands.map((b: any) => (
+                        <option key={b.id || b.name} value={b.name}>
+                          {b.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
                 </div>
               </div>
 
@@ -938,6 +947,3 @@ const TyreManagementPage: React.FC = () => {
 };
 
 export default TyreManagementPage;
-function useAuth(): { currentUser: any } {
-  throw new Error("Function not implemented.");
-}
