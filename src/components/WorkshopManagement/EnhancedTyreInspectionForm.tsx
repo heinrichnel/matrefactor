@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import QRCode from "qrcode.react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
+import { QRCodeSVG } from "qrcode.react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import SignaturePad from "react-signature-canvas";
 
 // 1. Import your custom useCapacitor hook (update path as needed)
@@ -387,7 +387,7 @@ const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
           <div className="mt-6 text-center">
             <p className="text-sm font-medium text-gray-700 mb-2">Tyre QR Code:</p>
             <div className="inline-block bg-white p-3 rounded-md shadow-sm border border-gray-200">
-              <QRCode
+              <QRCodeSVG
                 value={`${window.location.origin}/workshop/tyres/scan?fleet=${vehicleId}&position=${tyrePosition}`}
                 size={150}
                 level="H"

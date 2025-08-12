@@ -100,14 +100,12 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
         ...record,
         probeReading: probeValue,
         probeDiscrepancy: diff,
-        probeDiscrepancyPercentage: percentage,
         probeVerificationNotes: verificationNotes,
         witnessName,
-        verified: isVerified,
-        verificationDate: new Date().toISOString(),
+        probeVerified: isVerified,
+        probeVerifiedAt: new Date().toISOString(),
         photoEvidenceUrl: photoUrl,
         photoEvidenceName: photoEvidence?.name || record.photoEvidenceName,
-        flagged: Math.abs(percentage) > 5,
       });
 
       // Add audit log
@@ -156,7 +154,7 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Verify Diesel Consumption with Probe" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Verify Diesel Consumption with Probe">
       <div className="space-y-6">
         {/* Header information */}
         <div className="bg-gray-50 p-4 rounded-md">

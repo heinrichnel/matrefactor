@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { FLEET_NUMBERS } from "../../../types/index";
-import { CLIENTS, DRIVERS, Trip } from "../../../types/index";
+import { useWialonUnits } from "../../../hooks/useWialonUnits";
+import { CLIENTS, DRIVERS, FLEET_NUMBERS, Trip } from "../../../types/index";
 import Button from "../../ui/Button";
 import { Input, Select, TextArea } from "../../ui/FormElements";
-import { useWialonUnits } from "../../../hooks/useWialonUnits";
 
 interface TripFormProps {
   trip?: Trip;
@@ -114,7 +113,13 @@ export const TripForm: React.FC<TripFormProps> = ({
             const selected = e.target.value;
             setFleetNumber(selected);
             const unit = wialonUnits?.find((u) => u.name === selected);
-            setFleetUnitId(unit?.id ?? "");
+            setFleetUnitId(
+              unit?.id !== undefined && unit?.id !== null
+                ? typeof unit.id === "string"
+                  ? Number(unit.id)
+                  : unit.id
+                : ""
+            );
           }}
           options={[
             { value: "", label: "Select fleet number..." },

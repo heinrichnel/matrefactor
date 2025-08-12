@@ -1,10 +1,17 @@
-
 import React from 'react';
 import PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
-function CardHeader(props) {
+interface CardHeaderProps {
+  title?: React.ReactNode;
+  subheader?: React.ReactNode;
+  avatar?: React.ReactNode;
+  action?: React.ReactNode;
+  sx?: object;
+}
+
+const CardHeader: React.FC<CardHeaderProps> = (props) => {
   const { title, subheader, avatar, action, sx, ...other } = props;
 
   return (
@@ -27,7 +34,7 @@ function CardHeader(props) {
       {action && <Box>{action}</Box>}
     </Box>
   );
-}
+};
 
 CardHeader.propTypes = {
   action: PropTypes.node,

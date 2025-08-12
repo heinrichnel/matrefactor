@@ -1,8 +1,8 @@
-import { JobCardDetail, JobCardTask } from "@/components/Models/Workshop/JobCardDetailModal";
-import JobCardHeader from "@/components/WorkshopManagement/JobCardHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import JobCardHeader from "@/components/WorkshopManagement/JobCardHeader";
 import TaskManager from "@/components/WorkshopManagement/TaskManager";
 import { db } from "@/firebase"; // Your Firestore instance
+import { JobCardTask } from "@/types";
 import { format } from "date-fns";
 import { doc, setDoc } from "firebase/firestore"; // Firestore functions
 import { Save, X } from "lucide-react";
@@ -12,8 +12,33 @@ import { v4 as uuidv4 } from "uuid";
 import Button from "../ui/Button";
 import Card, { CardContent } from "../ui/Card";
 
+// Local shape for job card details used in this page
+interface LocalJobCardDetail {
+  id: string;
+  woNumber: string;
+  vehicle: string;
+  model: string;
+  odometer: number;
+  status: string;
+  priority: string;
+  createdAt: string;
+  dueDate: string;
+  assigned: string[];
+  memo: string;
+  tasks: JobCardTask[];
+  parts: any[];
+  labor: any[];
+  costs: any[];
+  attachments: any[];
+  remarks: any[];
+  timeLog: any[];
+  auditLog: any[];
+  canEdit: boolean;
+  rcaRequired?: boolean;
+}
+
 // Helper function to create an empty job card
-const createEmptyJobCard = (userName: string): JobCardDetail => {
+const createEmptyJobCard = (userName: string): LocalJobCardDetail => {
   const now = new Date().toISOString();
   return {
     id: uuidv4(),
@@ -54,21 +79,19 @@ const NewJobCardPage = () => {
   const navigate = useNavigate();
   const userName = "John Doe"; // Get from Auth Context in a real app
 
-  const [jobCardData, setJobCardData] = useState<JobCardDetail>(createEmptyJobCard(userName));
+  const [jobCardData, setJobCardData] = useState<LocalJobCardDetail>(createEmptyJobCard(userName));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [error, setError] = useState<string | null>(null);
 
-  const updateJobCardField = (field: keyof JobCardDetail, value: any) => {
+  const updateJobCardField = (field: keyof LocalJobCardDetail, value: any) => {
     setJobCardData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleTaskAdd = (task: Omit<JobCardTask, "id">) => {
-    const newTask = {
-      ...task,
+    const newTask: JobCardTask = {
+      ...(task as any),
       id: uuidv4(),
-      addedDate: new Date().toISOString(),
-      addedBy: userName,
     };
     setJobCardData((prev) => ({ ...prev, tasks: [...prev.tasks, newTask] }));
   };

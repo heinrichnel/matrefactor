@@ -38,7 +38,18 @@ type WialonLastMessage = {
  * a list of sensors, message history for tracking, and functions to select a unit
  * and calculate sensor values.
  */
-export const useWialonUnits = (session?: WialonSession, loggedIn: boolean = false) => {
+// Backward compatible signature: first param may be a session or a boolean (loggedIn)
+export const useWialonUnits = (
+  sessionOrLoggedIn?: WialonSession | boolean,
+  loggedInParam: boolean = false
+) => {
+  // Derive session and loggedIn from flexible params
+  const derivedSession: WialonSession | undefined =
+    typeof sessionOrLoggedIn === "object"
+      ? (sessionOrLoggedIn as WialonSession)
+      : (window as any)?.wialon?.core?.Session?.getInstance?.();
+  const loggedIn: boolean =
+    typeof sessionOrLoggedIn === "boolean" ? sessionOrLoggedIn : loggedInParam;
   const [units, setUnits] = useState<WialonUnit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<WialonUnit | null>(null);
   const [lastMessage, setLastMessage] = useState<WialonLastMessage | null>(null);
@@ -51,7 +62,7 @@ export const useWialonUnits = (session?: WialonSession, loggedIn: boolean = fals
   // Effect to load all units initially
   useEffect(() => {
     if (!window.wialon || !window.wialon.item) return;
-    if (!session) return;
+    if (!derivedSession) return;
 
     // Load necessary libraries and data flags for units, last message, and sensors.
     const flags =
@@ -59,14 +70,14 @@ export const useWialonUnits = (session?: WialonSession, loggedIn: boolean = fals
       (window.wialon.item as any).Unit.dataFlag.lastMessage |
       (window.wialon.item as any).Unit.dataFlag.sensors;
 
-    session.loadLibrary("itemIcon");
-    session.loadLibrary("unitSensors");
+    derivedSession.loadLibrary("itemIcon");
+    derivedSession.loadLibrary("unitSensors");
 
     setLoading(true); // Updated to loading
     setError(null);
 
     // Use updateDataFlags to load all unit items
-    session.updateDataFlags(
+    derivedSession.updateDataFlags(
       [{ type: "type", data: "avl_unit", flags: flags, mode: 0 }],
       (code: number) => {
         if (code) {
@@ -75,7 +86,7 @@ export const useWialonUnits = (session?: WialonSession, loggedIn: boolean = fals
           return;
         }
 
-        const rawUnits = session.getItems("avl_unit");
+        const rawUnits = derivedSession.getItems("avl_unit");
         if (rawUnits && rawUnits.length > 0) {
           const formattedUnits = rawUnits.map((u: any) => ({
             id: u.getId(),
@@ -95,7 +106,7 @@ export const useWialonUnits = (session?: WialonSession, loggedIn: boolean = fals
         setLoading(false); // Updated to loading
       }
     );
-  }, [session, loggedIn]);
+  }, [derivedSession, loggedIn]);
 
   // Effect to handle cleanup of the event listener when the component unmounts
   useEffect(() => {

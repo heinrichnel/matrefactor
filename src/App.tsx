@@ -74,21 +74,24 @@ import { startNetworkMonitoring } from "./utils/networkDetection";
 import { initOfflineCache } from "./utils/offlineCache";
 import { syncOfflineOperations } from "./utils/offlineOperations";
 
+// Define a single status enum to manage app state more cleanly
+enum AppStatus {
+  Loading = "loading",
+  Ready = "ready",
+  Error = "error",
+}
+
 const App: React.FC = () => {
+  const [status, setStatus] = useState<AppStatus>(AppStatus.Loading);
   const [connectionError, setConnectionError] = useState<Error | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     const initializeServices = async () => {
       try {
-        // Check if we're in a development environment with debugging enabled
-        const debugMode = import.meta.env.VITE_DEBUG_DEPLOYMENT;
-
-        if (debugMode) {
+        // Show fallback for debugging or critical errors from env variables
+        if (import.meta.env.VITE_DEBUG_DEPLOYMENT || import.meta.env.VITE_SHOW_FALLBACK) {
           console.log("🐛 Debug mode enabled - showing fallback");
-          setHasError(true);
-          setIsInitialized(true);
+          setStatus(AppStatus.Error);
           return;
         }
 
@@ -96,31 +99,23 @@ const App: React.FC = () => {
           console.error("Error handler triggered:", error);
           if (error.severity === ErrorSeverity.FATAL) {
             setConnectionError(error.originalError);
-            setHasError(true);
+            setStatus(AppStatus.Error);
           }
         });
 
-        // Wrap initialization in try-catch to prevent blocking
+        // Initialize services and handle potential errors
         try {
           await initializeConnectionMonitoring();
-        } catch (error) {
-          console.warn("Failed to initialize Firebase connection:", error);
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          setConnectionError(
-            new Error(`Failed to initialize Firebase connection: ${errorMessage}`)
-          );
-        }
-
-        try {
           await handleError(async () => await initOfflineCache(), {
             category: ErrorCategory.DATABASE,
             context: { component: "App", operation: "initOfflineCache" },
             maxRetries: 3,
           });
         } catch (error) {
-          console.warn("Failed to initialize offline cache:", error);
+          console.warn("Initialization failed:", error);
           const errorMessage = error instanceof Error ? error.message : String(error);
-          setConnectionError(new Error(`Failed to initialize offline cache: ${errorMessage}`));
+          setConnectionError(new Error(`Failed to initialize: ${errorMessage}`));
+          setStatus(AppStatus.Error);
         }
 
         startNetworkMonitoring(30000);
@@ -133,12 +128,14 @@ const App: React.FC = () => {
             });
           } catch {
             // Error is already handled by handleError utility
-            // This empty catch prevents unhandled promise rejections
           }
         };
         window.addEventListener("online", handleOnline);
 
-        setIsInitialized(true);
+        // If no fatal errors occurred, set status to ready
+        if (status !== AppStatus.Error) {
+          setStatus(AppStatus.Ready);
+        }
 
         return () => {
           window.removeEventListener("online", handleOnline);
@@ -146,16 +143,14 @@ const App: React.FC = () => {
         };
       } catch (error) {
         console.error("Failed to initialize services:", error);
-        setHasError(true);
-        setIsInitialized(true); // Still mark as initialized to show the app
+        setStatus(AppStatus.Error);
       }
     };
 
     initializeServices();
-  }, []);
+  }, [status]); // Add status to dependencies to prevent infinite loop if an error occurs
 
-  // Show loading state until initialization is complete
-  if (!isInitialized) {
+  if (status === AppStatus.Loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -166,8 +161,8 @@ const App: React.FC = () => {
     );
   }
 
-  // Show fallback for debugging or critical errors
-  if (hasError || import.meta.env.VITE_SHOW_FALLBACK) {
+  if (status === AppStatus.Error) {
+    // Show a detailed error or a generic fallback
     return <DeploymentFallback />;
   }
 
@@ -176,7 +171,6 @@ const App: React.FC = () => {
       <AppProviders>
         {/* Application alerts and notifications */}
         <div className="fixed top-0 left-0 right-0 z-50 p-4">
-          <FirestoreConnectionError />
           {connectionError && <FirestoreConnectionError error={connectionError} />}
         </div>
 

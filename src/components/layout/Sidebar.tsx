@@ -1,23 +1,3 @@
-import {
-  Bell,
-  Briefcase,
-  ChevronDown,
-  ChevronRight,
-  DollarSign,
-  FileText,
-  Fuel,
-  Home,
-  LineChart,
-  Map,
-  Menu,
-  Package,
-  Settings,
-  Tractor,
-  Truck,
-  Users,
-  Warehouse,
-  X,
-} from "lucide-react";
 import React, { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
@@ -26,7 +6,6 @@ import { twMerge } from "tailwind-merge";
 interface NavItem {
   name: string;
   path: string;
-  icon: React.ElementType;
   children?: NavItem[];
   badge?: {
     text: string;
@@ -43,21 +22,19 @@ const navSections: NavSection[] = [
   {
     title: "Dashboard",
     items: [
-      { name: "Dashboard", path: "/dashboard", icon: Home },
+      { name: "Dashboard", path: "/dashboard" },
       {
         name: "Analytics",
         path: "/analytics",
-        icon: LineChart,
         children: [
-          { name: "YTD KPIs", path: "/ytd-kpis", icon: DollarSign },
-          { name: "Performance", path: "/analytics", icon: LineChart },
-          { name: "Fleet Analytics", path: "/analytics/fleet", icon: Truck },
+          { name: "YTD KPIs", path: "/ytd-kpis" },
+          { name: "Performance", path: "/analytics" },
+          { name: "Fleet Analytics", path: "/analytics/fleet" },
         ],
       },
       {
         name: "Compliance",
         path: "/compliance",
-        icon: Briefcase,
         badge: { text: "New", color: "bg-green-500" },
       },
     ],
@@ -65,99 +42,95 @@ const navSections: NavSection[] = [
   {
     title: "Trips",
     items: [
-      { name: "Trip Manager", path: "/trips", icon: Truck },
+      { name: "Trip Manager", path: "/trips" },
       {
         name: "Trip Planning",
         path: "/trips/planning",
-        icon: Map,
         children: [
-          { name: "Load Planning", path: "/trips/load-planning", icon: Package },
-          { name: "Route Planning", path: "/route-planning", icon: Map },
+          { name: "Load Planning", path: "/trips/load-planning" },
+          { name: "Route Planning", path: "/route-planning" },
           {
             name: "Route Optimization",
             path: "/route-optimization",
-            icon: Map,
             badge: { text: "Beta", color: "bg-blue-500" },
           },
         ],
       },
-      { name: "Trip Dashboard", path: "/trips/dashboard", icon: LineChart },
+      { name: "Trip Dashboard", path: "/trips/dashboard" },
     ],
   },
   {
     title: "Diesel",
     items: [
-      { name: "Diesel Dashboard", path: "/diesel", icon: Fuel },
-      { name: "Management", path: "/diesel/manage", icon: Briefcase },
-      { name: "Fuel Logs", path: "/diesel/fuel-logs", icon: FileText },
-      { name: "Theft Detection", path: "/diesel/fuel-theft", icon: Briefcase },
+      { name: "Diesel Dashboard", path: "/diesel" },
+      { name: "Management", path: "/diesel/manage" },
+      { name: "Fuel Logs", path: "/diesel/fuel-logs" },
+      { name: "Theft Detection", path: "/diesel/fuel-theft" },
     ],
   },
   {
     title: "Drivers",
     items: [
-      { name: "Driver Management", path: "/drivers", icon: Users },
-      { name: "Performance", path: "/drivers/performance-analytics", icon: LineChart },
-      { name: "Safety Scores", path: "/drivers/safety-scores", icon: Briefcase },
-      { name: "Hours of Service", path: "/drivers/hours-of-service", icon: FileText },
+      { name: "Driver Management", path: "/drivers" },
+      { name: "Performance", path: "/drivers/performance-analytics" },
+      { name: "Safety Scores", path: "/drivers/safety-scores" },
+      { name: "Hours of Service", path: "/drivers/hours-of-service" },
     ],
   },
   {
     title: "Clients",
     items: [
-      { name: "Client Management", path: "/clients", icon: Users },
-      { name: "Client Dashboard", path: "/clients/dashboard", icon: LineChart },
-      { name: "Reports", path: "/clients/reports", icon: FileText },
-      { name: "Network Map", path: "/clients/network-map", icon: Map },
+      { name: "Client Management", path: "/clients" },
+      { name: "Client Dashboard", path: "/clients/dashboard" },
+      { name: "Reports", path: "/clients/reports" },
+      { name: "Network Map", path: "/clients/network-map" },
     ],
   },
   {
     title: "Invoices",
     items: [
-      { name: "Invoice Dashboard", path: "/invoices", icon: DollarSign },
-      { name: "Manage Invoices", path: "/invoices/manage", icon: FileText },
-      { name: "Pending", path: "/invoices/pending", icon: Briefcase },
-      { name: "Paid", path: "/invoices/paid", icon: Briefcase },
+      { name: "Invoice Dashboard", path: "/invoices" },
+      { name: "Manage Invoices", path: "/invoices/manage" },
+      { name: "Pending", path: "/invoices/pending" },
+      { name: "Paid", path: "/invoices/paid" },
     ],
   },
   {
     title: "Workshop & Inventory",
     items: [
-      { name: "Workshop", path: "/workshop", icon: Briefcase },
-      { name: "Inventory", path: "/workshop/inventory", icon: Warehouse },
-      { name: "Job Cards", path: "/workshop/job-cards", icon: Briefcase },
-      { name: "Inspections", path: "/workshop/inspections", icon: Briefcase },
+      { name: "Workshop", path: "/workshop" },
+      { name: "Inventory", path: "/workshop/inventory" },
+      { name: "Job Cards", path: "/workshop/job-cards" },
+      { name: "Inspections", path: "/workshop/inspections" },
     ],
   },
   {
     title: "Tyres",
     items: [
-      { name: "Tyre Management", path: "/tyres", icon: Tractor },
-      { name: "Tyre Dashboard", path: "/tyres/inventory", icon: LineChart },
-      { name: "Performance", path: "/tyres/performance", icon: Briefcase },
+      { name: "Tyre Management", path: "/tyres" },
+      { name: "Tyre Dashboard", path: "/tyres/inventory" },
+      { name: "Performance", path: "/tyres/performance" },
     ],
   },
   {
     title: "Maps & Tracking",
     items: [
-      { name: "Maps Dashboard", path: "/maps", icon: Map },
+      { name: "Maps Dashboard", path: "/maps" },
       {
         name: "Wialon Integration",
         path: "/maps/wialon",
-        icon: Wialon,
         children: [
-          { name: "Wialon Dashboard", path: "/maps/wialon", icon: Wialon },
-          { name: "Units & Tracking", path: "/maps/wialon/units", icon: Users },
-          { name: "Wialon Suite", path: "/maps/wialon/suite", icon: Settings },
+          { name: "Wialon Dashboard", path: "/maps/wialon" },
+          { name: "Units & Tracking", path: "/maps/wialon/units" },
+          { name: "Wialon Suite", path: "/maps/wialon/suite" },
           {
             name: "Live Tracking",
             path: "/maps/wialon/tracking",
-            icon: Map,
             badge: { text: "Live", color: "bg-red-500" },
           },
         ],
       },
-      { name: "Fleet Map", path: "/maps/fleet-map", icon: Truck },
+      { name: "Fleet Map", path: "/maps/fleet-map" },
     ],
   },
 ];
@@ -210,8 +183,7 @@ const NavItemComponent: React.FC<{
             )}
           >
             <div className="flex items-center">
-              <item.icon className="h-5 w-5 mr-3" />
-              <span>{item.name}</span>
+              <span className="truncate">{item.name}</span>
               {item.badge && (
                 <span
                   className={`ml-2 px-1.5 py-0.5 text-xs rounded-full text-white ${item.badge.color}`}
@@ -220,12 +192,8 @@ const NavItemComponent: React.FC<{
                 </span>
               )}
             </div>
-            <div className="transform transition-transform duration-200">
-              {isExpanded ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
+            <div className="transform transition-transform duration-200 text-gray-500 dark:text-gray-400">
+              {isExpanded ? "▼" : "►"}
             </div>
           </div>
 
@@ -258,7 +226,6 @@ const NavItemComponent: React.FC<{
             )
           }
         >
-          <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
           <span className="truncate">{item.name}</span>
           {item.badge && (
             <span
@@ -273,21 +240,16 @@ const NavItemComponent: React.FC<{
   );
 };
 
-const Sidebar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const closeSidebar = () => setIsOpen(false);
+// Update SidebarProps to receive the isOpen state and a function to close it.
+interface SidebarProps {
+  isOpen: boolean;
+  closeSidebar: () => void;
+}
 
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
   return (
     <>
-      {/* Mobile Sidebar Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-[60] block lg:hidden p-2 text-gray-700 bg-white rounded-md shadow-md"
-        aria-label={isOpen ? "Close menu" : "Open menu"}
-      >
-        <Menu className="h-6 w-6" />
-      </button>
-
+      {/* The mobile toggle button is now handled by the Navigation component */}
       {/* Backdrop for mobile */}
       <div
         className={twMerge(
@@ -316,7 +278,7 @@ const Sidebar: React.FC = () => {
             onClick={closeSidebar}
             className="lg:hidden p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           >
-            <X className="h-5 w-5" />
+            <span className="text-gray-500 dark:text-gray-400">Close</span>
           </button>
         </div>
 
@@ -324,7 +286,7 @@ const Sidebar: React.FC = () => {
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
-              <Users className="h-5 w-5" />
+              <span className="text-sm">AU</span>
             </div>
             <div className="ml-3">
               <p className="font-medium text-sm">Admin User</p>
@@ -332,10 +294,10 @@ const Sidebar: React.FC = () => {
             </div>
             <div className="ml-auto flex space-x-2">
               <button className="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                <Bell className="h-4 w-4" />
+                <span className="text-sm">Alerts</span>
               </button>
               <button className="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                <Settings className="h-4 w-4" />
+                <span className="text-sm">Settings</span>
               </button>
             </div>
           </div>

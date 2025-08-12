@@ -491,7 +491,7 @@ export const MobileWorkshopInspection: React.FC = () => {
               {categories.map((category) => (
                 <Button
                   key={category}
-                  variant={currentCategory === category ? "default" : ("outline" as const)}
+                  variant={currentCategory === category ? "default" : "outline"}
                   size="sm"
                   onClick={() => setCurrentCategory(category)}
                   className="whitespace-nowrap"

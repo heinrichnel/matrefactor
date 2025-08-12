@@ -18,6 +18,9 @@ import {
   getPositionsByFleet,
   getTyresByBrand,
   getTyresBySize,
+  getUniqueTyreBrands,
+  getUniqueTyrePatterns,
+  getUniqueTyreSizes,
   VENDORS,
 } from "../../utils/tyreConstants";
 import Button from "../ui/Button";
@@ -118,8 +121,8 @@ const TyreInspection: React.FC = () => {
   const [selectedTyre, setSelectedTyre] = useState<Tyre | null>(null);
 
   // Filtered tyre options based on selections
-  const [brandOptions, setBrandOptions] = useState<string[]>(TyreBrands);
-  const [patternOptions, setPatternOptions] = useState<string[]>(TyrePatterns);
+  const [brandOptions, setBrandOptions] = useState<string[]>(getUniqueTyreBrands());
+  const [patternOptions, setPatternOptions] = useState<string[]>(getUniqueTyrePatterns());
   // Track available positions for the selected fleet
   const [_, setPositionOptions] = useState<string[]>([]);
 
@@ -703,7 +706,10 @@ const TyreInspection: React.FC = () => {
                           label="Size"
                           value={formData.size}
                           onChange={(value) => handleChange("size", value)}
-                          options={TyreSizes.map((size) => ({ label: size, value: size }))}
+                          options={getUniqueTyreSizes().map((size: string) => ({
+                            label: size,
+                            value: size,
+                          }))}
                         />
 
                         <div className="grid grid-cols-3 gap-2">

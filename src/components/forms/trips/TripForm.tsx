@@ -123,7 +123,13 @@ export const TripForm: React.FC<TripFormProps> = ({
             const selected = e.target.value;
             setFleetNumber(selected);
             const unit = wialonUnits.find((u: any) => u.name === selected);
-            setFleetUnitId(unit?.id ?? "");
+            setFleetUnitId(
+              unit?.id !== undefined && unit?.id !== null
+                ? typeof unit.id === "string"
+                  ? Number(unit.id)
+                  : unit.id
+                : ""
+            );
           }}
           options={[
             { value: "", label: "Select fleet number..." },
