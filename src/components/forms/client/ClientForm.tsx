@@ -1,8 +1,8 @@
+import { Button } from "@/components/ui/Button";
 import { Building, Save, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../../context/AppContext";
 import { Client, CLIENT_INDUSTRIES, CLIENT_STATUSES, CLIENT_TYPES } from "../../../types/client";
-import Button from "../../ui/Button";
 import { Input, Select, TextArea } from "../../ui/FormElements";
 import Modal from "../../ui/Modal";
 

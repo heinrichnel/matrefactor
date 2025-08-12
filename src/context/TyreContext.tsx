@@ -6,7 +6,6 @@ import type {
   TyrePosition, // Import the new TyreInspectionRecord
   TyreStoreLocation,
 } from "../types/tyre"; // All types should now come from here
-import { listenToTyres } from "../types/tyres";
 import {
   addTyreInspection as addTyreInspectionToFirebase,
   deleteTyre,
@@ -14,6 +13,7 @@ import {
   getTyreInspections as getTyreInspectionsFromFirebase,
   getTyres, // Renamed to avoid conflict
   getTyresByVehicle,
+  listenToTyres,
   saveTyre,
 } from "../types/tyreStores";
 

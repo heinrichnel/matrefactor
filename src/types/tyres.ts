@@ -1,64 +1,13 @@
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { firestore, handleFirestoreError } from "../utils/firebaseConnectionHandler";
+// Compatibility shim: re-export canonical Tyre type and listener to avoid duplicate type definitions.
+export type { Tyre } from "./tyre";
+export { listenToTyres } from "./tyreStores";
 
-// The following import statement is added to include the constants and types you need.
-// The exact path and names depend on the content of your 'tyre' file.
-// Assuming the file exports these members correctly, this will work.
-
-
-/**
- * Listen to tyres collection in real-time
- * @param callback Function to call when tyres data changes
- * @returns Unsubscribe function to stop listening
- */
-export function listenToTyres(callback: (tyres: Tyre[]) => void) {
-  // Query with sorting for consistent ordering
-  const q = query(collection(firestore, "tyres"), orderBy("updatedAt", "desc"));
-
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const tyres = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        // Convert Firestore Timestamps to standard dates
-        if (data.createdAt) {
-          data.createdAt = data.createdAt.toDate
-            ? data.createdAt.toDate().toISOString()
-            : data.createdAt;
-        }
-        if (data.updatedAt) {
-          data.updatedAt = data.updatedAt.toDate
-            ? data.updatedAt.toDate().toISOString()
-            : data.updatedAt;
-        }
-        return { id: doc.id, ...data } as Tyre;
-      });
-      callback(tyres);
-    },
-    (error) => {
-      console.error("Error listening to tyres:", error);
-      handleFirestoreError(error);
-    }
-  );
-}
-
-export default {
-  listenToTyres,
-};
-
-export interface Tyre {
-  id: string;
-  serialNumber: string;
-  brand: string;
-  size: string; // This could be changed to TyreSize if it's a specific type.
-  // other tyre properties
-}
-
+// Deprecated interfaces maintained temporarily for backward compatibility.
+// Prefer importing from './tyre' moving forward.
 export interface Vehicle {
   id: string;
   registration: string;
   model: string;
-  // other vehicle properties
 }
 
 export interface Assignment {
@@ -67,5 +16,6 @@ export interface Assignment {
   vehicleId: string;
   assignedAt: Date;
   vehicle: Vehicle;
-  tyre: Tyre;
+  // Use canonical Tyre type here
+  tyre: import("./tyre").Tyre;
 }

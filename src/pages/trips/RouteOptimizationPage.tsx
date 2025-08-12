@@ -1,4 +1,4 @@
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import CardContent from "@/components/ui/CardContent";
 import CardHeader from "@/components/ui/CardHeader";
@@ -74,9 +74,9 @@ const RouteOptimizationPage: React.FC = () => {
 
       {/* Routes to Optimize */}
       <Card>
-        <CardHeader>
-          <h3 className="text-lg font-medium">Routes Recommended for Optimization</h3>
-        </CardHeader>
+        <CardHeader
+          title={<h3 className="text-lg font-medium">Routes Recommended for Optimization</h3>}
+        />
         <CardContent>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   BarChart,
   Building,
@@ -12,15 +13,14 @@ import {
   MapPin,
   Phone,
   Tag,
-  Users
-} from 'lucide-react';
-import React, { useState } from 'react';
-import Button from '../../components/ui/Button';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/badge';
-import { useAppContext } from '../../context/AppContext';
-import { Client, CLIENT_STATUSES, CLIENT_TYPES } from '../../types/client';
-import { formatCurrency, formatDate } from '../../utils/helpers';
+  Users,
+} from "lucide-react";
+import React, { useState } from "react";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import { Badge } from "../../components/ui/badge";
+import { useAppContext } from "../../context/AppContext";
+import { Client, CLIENT_STATUSES, CLIENT_TYPES } from "../../types/client";
+import { formatCurrency, formatDate } from "../../utils/helpers";
 
 interface ClientDetailProps {
   client: Client;
@@ -28,64 +28,65 @@ interface ClientDetailProps {
   onManageRelationships: () => void;
 }
 
-const ClientDetail: React.FC<ClientDetailProps> = ({
-  client,
-  onEdit,
-  onManageRelationships
-}) => {
+const ClientDetail: React.FC<ClientDetailProps> = ({ client, onEdit, onManageRelationships }) => {
   const { trips } = useAppContext();
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   // Get client status label
   const getStatusLabel = (status: string) => {
-    return CLIENT_STATUSES.find(s => s.value === status)?.label || status;
+    return CLIENT_STATUSES.find((s) => s.value === status)?.label || status;
   };
 
   // Get client type label
   const getTypeLabel = (type: string) => {
-    return CLIENT_TYPES.find(t => t.value === type)?.label || type;
+    return CLIENT_TYPES.find((t) => t.value === type)?.label || type;
   };
 
   // Get status badge class
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'archived': return 'bg-red-100 text-red-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "inactive":
+        return "bg-gray-100 text-gray-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "archived":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-blue-100 text-blue-800";
     }
   };
 
   // Calculate client metrics
   const calculateClientMetrics = () => {
     // Filter trips for this client
-    const clientTrips = trips.filter(trip => trip.clientName === client.name);
+    const clientTrips = trips.filter((trip) => trip.clientName === client.name);
 
     // Calculate revenue
     const totalRevenue = clientTrips.reduce((sum, trip) => sum + trip.baseRevenue, 0);
 
     // Calculate trip counts by status
-    const activeTrips = clientTrips.filter(trip => trip.status === 'active').length;
-    const completedTrips = clientTrips.filter(trip =>
-      trip.status === 'completed' || trip.status === 'invoiced' || trip.status === 'paid'
+    const activeTrips = clientTrips.filter((trip) => trip.status === "active").length;
+    const completedTrips = clientTrips.filter(
+      (trip) => trip.status === "completed" || trip.status === "invoiced" || trip.status === "paid"
     ).length;
 
     // Calculate invoiced amount and paid amount
     const invoicedAmount = clientTrips
-      .filter(trip => trip.status === 'invoiced' || trip.status === 'paid')
+      .filter((trip) => trip.status === "invoiced" || trip.status === "paid")
       .reduce((sum, trip) => sum + trip.baseRevenue, 0);
 
     const paidAmount = clientTrips
-      .filter(trip => trip.status === 'paid')
+      .filter((trip) => trip.status === "paid")
       .reduce((sum, trip) => sum + trip.baseRevenue, 0);
 
     // Calculate outstanding amount
     const outstandingAmount = invoicedAmount - paidAmount;
 
     // Calculate last trip date
-    const sortedTrips = [...clientTrips].sort((a, b) =>
-      new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
+    const sortedTrips = [...clientTrips].sort(
+      (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
     );
 
     const lastTripDate = sortedTrips.length > 0 ? sortedTrips[0].endDate : null;
@@ -98,7 +99,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
       invoicedAmount,
       paidAmount,
       outstandingAmount,
-      lastTripDate
+      lastTripDate,
     };
   };
 
@@ -128,16 +129,10 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               Are you sure you want to delete client "{client.name}"? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowConfirmDelete(false)}
-              >
+              <Button variant="outline" onClick={() => setShowConfirmDelete(false)}>
                 Cancel
               </Button>
-              <Button
-                color="danger"
-                onClick={handleDelete}
-              >
+              <Button color="danger" onClick={handleDelete}>
                 Delete
               </Button>
             </div>
@@ -158,7 +153,9 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                   <Badge className={`ml-3 ${getStatusClass(client.status)}`}>
                     {getStatusLabel(client.status)}
                   </Badge>
-                  <Badge className={`ml-2 ${client.type === 'internal' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                  <Badge
+                    className={`ml-2 ${client.type === "internal" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}
+                  >
                     {getTypeLabel(client.type)}
                   </Badge>
                 </div>
@@ -187,18 +184,10 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               >
                 Manage Relationships
               </Button>
-              <Button
-                variant="outline"
-                icon={<Edit className="w-4 h-4" />}
-                onClick={onEdit}
-              >
+              <Button variant="outline" icon={<Edit className="w-4 h-4" />} onClick={onEdit}>
                 Edit Client
               </Button>
-              <Button
-                variant="outline"
-                color="danger"
-                onClick={() => setShowConfirmDelete(true)}
-              >
+              <Button variant="outline" color="danger" onClick={() => setShowConfirmDelete(true)}>
                 Delete
               </Button>
             </div>
@@ -259,7 +248,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               <div>
                 <p className="text-sm text-gray-500">Last Trip</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {metrics.lastTripDate ? formatDate(metrics.lastTripDate) : 'No trips'}
+                  {metrics.lastTripDate ? formatDate(metrics.lastTripDate) : "No trips"}
                 </p>
                 <p className="text-xs text-gray-500">Most recent activity</p>
               </div>
@@ -306,7 +295,11 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                   <div className="flex items-center">
                     <Globe className="w-4 h-4 mr-2 text-gray-400" />
                     <a
-                      href={client.website.startsWith('http') ? client.website : `https://${client.website}`}
+                      href={
+                        client.website.startsWith("http")
+                          ? client.website
+                          : `https://${client.website}`
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline"
@@ -347,7 +340,8 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                     <div>
                       <p>{client.billingAddress.street}</p>
                       <p>
-                        {client.billingAddress.city}, {client.billingAddress.state} {client.billingAddress.postalCode}
+                        {client.billingAddress.city}, {client.billingAddress.state}{" "}
+                        {client.billingAddress.postalCode}
                       </p>
                       <p>{client.billingAddress.country}</p>
                     </div>
@@ -392,7 +386,9 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
               {client.creditLimit !== undefined && (
                 <div className="flex justify-between">
                   <p className="text-sm text-gray-500">Credit Limit</p>
-                  <p className="font-medium">{formatCurrency(client.creditLimit, client.currency)}</p>
+                  <p className="font-medium">
+                    {formatCurrency(client.creditLimit, client.currency)}
+                  </p>
                 </div>
               )}
 
@@ -456,29 +452,41 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
           <CardContent>
             {client.relationships.length > 0 ? (
               <div className="space-y-3">
-                {client.relationships.map(relationship => {
-                  const relatedClient = { name: 'Unknown Client', type: 'external', status: 'active' };
+                {client.relationships.map((relationship) => {
+                  const relatedClient = {
+                    name: "Unknown Client",
+                    type: "external",
+                    status: "active",
+                  };
 
                   // Get the relationship type label
                   const getRelationshipTypeLabel = (type: string) => {
                     switch (type) {
-                      case 'parent': return 'Parent Company';
-                      case 'subsidiary': return 'Subsidiary';
-                      case 'partner': return 'Business Partner';
-                      case 'competitor': return 'Competitor';
-                      default: return type;
+                      case "parent":
+                        return "Parent Company";
+                      case "subsidiary":
+                        return "Subsidiary";
+                      case "partner":
+                        return "Business Partner";
+                      case "competitor":
+                        return "Competitor";
+                      default:
+                        return type;
                     }
                   };
 
                   return (
-                    <div key={relationship.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={relationship.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div className="flex items-center">
                         <Building className="w-5 h-5 text-gray-400" />
                         <div className="ml-3">
                           <p className="text-sm font-medium text-gray-900">{relatedClient.name}</p>
                           <p className="text-xs text-gray-500">
                             {getRelationshipTypeLabel(relationship.relationType)}
-                            {relationship.notes ? ` • ${relationship.notes}` : ''}
+                            {relationship.notes ? ` • ${relationship.notes}` : ""}
                           </p>
                         </div>
                       </div>

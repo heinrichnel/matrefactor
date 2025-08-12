@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/Button";
 import { Box, Calendar, FileText, Info, Plus, Save, Trash } from "lucide-react";
 import React, { useState } from "react";
-import Button from "../../ui/Button";
 import { Card, CardContent } from "../../ui/Card";
 
 interface PartToReceive {

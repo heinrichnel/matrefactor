@@ -1,8 +1,8 @@
+import { Button } from "@/components/ui/Button";
+import { AlertTriangle, CheckCircle, Info, Shield, TrendingDown, TrendingUp } from "lucide-react";
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { AlertTriangle, CheckCircle, TrendingDown, TrendingUp, Shield, Info } from "lucide-react";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
 
 // Mock data for driver safety scores
 const mockSafetyData = [

@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/Button";
 import React, { useMemo } from "react";
 import useOfflineQuery from "../../hooks/useOfflineQuery";
-import Button from "../ui/Button";
 import Card, { CardContent, CardHeader } from "../ui/Card";
 
 /**

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   AlertTriangle,
   CheckCircle,
@@ -11,7 +12,6 @@ import * as React from "react";
 import { useState } from "react";
 import { useAppContext } from "../../../context/AppContext";
 import { useSyncContext } from "../../../context/SyncContext";
-import Button from "../../ui/Button";
 import Modal from "../../ui/Modal";
 // Fleet vehicles data used for registration -> fleet number mapping
 const FLEET_VEHICLES = [

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   AlertTriangle,
   CheckCircle,
@@ -12,7 +13,6 @@ import {
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import useOfflineQuery from "../../hooks/useOfflineQuery";
-import Button from "../ui/Button";
 import Card, { CardContent, CardHeader } from "../ui/Card";
 
 // Firestore license document shape (keep in sync with page version)

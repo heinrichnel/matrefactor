@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import Modal from "../../ui/Modal";
-import Button from "../../ui/Button";
+import { Button } from "@/components/ui/Button";
+import { AlertTriangle, History, Plus, Save, Settings, Trash2, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { FLEET_NUMBERS, FLEETS_WITH_PROBES } from "../../../types";
 import Card, { CardContent, CardHeader } from "../../ui/Card";
 import { Input } from "../../ui/FormElements";
-import { Save, X, Settings, AlertTriangle, Plus, Trash2, History } from "lucide-react";
-import { FLEET_NUMBERS, FLEETS_WITH_PROBES } from "../../../types";
+import Modal from "../../ui/Modal";
 
 interface DieselNorms {
   fleetNumber: string;

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   AlertTriangle,
   Calendar,
@@ -11,38 +12,38 @@ import {
   Save,
   Trash2,
   User,
-  X
-} from 'lucide-react';
-import React, { useMemo, useState } from 'react';
-import ActionItemDetails from '../../components/Adminmangement/ActionItemDetails';
-import Button from '../../components/ui/Button';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import { Input, Select, TextArea } from '../../components/ui/FormElements';
-import Modal from '../../components/ui/Modal';
-import SyncIndicator from '../../components/ui/SyncIndicator';
-import { useAppContext } from '../../context/AppContext';
-import { ActionItem, RESPONSIBLE_PERSONS } from '../../types';
-import { formatDate, formatDateTime } from '../../utils/helpers';
+  X,
+} from "lucide-react";
+import React, { useMemo, useState } from "react";
+import ActionItemDetails from "../../components/Adminmangement/ActionItemDetails";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import { Input, Select, TextArea } from "../../components/ui/FormElements";
+import Modal from "../../components/ui/Modal";
+import SyncIndicator from "../../components/ui/SyncIndicator";
+import { useAppContext } from "../../context/AppContext";
+import { ActionItem, RESPONSIBLE_PERSONS } from "../../types";
+import { formatDate, formatDateTime } from "../../utils/helpers";
 
 const ActionLog: React.FC = () => {
-  const { actionItems, addActionItem, updateActionItem, deleteActionItem, connectionStatus } = useAppContext();
+  const { actionItems, addActionItem, updateActionItem, deleteActionItem, connectionStatus } =
+    useAppContext();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ActionItem | null>(null);
   const [filters, setFilters] = useState({
-    status: '',
-    responsiblePerson: '',
-    overdue: false
+    status: "",
+    responsiblePerson: "",
+    overdue: false,
   });
 
   // Form state
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    responsiblePerson: '',
-    dueDate: '',
-    status: 'initiated' as 'initiated' | 'in_progress' | 'completed'
+    title: "",
+    description: "",
+    responsiblePerson: "",
+    dueDate: "",
+    status: "initiated" as "initiated" | "in_progress" | "completed",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,11 +51,13 @@ const ActionLog: React.FC = () => {
 
   // Calculate overdue status and days for each action item
   const enhancedActionItems = useMemo(() => {
-    return actionItems.map(item => {
+    return actionItems.map((item) => {
       const today = new Date();
       const dueDate = new Date(item.dueDate);
-      const isOverdue = today > dueDate && item.status !== 'completed';
-      const overdueBy = isOverdue ? Math.floor((today.getTime() - dueDate.getTime()) / (86400000)) : 0;
+      const isOverdue = today > dueDate && item.status !== "completed";
+      const overdueBy = isOverdue
+        ? Math.floor((today.getTime() - dueDate.getTime()) / 86400000)
+        : 0;
 
       // Check if overdue by 5 or 10 days
       const isOverdueBy5 = overdueBy >= 5;
@@ -66,16 +69,17 @@ const ActionLog: React.FC = () => {
         overdueBy,
         isOverdueBy5,
         isOverdueBy10,
-        needsReason: isOverdueBy10 && !item.overdueReason && item.status !== 'completed'
+        needsReason: isOverdueBy10 && !item.overdueReason && item.status !== "completed",
       };
     });
   }, [actionItems]);
 
   // Apply filters
   const filteredItems = useMemo(() => {
-    return enhancedActionItems.filter(item => {
+    return enhancedActionItems.filter((item) => {
       if (filters.status && item.status !== filters.status) return false;
-      if (filters.responsiblePerson && item.responsiblePerson !== filters.responsiblePerson) return false;
+      if (filters.responsiblePerson && item.responsiblePerson !== filters.responsiblePerson)
+        return false;
       if (filters.overdue && !item.isOverdue) return false;
       return true;
     });
@@ -85,8 +89,8 @@ const ActionLog: React.FC = () => {
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
       // Completed items at the bottom
-      if (a.status === 'completed' && b.status !== 'completed') return 1;
-      if (a.status !== 'completed' && b.status === 'completed') return -1;
+      if (a.status === "completed" && b.status !== "completed") return 1;
+      if (a.status !== "completed" && b.status === "completed") return -1;
 
       // Then sort by due date (overdue first)
       if (a.isOverdue && !b.isOverdue) return -1;
@@ -100,13 +104,13 @@ const ActionLog: React.FC = () => {
   // Calculate summary statistics
   const summary = useMemo(() => {
     const total = enhancedActionItems.length;
-    const completed = enhancedActionItems.filter(item => item.status === 'completed').length;
-    const inProgress = enhancedActionItems.filter(item => item.status === 'in_progress').length;
-    const initiated = enhancedActionItems.filter(item => item.status === 'initiated').length;
-    const overdue = enhancedActionItems.filter(item => item.isOverdue).length;
-    const overdueBy5 = enhancedActionItems.filter(item => item.isOverdueBy5).length;
-    const overdueBy10 = enhancedActionItems.filter(item => item.isOverdueBy10).length;
-    const needReason = enhancedActionItems.filter(item => item.needsReason).length;
+    const completed = enhancedActionItems.filter((item) => item.status === "completed").length;
+    const inProgress = enhancedActionItems.filter((item) => item.status === "in_progress").length;
+    const initiated = enhancedActionItems.filter((item) => item.status === "initiated").length;
+    const overdue = enhancedActionItems.filter((item) => item.isOverdue).length;
+    const overdueBy5 = enhancedActionItems.filter((item) => item.isOverdueBy5).length;
+    const overdueBy10 = enhancedActionItems.filter((item) => item.isOverdueBy10).length;
+    const needReason = enhancedActionItems.filter((item) => item.needsReason).length;
 
     return {
       total,
@@ -117,17 +121,17 @@ const ActionLog: React.FC = () => {
       overdueBy5,
       overdueBy10,
       needReason,
-      completionRate: total > 0 ? (completed / total) * 100 : 0
+      completionRate: total > 0 ? (completed / total) * 100 : 0,
     };
   }, [enhancedActionItems]);
 
   // Handle form changes
   const handleFormChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear error for this field
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -135,10 +139,10 @@ const ActionLog: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.responsiblePerson) newErrors.responsiblePerson = 'Responsible person is required';
-    if (!formData.dueDate) newErrors.dueDate = 'Due date is required';
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+    if (!formData.description.trim()) newErrors.description = "Description is required";
+    if (!formData.responsiblePerson) newErrors.responsiblePerson = "Responsible person is required";
+    if (!formData.dueDate) newErrors.dueDate = "Due date is required";
 
     // Validate due date is not in the past
     if (formData.dueDate) {
@@ -147,7 +151,7 @@ const ActionLog: React.FC = () => {
       today.setHours(0, 0, 0, 0);
 
       if (dueDate < today) {
-        newErrors.dueDate = 'Due date cannot be in the past';
+        newErrors.dueDate = "Due date cannot be in the past";
       }
     }
 
@@ -159,16 +163,16 @@ const ActionLog: React.FC = () => {
   const handleSubmit = () => {
     if (!validateForm()) return;
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
 
-    const actionItemData: Omit<ActionItem, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'> = {
+    const actionItemData: Omit<ActionItem, "id" | "createdAt" | "updatedAt" | "createdBy"> = {
       title: formData.title.trim(),
       description: formData.description.trim(),
       responsiblePerson: formData.responsiblePerson,
       startDate: today,
       dueDate: formData.dueDate,
       status: formData.status,
-      attachments: []
+      attachments: [],
     };
 
     // Add action item
@@ -178,17 +182,19 @@ const ActionLog: React.FC = () => {
     resetForm();
     setShowAddModal(false);
 
-    alert(`Action item created successfully!\n\nTitle: ${actionItemData.title}\nResponsible: ${actionItemData.responsiblePerson}\nDue Date: ${formatDate(actionItemData.dueDate)}`);
+    alert(
+      `Action item created successfully!\n\nTitle: ${actionItemData.title}\nResponsible: ${actionItemData.responsiblePerson}\nDue Date: ${formatDate(actionItemData.dueDate)}`
+    );
   };
 
   // Reset form
   const resetForm = () => {
     setFormData({
-      title: '',
-      description: '',
-      responsiblePerson: '',
-      dueDate: '',
-      status: 'initiated'
+      title: "",
+      description: "",
+      responsiblePerson: "",
+      dueDate: "",
+      status: "initiated",
     });
     setSelectedFiles(null);
     setErrors({});
@@ -197,41 +203,46 @@ const ActionLog: React.FC = () => {
   // Handle adding overdue reason
   const handleAddOverdueReason = (item: ActionItem, reason: string) => {
     if (!reason.trim()) {
-      alert('Please provide a reason for the overdue action item');
+      alert("Please provide a reason for the overdue action item");
       return;
     }
 
     updateActionItem({
       ...item,
-      overdueReason: reason
+      overdueReason: reason,
     });
 
-    alert('Overdue reason added successfully');
+    alert("Overdue reason added successfully");
   };
 
   // Handle status change
-  const handleStatusChange = (item: ActionItem, newStatus: 'initiated' | 'in_progress' | 'completed') => {
+  const handleStatusChange = (
+    item: ActionItem,
+    newStatus: "initiated" | "in_progress" | "completed"
+  ) => {
     const updates: Partial<ActionItem> = {
-      status: newStatus
+      status: newStatus,
     };
 
     // If marking as completed, add completion date and user
-    if (newStatus === 'completed') {
+    if (newStatus === "completed") {
       updates.completedAt = new Date().toISOString();
-      updates.completedBy = 'Current User'; // In a real app, use the logged-in user
+      updates.completedBy = "Current User"; // In a real app, use the logged-in user
     }
 
     updateActionItem({
       ...item,
-      ...updates
+      ...updates,
     });
   };
 
   // Handle delete action item
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this action item? This action cannot be undone.')) {
+    if (
+      confirm("Are you sure you want to delete this action item? This action cannot be undone.")
+    ) {
       deleteActionItem(id);
-      alert('Action item deleted successfully');
+      alert("Action item deleted successfully");
     }
   };
 
@@ -244,9 +255,12 @@ const ActionLog: React.FC = () => {
   // Get status badge class
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-yellow-100 text-yellow-800';
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-yellow-100 text-yellow-800";
     }
   };
 
@@ -267,7 +281,7 @@ const ActionLog: React.FC = () => {
             setShowAddModal(true);
           }}
           icon={<Plus className="w-4 h-4" />}
-          disabled={connectionStatus !== 'connected'}
+          disabled={connectionStatus !== "connected"}
         >
           Add Action Item
         </Button>
@@ -296,9 +310,7 @@ const ActionLog: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-500">Overdue</p>
                 <p className="text-2xl font-bold text-red-600">{summary.overdue}</p>
-                <p className="text-xs text-gray-400">
-                  {summary.overdueBy10} need reason
-                </p>
+                <p className="text-xs text-gray-400">{summary.overdueBy10} need reason</p>
               </div>
               <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
@@ -311,9 +323,7 @@ const ActionLog: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-500">In Progress</p>
                 <p className="text-2xl font-bold text-blue-600">{summary.inProgress}</p>
-                <p className="text-xs text-gray-400">
-                  {summary.initiated} initiated
-                </p>
+                <p className="text-xs text-gray-400">{summary.initiated} initiated</p>
               </div>
               <Clock className="w-8 h-8 text-blue-500" />
             </div>
@@ -326,9 +336,7 @@ const ActionLog: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-500">Completed</p>
                 <p className="text-2xl font-bold text-green-600">{summary.completed}</p>
-                <p className="text-xs text-gray-400">
-                  tasks finished
-                </p>
+                <p className="text-xs text-gray-400">tasks finished</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
@@ -344,22 +352,26 @@ const ActionLog: React.FC = () => {
             <Select
               label="Status"
               value={filters.status}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setFilters((prev) => ({ ...prev, status: e.target.value }))
+              }
               options={[
-                { label: 'All Statuses', value: '' },
-                { label: 'Initiated', value: 'initiated' },
-                { label: 'In Progress', value: 'in_progress' },
-                { label: 'Completed', value: 'completed' }
+                { label: "All Statuses", value: "" },
+                { label: "Initiated", value: "initiated" },
+                { label: "In Progress", value: "in_progress" },
+                { label: "Completed", value: "completed" },
               ]}
             />
 
             <Select
               label="Responsible Person"
               value={filters.responsiblePerson}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters(prev => ({ ...prev, responsiblePerson: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setFilters((prev) => ({ ...prev, responsiblePerson: e.target.value }))
+              }
               options={[
-                { label: 'All Persons', value: '' },
-                ...RESPONSIBLE_PERSONS.map(person => ({ label: person, value: person }))
+                { label: "All Persons", value: "" },
+                ...RESPONSIBLE_PERSONS.map((person) => ({ label: person, value: person })),
               ]}
             />
 
@@ -368,7 +380,7 @@ const ActionLog: React.FC = () => {
                 type="checkbox"
                 id="overdueFilter"
                 checked={filters.overdue}
-                onChange={(e) => setFilters(prev => ({ ...prev, overdue: e.target.checked }))}
+                onChange={(e) => setFilters((prev) => ({ ...prev, overdue: e.target.checked }))}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="overdueFilter" className="text-sm font-medium text-gray-700">
@@ -381,7 +393,7 @@ const ActionLog: React.FC = () => {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setFilters({ status: '', responsiblePerson: '', overdue: false })}
+              onClick={() => setFilters({ status: "", responsiblePerson: "", overdue: false })}
             >
               Clear Filters
             </Button>
@@ -401,7 +413,7 @@ const ActionLog: React.FC = () => {
                 setShowAddModal(true);
               }}
               icon={<Plus className="w-4 h-4" />}
-              disabled={connectionStatus !== 'connected'}
+              disabled={connectionStatus !== "connected"}
             >
               Add Action Item
             </Button>
@@ -414,8 +426,8 @@ const ActionLog: React.FC = () => {
               <h3 className="mt-2 text-sm font-medium text-gray-900">No action items found</h3>
               <p className="mt-1 text-sm text-gray-500">
                 {filters.status || filters.responsiblePerson || filters.overdue
-                  ? 'No items match your current filter criteria.'
-                  : 'Start by adding your first action item.'}
+                  ? "No items match your current filter criteria."
+                  : "Start by adding your first action item."}
               </p>
               {!filters.status && !filters.responsiblePerson && !filters.overdue && (
                 <div className="mt-4">
@@ -425,7 +437,7 @@ const ActionLog: React.FC = () => {
                       setShowAddModal(true);
                     }}
                     icon={<Plus className="w-4 h-4" />}
-                    disabled={connectionStatus !== 'connected'}
+                    disabled={connectionStatus !== "connected"}
                   >
                     Add First Action Item
                   </Button>
@@ -438,22 +450,31 @@ const ActionLog: React.FC = () => {
                 <div
                   key={item.id}
                   className={`p-4 rounded-lg border ${
-                    item.status === 'completed' ? 'bg-green-50 border-green-200' :
-                    item.isOverdueBy10 ? 'bg-red-50 border-l-4 border-l-red-500' :
-                    item.isOverdueBy5 ? 'bg-amber-50 border-l-4 border-l-amber-500' :
-                    item.isOverdue ? 'bg-yellow-50 border-l-4 border-l-yellow-500' :
-                    'bg-white border-gray-200'
+                    item.status === "completed"
+                      ? "bg-green-50 border-green-200"
+                      : item.isOverdueBy10
+                        ? "bg-red-50 border-l-4 border-l-red-500"
+                        : item.isOverdueBy5
+                          ? "bg-amber-50 border-l-4 border-l-amber-500"
+                          : item.isOverdue
+                            ? "bg-yellow-50 border-l-4 border-l-yellow-500"
+                            : "bg-white border-gray-200"
                   }`}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(item.status)}`}>
-                          {item.status === 'in_progress' ? 'In Progress' :
-                           item.status === 'completed' ? 'Completed' : 'Initiated'}
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(item.status)}`}
+                        >
+                          {item.status === "in_progress"
+                            ? "In Progress"
+                            : item.status === "completed"
+                              ? "Completed"
+                              : "Initiated"}
                         </span>
-                        {item.isOverdue && item.status !== 'completed' && (
+                        {item.isOverdue && item.status !== "completed" && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                             Overdue by {item.overdueBy} days
                           </span>
@@ -472,7 +493,9 @@ const ActionLog: React.FC = () => {
                           <Calendar className="w-4 h-4 text-gray-400" />
                           <div>
                             <p className="text-sm text-gray-500">Due Date</p>
-                            <p className={`font-medium ${item.isOverdue && item.status !== 'completed' ? 'text-red-600' : 'text-gray-900'}`}>
+                            <p
+                              className={`font-medium ${item.isOverdue && item.status !== "completed" ? "text-red-600" : "text-gray-900"}`}
+                            >
                               {formatDate(item.dueDate)}
                             </p>
                           </div>
@@ -523,7 +546,9 @@ const ActionLog: React.FC = () => {
                             <Button
                               size="sm"
                               onClick={() => {
-                                const reasonInput = document.getElementById(`reason-${item.id}`) as HTMLInputElement;
+                                const reasonInput = document.getElementById(
+                                  `reason-${item.id}`
+                                ) as HTMLInputElement;
                                 handleAddOverdueReason(item, reasonInput.value);
                               }}
                             >
@@ -537,7 +562,9 @@ const ActionLog: React.FC = () => {
                       {item.comments && item.comments.length > 0 && (
                         <div className="flex items-center space-x-2 text-sm text-gray-500">
                           <MessageSquare className="w-4 h-4" />
-                          <span>{item.comments.length} comment{item.comments.length !== 1 ? 's' : ''}</span>
+                          <span>
+                            {item.comments.length} comment{item.comments.length !== 1 ? "s" : ""}
+                          </span>
                         </div>
                       )}
 
@@ -545,7 +572,10 @@ const ActionLog: React.FC = () => {
                       {item.attachments && item.attachments.length > 0 && (
                         <div className="flex items-center space-x-2 text-sm text-gray-500 ml-4">
                           <FileUp className="w-4 h-4" />
-                          <span>{item.attachments.length} attachment{item.attachments.length !== 1 ? 's' : ''}</span>
+                          <span>
+                            {item.attachments.length} attachment
+                            {item.attachments.length !== 1 ? "s" : ""}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -560,15 +590,26 @@ const ActionLog: React.FC = () => {
                         View
                       </Button>
 
-                      {item.status !== 'completed' && (
+                      {item.status !== "completed" && (
                         <Button
                           size="sm"
-                          variant={item.status === 'initiated' ? 'outline' : 'primary'}
-                          onClick={() => handleStatusChange(item, item.status === 'initiated' ? 'in_progress' : 'completed')}
-                          icon={item.status === 'initiated' ? <Clock className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
-                          disabled={connectionStatus !== 'connected'}
+                          variant={item.status === "initiated" ? "outline" : "primary"}
+                          onClick={() =>
+                            handleStatusChange(
+                              item,
+                              item.status === "initiated" ? "in_progress" : "completed"
+                            )
+                          }
+                          icon={
+                            item.status === "initiated" ? (
+                              <Clock className="w-3 h-3" />
+                            ) : (
+                              <CheckCircle className="w-3 h-3" />
+                            )
+                          }
+                          disabled={connectionStatus !== "connected"}
                         >
-                          {item.status === 'initiated' ? 'Start' : 'Complete'}
+                          {item.status === "initiated" ? "Start" : "Complete"}
                         </Button>
                       )}
 
@@ -577,7 +618,7 @@ const ActionLog: React.FC = () => {
                         variant="danger"
                         onClick={() => handleDelete(item.id)}
                         icon={<Trash2 className="w-3 h-3" />}
-                        disabled={connectionStatus !== 'connected'}
+                        disabled={connectionStatus !== "connected"}
                       >
                         Delete
                       </Button>
@@ -607,8 +648,8 @@ const ActionLog: React.FC = () => {
               <div>
                 <h4 className="text-sm font-medium text-blue-800">Action Item Tracking</h4>
                 <p className="text-sm text-blue-700 mt-1">
-                  Create a new action item to track tasks, assign responsibility, and monitor progress.
-                  Start date will be automatically set to today.
+                  Create a new action item to track tasks, assign responsibility, and monitor
+                  progress. Start date will be automatically set to today.
                 </p>
               </div>
             </div>
@@ -618,7 +659,9 @@ const ActionLog: React.FC = () => {
             <Input
               label="Title *"
               value={formData.title}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange('title', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleFormChange("title", e.target.value)
+              }
               placeholder="Enter action item title..."
               error={errors.title}
             />
@@ -626,7 +669,9 @@ const ActionLog: React.FC = () => {
             <TextArea
               label="Description *"
               value={formData.description}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFormChange('description', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                handleFormChange("description", e.target.value)
+              }
               placeholder="Provide details about the action item..."
               rows={3}
               error={errors.description}
@@ -636,10 +681,12 @@ const ActionLog: React.FC = () => {
               <Select
                 label="Responsible Person *"
                 value={formData.responsiblePerson}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFormChange('responsiblePerson', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  handleFormChange("responsiblePerson", e.target.value)
+                }
                 options={[
-                  { label: 'Select responsible person...', value: '' },
-                  ...RESPONSIBLE_PERSONS.map(person => ({ label: person, value: person }))
+                  { label: "Select responsible person...", value: "" },
+                  ...RESPONSIBLE_PERSONS.map((person) => ({ label: person, value: person })),
                 ]}
                 error={errors.responsiblePerson}
               />
@@ -648,8 +695,10 @@ const ActionLog: React.FC = () => {
                 label="Due Date *"
                 type="date"
                 value={formData.dueDate}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange('dueDate', e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleFormChange("dueDate", e.target.value)
+                }
+                min={new Date().toISOString().split("T")[0]}
                 error={errors.dueDate}
               />
             </div>
@@ -657,10 +706,12 @@ const ActionLog: React.FC = () => {
             <Select
               label="Initial Status"
               value={formData.status}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFormChange('status', e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                handleFormChange("status", e.target.value as any)
+              }
               options={[
-                { label: 'Initiated', value: 'initiated' },
-                { label: 'In Progress', value: 'in_progress' }
+                { label: "Initiated", value: "initiated" },
+                { label: "In Progress", value: "in_progress" },
               ]}
             />
 
@@ -698,10 +749,7 @@ const ActionLog: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleSubmit}
-              icon={<Save className="w-4 h-4" />}
-            >
+            <Button onClick={handleSubmit} icon={<Save className="w-4 h-4" />}>
               Create Action Item
             </Button>
           </div>

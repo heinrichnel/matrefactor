@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Clipboard, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
-import { useFleetData, Vehicle } from "../../../hooks/useFleetData";
-import Button from "../../ui/Button";
-import Card, { CardContent, CardHeader } from "../../ui/Card";
+import { Button } from "@/components/ui/Button";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { ArrowLeft, CheckCircle2, Clipboard, XCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { firestore } from "../../../firebase";
+import { useFleetData, Vehicle } from "../../../hooks/useFleetData";
+import Card, { CardContent, CardHeader } from "../../ui/Card";
 
 interface InspectionItem {
   name: string;

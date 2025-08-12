@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { Trip, TripFinancialAnalysis } from "../../types";
-import { useAppContext } from "../../context/AppContext";
-import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import {
   BarChart3,
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  RefreshCw,
-  Download,
   Calculator,
-  Landmark,
+  DollarSign,
+  Download,
   Fuel,
+  Landmark,
+  RefreshCw,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
-import { formatCurrency } from "../../utils/helpers";
+import React, { useEffect, useState } from "react";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 import LoadingIndicator from "../../components/ui/LoadingIndicator";
+import { useAppContext } from "../../context/AppContext";
+import { Trip, TripFinancialAnalysis } from "../../types";
+import { formatCurrency } from "../../utils/helpers";
 
 // Define charts and chart options
 

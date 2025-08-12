@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/Button";
 import { BarChart, Download, Filter, PieChart, Plus, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import Button from "../ui/Button";
 import { Card, CardContent } from "../ui/Card";
 import SyncIndicator from "../ui/SyncIndicator";
 

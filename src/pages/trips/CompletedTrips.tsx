@@ -1,4 +1,4 @@
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import { Input, Select } from "@/components/ui/FormElements";
 import SyncIndicator from "@/components/ui/SyncIndicator";
@@ -350,7 +350,7 @@ const CompletedTrips: React.FC<CompletedTripsProps> = ({ trips, onView }) => {
                     {userRole === "admin" && (
                       <Button
                         size="sm"
-                        variant="danger"
+                        variant="destructive"
                         onClick={() => setDeletingTrip(trip)}
                         icon={<Trash2 className="w-3 h-3" />}
                       >

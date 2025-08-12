@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   AlertTriangle,
   ArrowUpDown,
@@ -12,7 +13,6 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { formatDate } from "../../utils/helpers";
-import Button from "../ui/Button";
 import Card, { CardContent, CardHeader } from "../ui/Card";
 
 // Mock fault data

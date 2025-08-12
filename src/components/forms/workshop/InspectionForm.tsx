@@ -1,15 +1,14 @@
+import { Button } from "@/components/ui/Button";
+import { AlertTriangle, ArrowLeft, CheckCircle, Clipboard, FileText, Save } from "lucide-react";
 import React, { useState } from "react";
-import Card, { CardContent, CardHeader } from "../../ui/Card";
-import Button from "../../ui/Button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../ui/Tabs";
-import { Select } from "../../ui/FormElements";
-import { Clipboard, CheckCircle, Save, FileText, ArrowLeft, AlertTriangle } from "lucide-react";
-import FleetSelector from "../../common/FleetSelector";
-import { InspectionItemCard } from "../../ui/InspectionItemCard";
 import { inspectionTemplates } from "../../../data/inspectionTemplates";
 import { DRIVERS } from "../../../types";
+import FleetSelector from "../../common/FleetSelector";
+import Card, { CardContent, CardHeader } from "../../ui/Card";
+import { Select } from "../../ui/FormElements";
+import { InspectionItemCard } from "../../ui/InspectionItemCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { FLEET_NUMBERS } from "../../../types";
 
 // Mock user roles for the inspector dropdown
 const INSPECTORS = [

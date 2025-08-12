@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { LoadPlan, Trip, LOAD_CATEGORIES } from "../../types";
-import { useAppContext } from "../../context/AppContext";
-import Card, { CardContent, CardHeader } from "../ui/Card";
-import Button from "../ui/Button";
-import { Input, Select, TextArea } from "../ui/FormElements";
+import { Button } from "@/components/ui/Button";
 import {
-  Package,
-  Plus,
-  X,
   AlertTriangle,
-  CheckCircle,
-  Scale,
   Box,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
+  Package,
+  Plus,
+  Scale,
+  X,
 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useAppContext } from "../../context/AppContext";
+import { LOAD_CATEGORIES, LoadPlan, Trip } from "../../types";
+import Card, { CardContent, CardHeader } from "../ui/Card";
+import { Input, Select, TextArea } from "../ui/FormElements";
 import LoadingIndicator from "../ui/LoadingIndicator";
 
 interface LoadPlanningComponentProps {

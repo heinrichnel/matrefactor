@@ -1,4 +1,4 @@
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import SyncIndicator from "@/components/ui/SyncIndicator";
 import { Filter, Layers, Navigation, RefreshCw, Truck } from "lucide-react";

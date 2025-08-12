@@ -1,4 +1,4 @@
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { FileUpload, Input, Select, TextArea } from "@/components/ui/FormElements";
 import { AlertTriangle, Flag, Save, Upload, X } from "lucide-react";
 import React, { useEffect, useState } from "react";

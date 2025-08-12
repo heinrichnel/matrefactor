@@ -1,25 +1,24 @@
 // ─── React & State ───────────────────────────────────────────────
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 // ─── Types & Constants ───────────────────────────────────────────
-import { Trip, TripDeletionRecord, TRIP_DELETION_REASONS } from '../../../types';
-import { formatCurrency, calculateTotalCosts } from '../../../utils/helpers';
+import { Trip, TRIP_DELETION_REASONS, TripDeletionRecord } from "../../../types";
+import { calculateTotalCosts, formatCurrency } from "../../../utils/helpers";
 
 // ─── UI Components ───────────────────────────────────────────────
-import Modal from '../../ui/Modal';
-import Button from '../../ui/Button';
-import { Select, Textarea } from '../../ui/FormElements';
+import { Button } from "@/components/ui/Button";
+import { Select, Textarea } from "../../ui/FormElements";
+import Modal from "../../ui/Modal";
 
 // ─── Icons ───────────────────────────────────────────────────────
-import { Trash2, X, AlertTriangle, Shield } from 'lucide-react';
-
+import { AlertTriangle, Shield, Trash2, X } from "lucide-react";
 
 interface TripDeletionModalProps {
   isOpen: boolean;
   trip: Trip;
   onClose: () => void;
-  onDelete: (trip: Trip, deletionRecord: Omit<TripDeletionRecord, 'id'>) => void;
-  userRole: 'admin' | 'manager' | 'operator';
+  onDelete: (trip: Trip, deletionRecord: Omit<TripDeletionRecord, "id">) => void;
+  userRole: "admin" | "manager" | "operator";
 }
 
 const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
@@ -27,26 +26,26 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
   trip,
   onClose,
   onDelete,
-  userRole
+  userRole,
 }) => {
-  const [deletionReason, setDeletionReason] = useState('');
-  const [customReason, setCustomReason] = useState('');
-  const [confirmText, setConfirmText] = useState('');
+  const [deletionReason, setDeletionReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
+  const [confirmText, setConfirmText] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const totalCosts = calculateTotalCosts(trip.costs);
-  const flaggedItems = trip.costs.filter(c => c.isFlagged).length;
+  const flaggedItems = trip.costs.filter((c) => c.isFlagged).length;
   const confirmationText = `DELETE ${trip.fleetNumber}`;
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!deletionReason) {
-      newErrors.deletionReason = 'Deletion reason is required';
+      newErrors.deletionReason = "Deletion reason is required";
     }
-    
-    if (deletionReason === 'Other (specify in comments)' && !customReason.trim()) {
-      newErrors.customReason = 'Please specify the reason for deletion';
+
+    if (deletionReason === "Other (specify in comments)" && !customReason.trim()) {
+      newErrors.customReason = "Please specify the reason for deletion";
     }
 
     if (confirmText !== confirmationText) {
@@ -60,18 +59,19 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
   const handleDelete = () => {
     if (!validateForm()) return;
 
-    const finalReason = deletionReason === 'Other (specify in comments)' ? customReason : deletionReason;
+    const finalReason =
+      deletionReason === "Other (specify in comments)" ? customReason : deletionReason;
 
-    const deletionRecord: Omit<TripDeletionRecord, 'id'> = {
+    const deletionRecord: Omit<TripDeletionRecord, "id"> = {
       tripId: trip.id,
-      deletedBy: 'Current User', // In real app, use actual user
+      deletedBy: "Current User", // In real app, use actual user
       deletedAt: new Date().toISOString(),
       reason: finalReason,
       tripData: JSON.stringify(trip),
       totalRevenue: trip.baseRevenue,
       totalCosts: totalCosts,
       costEntriesCount: trip.costs.length,
-      flaggedItemsCount: flaggedItems
+      flaggedItemsCount: flaggedItems,
     };
 
     onDelete(trip, deletionRecord);
@@ -79,14 +79,15 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
   };
 
   // Check if user has permission to delete
-  if (userRole !== 'admin') {
+  if (userRole !== "admin") {
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Access Denied" maxWidth="md">
         <div className="text-center space-y-4">
           <Shield className="w-16 h-16 text-red-500 mx-auto" />
           <h3 className="text-lg font-medium text-gray-900">Insufficient Permissions</h3>
           <p className="text-gray-600">
-            Only administrators can delete completed trips. This restriction ensures data integrity and audit compliance.
+            Only administrators can delete completed trips. This restriction ensures data integrity
+            and audit compliance.
           </p>
           <Button onClick={onClose}>Close</Button>
         </div>
@@ -95,12 +96,7 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Delete Completed Trip"
-      maxWidth="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Delete Completed Trip" maxWidth="lg">
       <div className="space-y-6">
         {/* Critical Warning */}
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
@@ -109,8 +105,9 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
             <div>
               <h4 className="text-sm font-medium text-red-800">CRITICAL: Permanent Deletion</h4>
               <p className="text-sm text-red-700 mt-1">
-                This action will permanently delete the completed trip and all associated data. 
-                This operation cannot be undone. All deletion details will be logged for governance and audit purposes.
+                This action will permanently delete the completed trip and all associated data. This
+                operation cannot be undone. All deletion details will be logged for governance and
+                audit purposes.
               </p>
             </div>
           </div>
@@ -121,24 +118,49 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
           <h3 className="text-lg font-medium text-gray-900 mb-3">Trip to be Deleted</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p><strong>Fleet:</strong> {trip.fleetNumber}</p>
-              <p><strong>Driver:</strong> {trip.driverName}</p>
-              <p><strong>Route:</strong> {trip.route}</p>
-              <p><strong>Client:</strong> {trip.clientName}</p>
+              <p>
+                <strong>Fleet:</strong> {trip.fleetNumber}
+              </p>
+              <p>
+                <strong>Driver:</strong> {trip.driverName}
+              </p>
+              <p>
+                <strong>Route:</strong> {trip.route}
+              </p>
+              <p>
+                <strong>Client:</strong> {trip.clientName}
+              </p>
             </div>
             <div>
-              <p><strong>Period:</strong> {trip.startDate} to {trip.endDate}</p>
-              <p><strong>Revenue:</strong> {formatCurrency(trip.baseRevenue, trip.revenueCurrency)}</p>
-              <p><strong>Total Costs:</strong> {formatCurrency(totalCosts, trip.revenueCurrency)}</p>
-              <p><strong>Status:</strong> {trip.status.toUpperCase()}</p>
+              <p>
+                <strong>Period:</strong> {trip.startDate} to {trip.endDate}
+              </p>
+              <p>
+                <strong>Revenue:</strong> {formatCurrency(trip.baseRevenue, trip.revenueCurrency)}
+              </p>
+              <p>
+                <strong>Total Costs:</strong> {formatCurrency(totalCosts, trip.revenueCurrency)}
+              </p>
+              <p>
+                <strong>Status:</strong> {trip.status.toUpperCase()}
+              </p>
             </div>
           </div>
-          
+
           <div className="mt-3 pt-3 border-t border-gray-200">
             <div className="flex justify-between text-sm">
-              <span>Cost Entries: <strong>{trip.costs.length}</strong></span>
-              <span>Flagged Items: <strong className="text-red-600">{flaggedItems}</strong></span>
-              <span>Attachments: <strong>{trip.costs.reduce((sum, cost) => sum + cost.attachments.length, 0)}</strong></span>
+              <span>
+                Cost Entries: <strong>{trip.costs.length}</strong>
+              </span>
+              <span>
+                Flagged Items: <strong className="text-red-600">{flaggedItems}</strong>
+              </span>
+              <span>
+                Attachments:{" "}
+                <strong>
+                  {trip.costs.reduce((sum, cost) => sum + cost.attachments.length, 0)}
+                </strong>
+              </span>
             </div>
           </div>
         </div>
@@ -146,19 +168,19 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
         {/* Deletion Reason */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900">Deletion Justification (Required)</h3>
-          
+
           <Select
             label="Reason for Deletion *"
             value={deletionReason}
             onChange={(e) => setDeletionReason(e.target.value)}
             options={[
-              { label: 'Select reason for deletion...', value: '' },
-              ...TRIP_DELETION_REASONS.map(reason => ({ label: reason, value: reason }))
+              { label: "Select reason for deletion...", value: "" },
+              ...TRIP_DELETION_REASONS.map((reason) => ({ label: reason, value: reason })),
             ]}
             error={errors.deletionReason}
           />
 
-          {deletionReason === 'Other (specify in comments)' && (
+          {deletionReason === "Other (specify in comments)" && (
             <Textarea
               label="Specify Reason *"
               value={customReason}
@@ -176,7 +198,7 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
           <p className="text-sm text-gray-600">
             To confirm deletion, please type <strong>{confirmationText}</strong> in the field below:
           </p>
-          
+
           <input
             type="text"
             value={confirmText}
@@ -184,16 +206,15 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
             placeholder={confirmationText}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500"
           />
-          {errors.confirmText && (
-            <p className="text-sm text-red-600">{errors.confirmText}</p>
-          )}
+          {errors.confirmText && <p className="text-sm text-red-600">{errors.confirmText}</p>}
         </div>
 
         {/* Data Retention Notice */}
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <h4 className="text-sm font-medium text-blue-800">Data Retention & Audit Trail</h4>
           <p className="text-sm text-blue-700 mt-1">
-            Upon deletion, the following information will be permanently archived in the deletion log:
+            Upon deletion, the following information will be permanently archived in the deletion
+            log:
           </p>
           <ul className="text-sm text-blue-700 mt-2 list-disc list-inside">
             <li>Complete trip data snapshot</li>
@@ -206,11 +227,7 @@ const TripDeletionModal: React.FC<TripDeletionModalProps> = ({
 
         {/* Actions */}
         <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            icon={<X className="w-4 h-4" />}
-          >
+          <Button variant="outline" onClick={onClose} icon={<X className="w-4 h-4" />}>
             Cancel
           </Button>
           <Button

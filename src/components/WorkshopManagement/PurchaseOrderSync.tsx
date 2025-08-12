@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader } from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import { Button } from "@/components/ui/Button";
+import React, { useEffect, useState } from "react";
 import { syncPurchaseOrderToSage } from "../../api/sageIntegration";
-import { PurchaseOrder, POItem } from "../../types/inventory";
+import { Card, CardContent, CardHeader } from "../../components/ui/Card";
+import { POItem, PurchaseOrder } from "../../types/inventory";
 
 const PurchaseOrderSync: React.FC = () => {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);

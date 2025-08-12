@@ -1,8 +1,8 @@
-import React from 'react';
-import { CostEntry } from '../../types';
-import { formatCurrency } from '../../utils/formatters';
-import { PencilIcon, TrashIcon, FileIcon } from 'lucide-react';
-import Button from '../ui/Button';
+import React from "react";
+import { CostEntry } from "../../types";
+import { formatCurrency } from "../../utils/formatters";
+import { PencilIcon, TrashIcon, FileIcon } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface CostListProps {
   costs: CostEntry[];
@@ -11,12 +11,7 @@ interface CostListProps {
   onViewAttachments?: (cost: CostEntry) => void;
 }
 
-const CostList: React.FC<CostListProps> = ({
-  costs,
-  onEdit,
-  onDelete,
-  onViewAttachments
-}) => {
+const CostList: React.FC<CostListProps> = ({ costs, onEdit, onDelete, onViewAttachments }) => {
   if (!costs || costs.length === 0) {
     return <div className="text-gray-500 italic p-4">No costs recorded</div>;
   }
@@ -28,16 +23,28 @@ const CostList: React.FC<CostListProps> = ({
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Category
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Description
             </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Amount
             </th>
-            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              scope="col"
+              className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Actions
             </th>
           </tr>
@@ -49,7 +56,11 @@ const CostList: React.FC<CostListProps> = ({
                 {cost.category}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {cost.notes ? (cost.notes.length > 50 ? `${cost.notes.substring(0, 50)}...` : cost.notes) : '-'}
+                {cost.notes
+                  ? cost.notes.length > 50
+                    ? `${cost.notes.substring(0, 50)}...`
+                    : cost.notes
+                  : "-"}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {formatCurrency(Number(cost.amount))}
@@ -91,7 +102,10 @@ const CostList: React.FC<CostListProps> = ({
             </tr>
           ))}
           <tr className="bg-gray-50">
-            <td colSpan={2} className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
+            <td
+              colSpan={2}
+              className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right"
+            >
               Total:
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">

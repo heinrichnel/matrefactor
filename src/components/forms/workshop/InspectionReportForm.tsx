@@ -1,9 +1,9 @@
+import { Button } from "@/components/ui/Button";
 import { format } from "date-fns";
 import { Camera, Check, Download, Trash2, Upload, X } from "lucide-react";
 import { useSnackbar } from "notistack";
 import React, { useState } from "react";
 import { generateInspectionPDF } from "../../../utils/pdfGenerators";
-import Button from "../../ui/Button";
 import Card, { CardContent } from "../../ui/Card";
 
 export interface InspectionItem {

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   AlertTriangle,
   BarChart3,
@@ -12,7 +13,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 import React, { useState } from "react";
-import Button from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 import PageWrapper from "../../components/ui/PageWrapper";
 import { Badge } from "../../components/ui/badge";

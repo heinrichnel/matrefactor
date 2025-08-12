@@ -1,5 +1,5 @@
+import { Button } from "@/components/ui/Button";
 import React, { useState } from "react";
-import Button from "../../ui/Button";
 
 export interface RCAEntry {
   id: string;

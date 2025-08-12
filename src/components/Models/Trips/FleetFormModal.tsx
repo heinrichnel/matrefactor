@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/Button";
 import { Save, Truck, X } from "lucide-react";
 import React, { useState } from "react";
-import Button from "../../ui/Button";
 import { Input, Select, TextArea } from "../../ui/FormElements";
 import Modal from "../../ui/Modal";
 

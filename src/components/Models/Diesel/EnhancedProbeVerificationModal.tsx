@@ -1,10 +1,10 @@
+import { Button } from "@/components/ui/Button";
 import { AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../../context/AppContext";
 import { addAuditLogToFirebase } from "../../../firebase";
 import { DieselConsumptionRecord, FLEETS_WITH_PROBES } from "../../../types";
 import { formatDate } from "../../../utils/helpers";
-import Button from "../../ui/Button";
 import { Input, TextArea } from "../../ui/FormElements";
 import Modal from "../../ui/Modal";
 

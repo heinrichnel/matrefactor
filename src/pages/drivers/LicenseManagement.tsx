@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   AlertTriangle,
   CheckCircle,
@@ -11,7 +12,6 @@ import {
   XCircle,
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
-import Button from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 import useOfflineQuery from "../../hooks/useOfflineQuery";
 

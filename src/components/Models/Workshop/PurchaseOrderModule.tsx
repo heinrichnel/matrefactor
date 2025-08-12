@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Card, { CardContent, CardHeader } from '../../ui/Card';
-import Button from '../../ui/Button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../ui/Tabs';
-import { FileText, ShoppingCart, Check, Package, Store, Plus, RefreshCw } from 'lucide-react';
+import { Button } from "@/components/ui/Button";
+import { Check, FileText, Package, Plus, RefreshCw, ShoppingCart, Store } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Card, { CardContent, CardHeader } from "../../ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs";
 
 interface PurchaseOrderModuleProps {
   onCreatePO?: () => void;
@@ -11,16 +11,16 @@ interface PurchaseOrderModuleProps {
 
 const PurchaseOrderModule: React.FC<PurchaseOrderModuleProps> = ({ onCreatePO }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('orders');
-  
+  const [activeTab, setActiveTab] = useState("orders");
+
   const handleCreatePO = () => {
     if (onCreatePO) {
       onCreatePO();
     } else {
-      navigate('/workshop/purchase-orders/new');
+      navigate("/workshop/purchase-orders/new");
     }
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -29,16 +29,10 @@ const PurchaseOrderModule: React.FC<PurchaseOrderModuleProps> = ({ onCreatePO })
           <p className="text-gray-600">Create and manage purchase orders for parts and supplies</p>
         </div>
         <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            icon={<RefreshCw className="w-4 h-4" />}
-          >
+          <Button variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
             Refresh
           </Button>
-          <Button
-            icon={<Plus className="w-4 h-4" />}
-            onClick={handleCreatePO}
-          >
+          <Button icon={<Plus className="w-4 h-4" />} onClick={handleCreatePO}>
             New Purchase Order
           </Button>
         </div>
@@ -71,12 +65,11 @@ const PurchaseOrderModule: React.FC<PurchaseOrderModuleProps> = ({ onCreatePO })
               <div className="text-center py-8">
                 <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No purchase orders</h3>
-                <p className="mt-1 text-sm text-gray-500">Create a new purchase order to get started</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Create a new purchase order to get started
+                </p>
                 <div className="mt-6">
-                  <Button
-                    icon={<Plus className="w-4 h-4" />}
-                    onClick={handleCreatePO}
-                  >
+                  <Button icon={<Plus className="w-4 h-4" />} onClick={handleCreatePO}>
                     Create Purchase Order
                   </Button>
                 </div>
@@ -92,7 +85,9 @@ const PurchaseOrderModule: React.FC<PurchaseOrderModuleProps> = ({ onCreatePO })
               <div className="text-center py-8">
                 <Check className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No pending approvals</h3>
-                <p className="mt-1 text-sm text-gray-500">Purchase orders pending approval will appear here</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Purchase orders pending approval will appear here
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -120,11 +115,7 @@ const PurchaseOrderModule: React.FC<PurchaseOrderModuleProps> = ({ onCreatePO })
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No vendors</h3>
                 <p className="mt-1 text-sm text-gray-500">Add vendors to manage your suppliers</p>
                 <div className="mt-6">
-                  <Button
-                    icon={<Plus className="w-4 h-4" />}
-                  >
-                    Add Vendor
-                  </Button>
+                  <Button icon={<Plus className="w-4 h-4" />}>Add Vendor</Button>
                 </div>
               </div>
             </CardContent>

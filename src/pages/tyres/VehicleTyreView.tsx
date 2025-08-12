@@ -1,21 +1,21 @@
-import { AlertTriangle, CircleDot, Info } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import Button from '../../components/ui/Button';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import LoadingIndicator from '../../components/ui/LoadingIndicator';
-import { useTyres } from '../../context/TyreContext';
-import { useFleetList } from '../../hooks/useFleetList';
-import { FleetTyreMapping, Tyre, TyrePosition, formatTyreSize } from '../../types/tyre';
-import { getPositionsByFleet } from '../../utils/tyreConstants';
+import { Button } from "@/components/ui/Button";
+import { AlertTriangle, CircleDot, Info } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader } from "../../components/ui/Card";
+import LoadingIndicator from "../../components/ui/LoadingIndicator";
+import { useTyres } from "../../context/TyreContext";
+import { useFleetList } from "../../hooks/useFleetList";
+import { FleetTyreMapping, Tyre, TyrePosition, formatTyreSize } from "../../types/tyre";
+import { getPositionsByFleet } from "../../utils/tyreConstants";
 
 // Helper functions needed for this component
-const formatCurrency = (amount: number | undefined, currency: string = 'ZAR'): string => {
-  if (amount === undefined || isNaN(amount)) return 'N/A';
+const formatCurrency = (amount: number | undefined, currency: string = "ZAR"): string => {
+  if (amount === undefined || isNaN(amount)) return "N/A";
 
-  return new Intl.NumberFormat('en-ZA', {
-    style: 'currency',
+  return new Intl.NumberFormat("en-ZA", {
+    style: "currency",
     currency: currency,
-    minimumFractionDigits: 2
+    minimumFractionDigits: 2,
   }).format(amount);
 };
 
@@ -36,7 +36,7 @@ interface VehicleTyreViewProps {
 const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
   selectedVehicle,
   onTyreSelect,
-  onVehicleSelect
+  onVehicleSelect,
 }) => {
   const { loading, getTyresByVehicle } = useTyres();
   const [vehicleTyres, setVehicleTyres] = useState<Tyre[]>([]);
@@ -53,26 +53,26 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
       setTyreConfig({
         fleetNumber: selectedVehicle,
         vehicleType: getVehicleType(selectedVehicle),
-        positions: positions.map(pos => ({
+        positions: positions.map((pos) => ({
           position: pos as TyrePosition,
-          tyreCode: '',
-          brand: '',
-          pattern: '',
-          size: '',
-          lastInspectionDate: '',
+          tyreCode: "",
+          brand: "",
+          pattern: "",
+          size: "",
+          lastInspectionDate: "",
           treadDepth: 0,
           pressure: 0,
           odometerAtFitment: 0,
-          kmSinceFitment: 0
-        }))
+          kmSinceFitment: 0,
+        })),
       });
 
       // Load tyres for this vehicle from Firestore
       getTyresByVehicle(selectedVehicle)
-        .then(fetchedTyres => {
+        .then((fetchedTyres) => {
           setVehicleTyres(fetchedTyres);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Error fetching vehicle tyres:", err);
         });
     }
@@ -80,18 +80,17 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
 
   // Helper to determine vehicle type based on fleet number
   const getVehicleType = (fleetNo: string): string => {
-    if (fleetNo.includes('H')) return 'HORSE';
-    if (fleetNo.includes('T')) return 'INTERLINK';
-    if (fleetNo.includes('F')) return 'REEFER';
-    if (fleetNo.includes('L')) return 'LMV';
-    return 'OTHER';
+    if (fleetNo.includes("H")) return "HORSE";
+    if (fleetNo.includes("T")) return "INTERLINK";
+    if (fleetNo.includes("F")) return "REEFER";
+    if (fleetNo.includes("L")) return "LMV";
+    return "OTHER";
   };
 
   // Get tyre at a specific position
   const getTyreAtPosition = (position: string): Tyre | undefined => {
-    return vehicleTyres.find(t =>
-      t.mountStatus === 'mounted' &&
-      t.installation?.position === position
+    return vehicleTyres.find(
+      (t) => t.mountStatus === "mounted" && t.installation?.position === position
     );
   };
 
@@ -105,14 +104,19 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
   // Get status color for tyre position
   const getPositionStatusColor = (position: string): string => {
     const tyre = getTyreAtPosition(position);
-    if (!tyre) return 'bg-gray-200';
+    if (!tyre) return "bg-gray-200";
 
     switch (tyre.condition.status) {
-      case 'good': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'critical': return 'bg-orange-500';
-      case 'needs_replacement': return 'bg-red-500';
-      default: return 'bg-gray-400';
+      case "good":
+        return "bg-green-500";
+      case "warning":
+        return "bg-yellow-500";
+      case "critical":
+        return "bg-orange-500";
+      case "needs_replacement":
+        return "bg-red-500";
+      default:
+        return "bg-gray-400";
     }
   };
 
@@ -129,7 +133,7 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
               onChange={(e) => onVehicleSelect && onVehicleSelect(e.target.value)}
             >
               <option value="">Select a vehicle</option>
-              {fleetOptions.map(option => (
+              {fleetOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -149,9 +153,7 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <h3 className="text-xl font-medium">
-            Tyre Positions for {selectedVehicle}
-          </h3>
+          <h3 className="text-xl font-medium">Tyre Positions for {selectedVehicle}</h3>
         </CardHeader>
         <CardContent>
           {tyreConfig ? (
@@ -166,8 +168,8 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                 {/* Front axle */}
                 <div className="flex justify-center space-x-20">
                   {tyreConfig.positions
-                    .filter(p => p.position.startsWith('V1') || p.position.startsWith('V2'))
-                    .map(pos => (
+                    .filter((p) => p.position.startsWith("V1") || p.position.startsWith("V2"))
+                    .map((pos) => (
                       <div
                         key={pos.position}
                         className="relative cursor-pointer"
@@ -175,7 +177,9 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                       >
                         <div
                           className={`w-16 h-16 rounded-full flex items-center justify-center border-4 ${
-                            selectedPosition === pos.position ? 'border-blue-600' : 'border-gray-400'
+                            selectedPosition === pos.position
+                              ? "border-blue-600"
+                              : "border-gray-400"
                           } ${getPositionStatusColor(pos.position)}`}
                         >
                           <span className="font-bold text-white">{pos.position}</span>
@@ -186,20 +190,20 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                           </div>
                         )}
                       </div>
-                    ))
-                  }
+                    ))}
                 </div>
 
                 {/* Middle axles */}
                 <div className="flex justify-center space-x-10">
                   {tyreConfig.positions
-                    .filter(p =>
-                      p.position.startsWith('V3') ||
-                      p.position.startsWith('V4') ||
-                      p.position.startsWith('V5') ||
-                      p.position.startsWith('V6')
+                    .filter(
+                      (p) =>
+                        p.position.startsWith("V3") ||
+                        p.position.startsWith("V4") ||
+                        p.position.startsWith("V5") ||
+                        p.position.startsWith("V6")
                     )
-                    .map(pos => (
+                    .map((pos) => (
                       <div
                         key={pos.position}
                         className="relative cursor-pointer"
@@ -207,7 +211,9 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                       >
                         <div
                           className={`w-16 h-16 rounded-full flex items-center justify-center border-4 ${
-                            selectedPosition === pos.position ? 'border-blue-600' : 'border-gray-400'
+                            selectedPosition === pos.position
+                              ? "border-blue-600"
+                              : "border-gray-400"
                           } ${getPositionStatusColor(pos.position)}`}
                         >
                           <span className="font-bold text-white">{pos.position}</span>
@@ -218,20 +224,20 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                           </div>
                         )}
                       </div>
-                    ))
-                  }
+                    ))}
                 </div>
 
                 {/* Rear axles */}
                 <div className="flex justify-center space-x-10">
                   {tyreConfig.positions
-                    .filter(p =>
-                      p.position.startsWith('V7') ||
-                      p.position.startsWith('V8') ||
-                      p.position.startsWith('V9') ||
-                      p.position.startsWith('V10')
+                    .filter(
+                      (p) =>
+                        p.position.startsWith("V7") ||
+                        p.position.startsWith("V8") ||
+                        p.position.startsWith("V9") ||
+                        p.position.startsWith("V10")
                     )
-                    .map(pos => (
+                    .map((pos) => (
                       <div
                         key={pos.position}
                         className="relative cursor-pointer"
@@ -239,7 +245,9 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                       >
                         <div
                           className={`w-16 h-16 rounded-full flex items-center justify-center border-4 ${
-                            selectedPosition === pos.position ? 'border-blue-600' : 'border-gray-400'
+                            selectedPosition === pos.position
+                              ? "border-blue-600"
+                              : "border-gray-400"
                           } ${getPositionStatusColor(pos.position)}`}
                         >
                           <span className="font-bold text-white">{pos.position}</span>
@@ -250,8 +258,7 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                           </div>
                         )}
                       </div>
-                    ))
-                  }
+                    ))}
                 </div>
 
                 {/* Legend */}
@@ -305,7 +312,8 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                       <tr className="border-b">
                         <td className="py-2 text-gray-600">Brand & Model</td>
                         <td className="py-2 font-medium">
-                          {getTyreAtPosition(selectedPosition)?.brand} {getTyreAtPosition(selectedPosition)?.model}
+                          {getTyreAtPosition(selectedPosition)?.brand}{" "}
+                          {getTyreAtPosition(selectedPosition)?.model}
                         </td>
                       </tr>
                       <tr className="border-b">
@@ -317,7 +325,9 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
                       <tr className="border-b">
                         <td className="py-2 text-gray-600">Size</td>
                         <td className="py-2 font-medium">
-                          {getTyreAtPosition(selectedPosition)?.size ? formatTyreSize(getTyreAtPosition(selectedPosition)!.size) : 'N/A'}
+                          {getTyreAtPosition(selectedPosition)?.size
+                            ? formatTyreSize(getTyreAtPosition(selectedPosition)!.size)
+                            : "N/A"}
                         </td>
                       </tr>
                       <tr className="border-b">
@@ -378,7 +388,9 @@ const VehicleTyreView: React.FC<VehicleTyreViewProps> = ({
               <div className="p-8 text-center bg-gray-50 rounded-lg">
                 <Info className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-700 mb-2">No Tyre Mounted</h3>
-                <p className="text-gray-500 mb-4">Position {selectedPosition} does not have a tyre mounted.</p>
+                <p className="text-gray-500 mb-4">
+                  Position {selectedPosition} does not have a tyre mounted.
+                </p>
                 <Button>Mount Tyre at This Position</Button>
               </div>
             )}

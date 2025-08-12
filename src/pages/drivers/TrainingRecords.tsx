@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/Button";
 import { Calendar, CheckCircle, Clock, Filter, Plus, Search, User } from "lucide-react";
 import React, { useState } from "react";
-import Button from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 
 // Mock training data

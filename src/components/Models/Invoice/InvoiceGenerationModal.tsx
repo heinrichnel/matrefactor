@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import Modal from '../../ui/Modal';
-import Button from '../../ui/Button';
-import { DollarSign, X, FileText, Send, AlertTriangle } from 'lucide-react';
-import { formatCurrency } from '../../../utils/helpers';
+import { Button } from "@/components/ui/Button";
+import { FileText, Send, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { formatCurrency } from "../../../utils/helpers";
+import Modal from "../../ui/Modal";
 
 interface InvoiceItem {
   id: string;
@@ -10,7 +10,7 @@ interface InvoiceItem {
   quantity: number;
   unitPrice: number;
   total: number;
-  itemType: 'part' | 'labor' | 'service' | 'other';
+  itemType: "part" | "labor" | "service" | "other";
 }
 
 interface InvoiceGenerationModalProps {
@@ -52,25 +52,25 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
   parts,
   tasks,
   laborRate,
-  onGenerateInvoice
+  onGenerateInvoice,
 }) => {
   const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>([]);
   const [taxRate, setTaxRate] = useState(15); // Default tax rate (%)
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Calculate totals
   const calculateTotals = () => {
     const partsCost = invoiceItems
-      .filter(item => item.itemType === 'part')
+      .filter((item) => item.itemType === "part")
       .reduce((sum, item) => sum + item.total, 0);
 
     const laborCost = invoiceItems
-      .filter(item => item.itemType === 'labor')
+      .filter((item) => item.itemType === "labor")
       .reduce((sum, item) => sum + item.total, 0);
 
     const otherCost = invoiceItems
-      .filter(item => item.itemType !== 'part' && item.itemType !== 'labor')
+      .filter((item) => item.itemType !== "part" && item.itemType !== "labor")
       .reduce((sum, item) => sum + item.total, 0);
 
     const subtotal = partsCost + laborCost + otherCost;
@@ -83,7 +83,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
       otherCost,
       subtotal,
       taxAmount,
-      total
+      total,
     };
   };
 
@@ -102,7 +102,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
           quantity: part.quantity,
           unitPrice: part.unitPrice,
           total: part.quantity * part.unitPrice,
-          itemType: 'part'
+          itemType: "part",
         });
       });
 
@@ -115,7 +115,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
           quantity: hours,
           unitPrice: laborRate,
           total: hours * laborRate,
-          itemType: 'labor'
+          itemType: "labor",
         });
       });
 
@@ -139,13 +139,13 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
         taxRate,
         taxAmount,
         totalAmount: total,
-        notes: notes.trim() || undefined
+        notes: notes.trim() || undefined,
       });
 
       onClose();
     } catch (error) {
-      console.error('Error generating invoice:', error);
-      alert('Failed to generate invoice. Please try again.');
+      console.error("Error generating invoice:", error);
+      alert("Failed to generate invoice. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -160,12 +160,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Generate Invoice"
-      maxWidth="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Generate Invoice" maxWidth="lg">
       <div className="space-y-6">
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <div className="flex items-start space-x-3">
@@ -173,7 +168,8 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
             <div>
               <h4 className="text-sm font-medium text-blue-800">Generate Invoice for Job Card</h4>
               <p className="text-sm text-blue-700 mt-1">
-                Review the invoice details below. The system has automatically added parts used and labor time based on the job card.
+                Review the invoice details below. The system has automatically added parts used and
+                labor time based on the job card.
               </p>
             </div>
           </div>
@@ -198,52 +194,70 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Description
                   </th>
-                  <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Quantity
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Unit Price
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Total
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {invoiceItems.map((item) => (
-                  <tr key={item.id} className={item.itemType === 'labor' ? 'bg-blue-50' : ''}>
+                  <tr key={item.id} className={item.itemType === "labor" ? "bg-blue-50" : ""}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.description}
                       <span className="text-xs text-gray-500 ml-2">
-                        ({item.itemType === 'labor' ? 'Labor' : 'Part'})
+                        ({item.itemType === "labor" ? "Labor" : "Part"})
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                      {item.quantity} {item.itemType === 'labor' ? 'hours' : 'units'}
+                      {item.quantity} {item.itemType === "labor" ? "hours" : "units"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                      {formatCurrency(item.unitPrice, 'USD')}
+                      {formatCurrency(item.unitPrice, "USD")}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                      {formatCurrency(item.total, 'USD')}
+                      {formatCurrency(item.total, "USD")}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr className="bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900" colSpan={3}>
+                  <td
+                    className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900"
+                    colSpan={3}
+                  >
                     Subtotal
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                    {formatCurrency(totals.subtotal, 'USD')}
+                    {formatCurrency(totals.subtotal, "USD")}
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900" colSpan={2}>
+                  <td
+                    className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900"
+                    colSpan={2}
+                  >
                     Tax Rate
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -258,15 +272,18 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
                     <span className="ml-1">%</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                    {formatCurrency(totals.taxAmount, 'USD')}
+                    {formatCurrency(totals.taxAmount, "USD")}
                   </td>
                 </tr>
                 <tr className="bg-blue-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900" colSpan={3}>
+                  <td
+                    className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900"
+                    colSpan={3}
+                  >
                     Total
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-lg font-bold text-gray-900">
-                    {formatCurrency(totals.total, 'USD')}
+                    {formatCurrency(totals.total, "USD")}
                   </td>
                 </tr>
               </tfoot>
@@ -296,11 +313,7 @@ const InvoiceGenerationModal: React.FC<InvoiceGenerationModalProps> = ({
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            icon={<Send className="w-4 h-4" />}
-            isLoading={isLoading}
-          >
+          <Button onClick={handleSubmit} icon={<Send className="w-4 h-4" />} isLoading={isLoading}>
             Generate Invoice
           </Button>
         </div>

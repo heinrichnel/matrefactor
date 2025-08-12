@@ -6,7 +6,7 @@ import { MissedLoad } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 
 // ─── UI Components ───────────────────────────────────────────────
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import Modal from "@/components/ui/Modal";
 // FIX: Corrected the typo from 'Textarea' to 'TextArea'

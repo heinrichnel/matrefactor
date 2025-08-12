@@ -1,37 +1,36 @@
 // ─── React & Utilities ───────────────────────────────────────────
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 // ─── Types & Constants ───────────────────────────────────────────
-import { MissedLoad, MISSED_LOAD_REASONS, CLIENTS } from '../../types';
-import { formatCurrency, formatDate } from '../../utils/helpers';
+import { CLIENTS, MISSED_LOAD_REASONS, MissedLoad } from "../../types";
+import { formatCurrency, formatDate } from "../../utils/helpers";
 
 // ─── UI Components ───────────────────────────────────────────────
-import Card, { CardContent, CardHeader } from '../ui/Card';
-import Button from '../ui/Button';
-import Modal from '../ui/Modal';
-import { Input, Select, TextArea } from '../ui/FormElements';
+import { Button } from "@/components/ui/Button";
+import Card, { CardContent, CardHeader } from "../ui/Card";
+import { Input, Select, TextArea } from "../ui/FormElements";
+import Modal from "../ui/Modal";
 
 // ─── Icons ───────────────────────────────────────────────────────
 import {
-  DollarSign,
-  Plus,
-  Edit,
-  Trash2,
   AlertTriangle,
-  TrendingDown,
   Calendar,
+  CheckCircle,
+  DollarSign,
+  Edit,
+  FileText,
   MapPin,
+  Plus,
+  Save,
+  Trash2,
+  TrendingDown,
   User,
   X,
-  Save,
-  CheckCircle,
-  FileText
-} from 'lucide-react';
-
+} from "lucide-react";
 
 interface MissedLoadsTrackerProps {
   missedLoads: MissedLoad[];
-  onAddMissedLoad: (missedLoad: Omit<MissedLoad, 'id'>) => void;
+  onAddMissedLoad: (missedLoad: Omit<MissedLoad, "id">) => void;
   onUpdateMissedLoad: (missedLoad: MissedLoad) => void;
   onDeleteMissedLoad?: (id: string) => void;
 }
@@ -40,45 +39,45 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
   missedLoads,
   onAddMissedLoad,
   onUpdateMissedLoad,
-  onDeleteMissedLoad
+  onDeleteMissedLoad,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [showResolutionModal, setShowResolutionModal] = useState(false);
   const [editingLoad, setEditingLoad] = useState<MissedLoad | null>(null);
   const [resolvingLoad, setResolvingLoad] = useState<MissedLoad | null>(null);
   const [formData, setFormData] = useState({
-    customerName: '',
-    loadRequestDate: new Date().toISOString().split('T')[0],
-    requestedPickupDate: '',
-    requestedDeliveryDate: '',
-    route: '',
-    estimatedRevenue: '',
-    currency: 'ZAR' as 'ZAR' | 'USD',
-    reason: '',
-    reasonDescription: '',
-    resolutionStatus: 'pending' as 'pending' | 'resolved' | 'lost_opportunity' | 'rescheduled',
+    customerName: "",
+    loadRequestDate: new Date().toISOString().split("T")[0],
+    requestedPickupDate: "",
+    requestedDeliveryDate: "",
+    route: "",
+    estimatedRevenue: "",
+    currency: "ZAR" as "ZAR" | "USD",
+    reason: "",
+    reasonDescription: "",
+    resolutionStatus: "pending" as "pending" | "resolved" | "lost_opportunity" | "rescheduled",
     followUpRequired: true,
     competitorWon: false,
-    impact: 'medium' as 'low' | 'medium' | 'high'
+    impact: "medium" as "low" | "medium" | "high",
   });
   const [resolutionData, setResolutionData] = useState({
-    resolutionNotes: '',
-    compensationOffered: '',
-    compensationNotes: ''
+    resolutionNotes: "",
+    compensationOffered: "",
+    compensationNotes: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const handleResolutionChange = (field: string, value: string) => {
-    setResolutionData(prev => ({ ...prev, [field]: value }));
+    setResolutionData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -86,25 +85,25 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.customerName.trim()) {
-      newErrors.customerName = 'Customer name is required';
+      newErrors.customerName = "Customer name is required";
     }
     if (!formData.loadRequestDate) {
-      newErrors.loadRequestDate = 'Load request date is required';
+      newErrors.loadRequestDate = "Load request date is required";
     }
     if (!formData.requestedPickupDate) {
-      newErrors.requestedPickupDate = 'Requested pickup date is required';
+      newErrors.requestedPickupDate = "Requested pickup date is required";
     }
     if (!formData.requestedDeliveryDate) {
-      newErrors.requestedDeliveryDate = 'Requested delivery date is required';
+      newErrors.requestedDeliveryDate = "Requested delivery date is required";
     }
     if (!formData.route.trim()) {
-      newErrors.route = 'Route is required';
+      newErrors.route = "Route is required";
     }
     if (!formData.estimatedRevenue || Number(formData.estimatedRevenue) <= 0) {
-      newErrors.estimatedRevenue = 'Valid estimated revenue is required';
+      newErrors.estimatedRevenue = "Valid estimated revenue is required";
     }
     if (!formData.reason) {
-      newErrors.reason = 'Reason for missing load is required';
+      newErrors.reason = "Reason for missing load is required";
     }
 
     setErrors(newErrors);
@@ -115,7 +114,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!resolutionData.resolutionNotes.trim()) {
-      newErrors.resolutionNotes = 'Resolution notes are required';
+      newErrors.resolutionNotes = "Resolution notes are required";
     }
 
     setErrors(newErrors);
@@ -125,7 +124,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
   const handleSubmit = () => {
     if (!validateForm()) return;
 
-    const missedLoadData: Omit<MissedLoad, 'id'> = {
+    const missedLoadData: Omit<MissedLoad, "id"> = {
       customerName: formData.customerName.trim(),
       loadRequestDate: formData.loadRequestDate,
       requestedPickupDate: formData.requestedPickupDate,
@@ -138,17 +137,17 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
       resolutionStatus: formData.resolutionStatus,
       followUpRequired: formData.followUpRequired,
       competitorWon: formData.competitorWon,
-      recordedBy: 'Current User',
+      recordedBy: "Current User",
       recordedAt: new Date().toISOString(),
-      impact: formData.impact
+      impact: formData.impact,
     };
 
     if (editingLoad) {
       onUpdateMissedLoad({ ...missedLoadData, id: editingLoad.id });
-      alert('Missed load updated successfully!');
+      alert("Missed load updated successfully!");
     } else {
       onAddMissedLoad(missedLoadData);
-      alert('Missed load recorded successfully!');
+      alert("Missed load recorded successfully!");
     }
 
     handleClose();
@@ -159,24 +158,28 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
 
     const updatedLoad: MissedLoad = {
       ...resolvingLoad,
-      resolutionStatus: 'resolved',
+      resolutionStatus: "resolved",
       resolutionNotes: resolutionData.resolutionNotes.trim(),
       resolvedAt: new Date().toISOString(),
-      resolvedBy: 'Current User',
-      compensationOffered: resolutionData.compensationOffered ? Number(resolutionData.compensationOffered) : undefined,
-      compensationNotes: resolutionData.compensationNotes.trim() || undefined
+      resolvedBy: "Current User",
+      compensationOffered: resolutionData.compensationOffered
+        ? Number(resolutionData.compensationOffered)
+        : undefined,
+      compensationNotes: resolutionData.compensationNotes.trim() || undefined,
     };
 
     onUpdateMissedLoad(updatedLoad);
 
-    alert(`Missed load resolved successfully!\n\nResolution: ${resolutionData.resolutionNotes}\n${resolutionData.compensationOffered ? `Compensation offered: ${formatCurrency(Number(resolutionData.compensationOffered), resolvingLoad.currency)}` : ''}`);
+    alert(
+      `Missed load resolved successfully!\n\nResolution: ${resolutionData.resolutionNotes}\n${resolutionData.compensationOffered ? `Compensation offered: ${formatCurrency(Number(resolutionData.compensationOffered), resolvingLoad.currency)}` : ""}`
+    );
 
     setShowResolutionModal(false);
     setResolvingLoad(null);
     setResolutionData({
-      resolutionNotes: '',
-      compensationOffered: '',
-      compensationNotes: ''
+      resolutionNotes: "",
+      compensationOffered: "",
+      compensationNotes: "",
     });
     setErrors({});
   };
@@ -191,11 +194,11 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
       estimatedRevenue: load.estimatedRevenue.toString(),
       currency: load.currency,
       reason: load.reason,
-      reasonDescription: load.reasonDescription || '',
+      reasonDescription: load.reasonDescription || "",
       resolutionStatus: load.resolutionStatus,
       followUpRequired: load.followUpRequired,
       competitorWon: load.competitorWon || false,
-      impact: load.impact
+      impact: load.impact,
     });
     setEditingLoad(load);
     setShowModal(true);
@@ -204,18 +207,19 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
   const handleResolve = (load: MissedLoad) => {
     setResolvingLoad(load);
     setResolutionData({
-      resolutionNotes: '',
-      compensationOffered: '',
-      compensationNotes: ''
+      resolutionNotes: "",
+      compensationOffered: "",
+      compensationNotes: "",
     });
     setShowResolutionModal(true);
   };
 
   const handleDelete = (id: string) => {
-    const load = missedLoads.find(l => l.id === id);
+    const load = missedLoads.find((l) => l.id === id);
     if (!load) return;
 
-    const confirmMessage = `Are you sure you want to delete this missed load?\n\n` +
+    const confirmMessage =
+      `Are you sure you want to delete this missed load?\n\n` +
       `Customer: ${load.customerName}\n` +
       `Route: ${load.route}\n` +
       `Estimated Revenue: ${formatCurrency(load.estimatedRevenue, load.currency)}\n\n` +
@@ -230,19 +234,19 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
     setShowModal(false);
     setEditingLoad(null);
     setFormData({
-      customerName: '',
-      loadRequestDate: new Date().toISOString().split('T')[0],
-      requestedPickupDate: '',
-      requestedDeliveryDate: '',
-      route: '',
-      estimatedRevenue: '',
-      currency: 'ZAR',
-      reason: '',
-      reasonDescription: '',
-      resolutionStatus: 'pending',
+      customerName: "",
+      loadRequestDate: new Date().toISOString().split("T")[0],
+      requestedPickupDate: "",
+      requestedDeliveryDate: "",
+      route: "",
+      estimatedRevenue: "",
+      currency: "ZAR",
+      reason: "",
+      reasonDescription: "",
+      resolutionStatus: "pending",
       followUpRequired: true,
       competitorWon: false,
-      impact: 'medium'
+      impact: "medium",
     });
     setErrors({});
   };
@@ -255,34 +259,41 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
   // Calculate summary metrics
   const totalMissedLoads = missedLoads.length;
   const revenueLostZAR = missedLoads
-    .filter(load => load.currency === 'ZAR' && load.resolutionStatus !== 'resolved')
+    .filter((load) => load.currency === "ZAR" && load.resolutionStatus !== "resolved")
     .reduce((sum, load) => sum + load.estimatedRevenue, 0);
   const revenueLostUSD = missedLoads
-    .filter(load => load.currency === 'USD' && load.resolutionStatus !== 'resolved')
+    .filter((load) => load.currency === "USD" && load.resolutionStatus !== "resolved")
     .reduce((sum, load) => sum + load.estimatedRevenue, 0);
-  const resolvedLoads = missedLoads.filter(load => load.resolutionStatus === 'resolved').length;
-  const competitorWins = missedLoads.filter(load => load.competitorWon).length;
+  const resolvedLoads = missedLoads.filter((load) => load.resolutionStatus === "resolved").length;
+  const competitorWins = missedLoads.filter((load) => load.competitorWon).length;
   const compensationOfferedZAR = missedLoads
-    .filter(load => load.currency === 'ZAR' && load.compensationOffered)
+    .filter((load) => load.currency === "ZAR" && load.compensationOffered)
     .reduce((sum, load) => sum + (load.compensationOffered || 0), 0);
   const compensationOfferedUSD = missedLoads
-    .filter(load => load.currency === 'USD' && load.compensationOffered)
+    .filter((load) => load.currency === "USD" && load.compensationOffered)
     .reduce((sum, load) => sum + (load.compensationOffered || 0), 0);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'resolved': return 'bg-green-100 text-green-800';
-      case 'rescheduled': return 'bg-blue-100 text-blue-800';
-      case 'lost_opportunity': return 'bg-red-100 text-red-800';
-      default: return 'bg-yellow-100 text-yellow-800';
+      case "resolved":
+        return "bg-green-100 text-green-800";
+      case "rescheduled":
+        return "bg-blue-100 text-blue-800";
+      case "lost_opportunity":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-yellow-100 text-yellow-800";
     }
   };
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-green-100 text-green-800';
+      case "high":
+        return "bg-red-100 text-red-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-green-100 text-green-800";
     }
   };
 
@@ -294,10 +305,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
           <h2 className="text-2xl font-bold text-gray-900">Missed Loads Tracker</h2>
           <p className="text-gray-600">Track and analyze missed business opportunities</p>
         </div>
-        <Button
-          onClick={handleNewMissedLoad}
-          icon={<Plus className="w-4 h-4" />}
-        >
+        <Button onClick={handleNewMissedLoad} icon={<Plus className="w-4 h-4" />}>
           Record Missed Load
         </Button>
       </div>
@@ -324,10 +332,10 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                 <p className="text-sm text-gray-500">Revenue Lost</p>
                 <div className="space-y-1">
                   <p className="text-lg font-bold text-red-600">
-                    {formatCurrency(revenueLostZAR, 'ZAR')}
+                    {formatCurrency(revenueLostZAR, "ZAR")}
                   </p>
                   <p className="text-lg font-bold text-red-600">
-                    {formatCurrency(revenueLostUSD, 'USD')}
+                    {formatCurrency(revenueLostUSD, "USD")}
                   </p>
                 </div>
               </div>
@@ -343,10 +351,10 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                 <p className="text-sm text-gray-500">Compensation Offered</p>
                 <div className="space-y-1">
                   <p className="text-lg font-bold text-blue-600">
-                    {formatCurrency(compensationOfferedZAR, 'ZAR')}
+                    {formatCurrency(compensationOfferedZAR, "ZAR")}
                   </p>
                   <p className="text-lg font-bold text-blue-600">
-                    {formatCurrency(compensationOfferedUSD, 'USD')}
+                    {formatCurrency(compensationOfferedUSD, "USD")}
                   </p>
                 </div>
               </div>
@@ -389,15 +397,22 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
           ) : (
             <div className="space-y-4">
               {missedLoads.map((load) => (
-                <div key={load.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div
+                  key={load.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-lg font-medium text-gray-900">{load.customerName}</h3>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(load.resolutionStatus)}`}>
-                          {load.resolutionStatus.replace('_', ' ').toUpperCase()}
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(load.resolutionStatus)}`}
+                        >
+                          {load.resolutionStatus.replace("_", " ").toUpperCase()}
                         </span>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(load.impact)}`}>
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(load.impact)}`}
+                        >
                           {load.impact.toUpperCase()} IMPACT
                         </span>
                         {load.competitorWon && (
@@ -405,7 +420,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                             COMPETITOR WON
                           </span>
                         )}
-                        {load.resolutionStatus === 'resolved' && (
+                        {load.resolutionStatus === "resolved" && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             RESOLVED
@@ -426,7 +441,8 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                           <div>
                             <p className="text-sm text-gray-500">Requested Dates</p>
                             <p className="font-medium text-sm">
-                              {formatDate(load.requestedPickupDate)} - {formatDate(load.requestedDeliveryDate)}
+                              {formatDate(load.requestedPickupDate)} -{" "}
+                              {formatDate(load.requestedDeliveryDate)}
                             </p>
                           </div>
                         </div>
@@ -451,36 +467,43 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                       <div className="mb-3">
                         <p className="text-sm text-gray-500">Reason</p>
                         <p className="font-medium">
-                          {MISSED_LOAD_REASONS.find(r => r.value === load.reason)?.label || load.reason}
+                          {MISSED_LOAD_REASONS.find((r) => r.value === load.reason)?.label ||
+                            load.reason}
                         </p>
                         {load.reasonDescription && (
                           <p className="text-sm text-gray-600 mt-1">{load.reasonDescription}</p>
                         )}
                       </div>
 
-                      {load.resolutionStatus === 'resolved' && load.resolutionNotes && (
+                      {load.resolutionStatus === "resolved" && load.resolutionNotes && (
                         <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded">
                           <p className="text-sm font-medium text-green-800">Resolution Notes:</p>
                           <p className="text-sm text-green-700">{load.resolutionNotes}</p>
                           {load.compensationOffered && (
                             <p className="text-sm text-green-700 mt-1">
-                              <strong>Compensation Offered:</strong> {formatCurrency(load.compensationOffered, load.currency)}
+                              <strong>Compensation Offered:</strong>{" "}
+                              {formatCurrency(load.compensationOffered, load.currency)}
                             </p>
                           )}
                           <p className="text-xs text-green-600 mt-1">
-                            Resolved by {load.resolvedBy} on {load.resolvedAt ? formatDate(load.resolvedAt) : 'Unknown'}
+                            Resolved by {load.resolvedBy} on{" "}
+                            {load.resolvedAt ? formatDate(load.resolvedAt) : "Unknown"}
                           </p>
                         </div>
                       )}
 
                       <div className="text-xs text-gray-500">
                         Recorded on {formatDate(load.recordedAt)} •
-                        {load.followUpRequired && <span className="text-amber-600 font-medium ml-1">Follow-up required</span>}
+                        {load.followUpRequired && (
+                          <span className="text-amber-600 font-medium ml-1">
+                            Follow-up required
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     <div className="flex space-x-2 ml-4">
-                      {load.resolutionStatus !== 'resolved' && (
+                      {load.resolutionStatus !== "resolved" && (
                         <Button
                           size="sm"
                           onClick={() => handleResolve(load)}
@@ -518,7 +541,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
       <Modal
         isOpen={showModal}
         onClose={handleClose}
-        title={editingLoad ? 'Edit Missed Load' : 'Record Missed Load'}
+        title={editingLoad ? "Edit Missed Load" : "Record Missed Load"}
         maxWidth="lg"
       >
         <div className="space-y-6">
@@ -528,8 +551,9 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               <div>
                 <h4 className="text-sm font-medium text-amber-800">Missed Load Documentation</h4>
                 <p className="text-sm text-amber-700 mt-1">
-                  Record all missed business opportunities to identify patterns and improve our response capabilities.
-                  This data helps in capacity planning and competitive analysis.
+                  Record all missed business opportunities to identify patterns and improve our
+                  response capabilities. This data helps in capacity planning and competitive
+                  analysis.
                 </p>
               </div>
             </div>
@@ -539,11 +563,11 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
             <Select
               label="Customer Name *"
               value={formData.customerName}
-              onChange={(e) => handleChange('customerName', e.target.value)}
+              onChange={(e) => handleChange("customerName", e.target.value)}
               options={[
-                { label: 'Select customer...', value: '' },
-                ...CLIENTS.map(c => ({ label: c, value: c })),
-                { label: 'Other (specify in description)', value: 'Other' }
+                { label: "Select customer...", value: "" },
+                ...CLIENTS.map((c) => ({ label: c, value: c })),
+                { label: "Other (specify in description)", value: "Other" },
               ]}
               error={errors.customerName}
             />
@@ -552,7 +576,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               label="Load Request Date *"
               type="date"
               value={formData.loadRequestDate}
-              onChange={(e) => handleChange('loadRequestDate', e.target.value)}
+              onChange={(e) => handleChange("loadRequestDate", e.target.value)}
               error={errors.loadRequestDate}
             />
 
@@ -560,7 +584,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               label="Requested Pickup Date *"
               type="date"
               value={formData.requestedPickupDate}
-              onChange={(e) => handleChange('requestedPickupDate', e.target.value)}
+              onChange={(e) => handleChange("requestedPickupDate", e.target.value)}
               error={errors.requestedPickupDate}
             />
 
@@ -568,14 +592,14 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               label="Requested Delivery Date *"
               type="date"
               value={formData.requestedDeliveryDate}
-              onChange={(e) => handleChange('requestedDeliveryDate', e.target.value)}
+              onChange={(e) => handleChange("requestedDeliveryDate", e.target.value)}
               error={errors.requestedDeliveryDate}
             />
 
             <Input
               label="Route *"
               value={formData.route}
-              onChange={(e) => handleChange('route', e.target.value)}
+              onChange={(e) => handleChange("route", e.target.value)}
               placeholder="e.g., Johannesburg to Cape Town"
               error={errors.route}
             />
@@ -584,10 +608,10 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               <Select
                 label="Currency *"
                 value={formData.currency}
-                onChange={(e) => handleChange('currency', e.target.value)}
+                onChange={(e) => handleChange("currency", e.target.value)}
                 options={[
-                  { label: 'ZAR (R)', value: 'ZAR' },
-                  { label: 'USD ($)', value: 'USD' }
+                  { label: "ZAR (R)", value: "ZAR" },
+                  { label: "USD ($)", value: "USD" },
                 ]}
               />
               <Input
@@ -596,7 +620,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                 step="0.01"
                 min="0"
                 value={formData.estimatedRevenue}
-                onChange={(e) => handleChange('estimatedRevenue', e.target.value)}
+                onChange={(e) => handleChange("estimatedRevenue", e.target.value)}
                 placeholder="0.00"
                 error={errors.estimatedRevenue}
               />
@@ -605,34 +629,31 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
             <Select
               label="Reason for Missing Load *"
               value={formData.reason}
-              onChange={(e) => handleChange('reason', e.target.value)}
-              options={[
-                { label: 'Select reason...', value: '' },
-                ...MISSED_LOAD_REASONS
-              ]}
+              onChange={(e) => handleChange("reason", e.target.value)}
+              options={[{ label: "Select reason...", value: "" }, ...MISSED_LOAD_REASONS]}
               error={errors.reason}
             />
 
             <Select
               label="Business Impact"
               value={formData.impact}
-              onChange={(e) => handleChange('impact', e.target.value)}
+              onChange={(e) => handleChange("impact", e.target.value)}
               options={[
-                { label: 'Low Impact', value: 'low' },
-                { label: 'Medium Impact', value: 'medium' },
-                { label: 'High Impact', value: 'high' }
+                { label: "Low Impact", value: "low" },
+                { label: "Medium Impact", value: "medium" },
+                { label: "High Impact", value: "high" },
               ]}
             />
 
             <Select
               label="Resolution Status"
               value={formData.resolutionStatus}
-              onChange={(e) => handleChange('resolutionStatus', e.target.value)}
+              onChange={(e) => handleChange("resolutionStatus", e.target.value)}
               options={[
-                { label: 'Pending', value: 'pending' },
-                { label: 'Resolved', value: 'resolved' },
-                { label: 'Lost Opportunity', value: 'lost_opportunity' },
-                { label: 'Rescheduled', value: 'rescheduled' }
+                { label: "Pending", value: "pending" },
+                { label: "Resolved", value: "resolved" },
+                { label: "Lost Opportunity", value: "lost_opportunity" },
+                { label: "Rescheduled", value: "rescheduled" },
               ]}
             />
           </div>
@@ -640,7 +661,9 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
           <TextArea
             label="Additional Details"
             value={formData.reasonDescription}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('reasonDescription', e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              handleChange("reasonDescription", e.target.value)
+            }
             placeholder="Provide additional context about why this load was missed and any lessons learned..."
             rows={3}
           />
@@ -651,7 +674,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                 type="checkbox"
                 id="followUpRequired"
                 checked={formData.followUpRequired}
-                onChange={(e) => handleChange('followUpRequired', e.target.checked)}
+                onChange={(e) => handleChange("followUpRequired", e.target.checked)}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="followUpRequired" className="text-sm font-medium text-gray-700">
@@ -664,7 +687,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                 type="checkbox"
                 id="competitorWon"
                 checked={formData.competitorWon}
-                onChange={(e) => handleChange('competitorWon', e.target.checked)}
+                onChange={(e) => handleChange("competitorWon", e.target.checked)}
                 className="rounded border-gray-300 text-red-600 focus:ring-red-500"
               />
               <label htmlFor="competitorWon" className="text-sm font-medium text-gray-700">
@@ -674,18 +697,11 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              icon={<X className="w-4 h-4" />}
-            >
+            <Button variant="outline" onClick={handleClose} icon={<X className="w-4 h-4" />}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSubmit}
-              icon={<Save className="w-4 h-4" />}
-            >
-              {editingLoad ? 'Update Missed Load' : 'Record Missed Load'}
+            <Button onClick={handleSubmit} icon={<Save className="w-4 h-4" />}>
+              {editingLoad ? "Update Missed Load" : "Record Missed Load"}
             </Button>
           </div>
         </div>
@@ -698,9 +714,9 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
           setShowResolutionModal(false);
           setResolvingLoad(null);
           setResolutionData({
-            resolutionNotes: '',
-            compensationOffered: '',
-            compensationNotes: ''
+            resolutionNotes: "",
+            compensationOffered: "",
+            compensationNotes: "",
           });
           setErrors({});
         }}
@@ -715,7 +731,8 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                 <div>
                   <h4 className="text-sm font-medium text-green-800">Missed Load Resolution</h4>
                   <p className="text-sm text-green-700 mt-1">
-                    Document how this missed load was resolved and any compensation or goodwill gestures offered to maintain customer relationships.
+                    Document how this missed load was resolved and any compensation or goodwill
+                    gestures offered to maintain customer relationships.
                   </p>
                 </div>
               </div>
@@ -724,10 +741,21 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
             <div className="bg-gray-50 rounded-md p-4">
               <h4 className="text-sm font-medium text-gray-800 mb-2">Missed Load Details</h4>
               <div className="text-sm text-gray-700 space-y-1">
-                <p><strong>Customer:</strong> {resolvingLoad.customerName}</p>
-                <p><strong>Route:</strong> {resolvingLoad.route}</p>
-                <p><strong>Estimated Revenue:</strong> {formatCurrency(resolvingLoad.estimatedRevenue, resolvingLoad.currency)}</p>
-                <p><strong>Reason:</strong> {MISSED_LOAD_REASONS.find(r => r.value === resolvingLoad.reason)?.label || resolvingLoad.reason}</p>
+                <p>
+                  <strong>Customer:</strong> {resolvingLoad.customerName}
+                </p>
+                <p>
+                  <strong>Route:</strong> {resolvingLoad.route}
+                </p>
+                <p>
+                  <strong>Estimated Revenue:</strong>{" "}
+                  {formatCurrency(resolvingLoad.estimatedRevenue, resolvingLoad.currency)}
+                </p>
+                <p>
+                  <strong>Reason:</strong>{" "}
+                  {MISSED_LOAD_REASONS.find((r) => r.value === resolvingLoad.reason)?.label ||
+                    resolvingLoad.reason}
+                </p>
               </div>
             </div>
 
@@ -735,7 +763,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               <TextArea
                 label="Resolution Notes *"
                 value={resolutionData.resolutionNotes}
-                onChange={(e) => handleResolutionChange('resolutionNotes', e.target.value)}
+                onChange={(e) => handleResolutionChange("resolutionNotes", e.target.value)}
                 placeholder="Describe how this missed load was resolved, what actions were taken, and the outcome..."
                 rows={4}
                 error={errors.resolutionNotes}
@@ -748,7 +776,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                   step="0.01"
                   min="0"
                   value={resolutionData.compensationOffered}
-                  onChange={(e) => handleResolutionChange('compensationOffered', e.target.value)}
+                  onChange={(e) => handleResolutionChange("compensationOffered", e.target.value)}
                   placeholder="0.00"
                 />
                 <div></div>
@@ -757,7 +785,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               <TextArea
                 label="Compensation Notes"
                 value={resolutionData.compensationNotes}
-                onChange={(e) => handleResolutionChange('compensationNotes', e.target.value)}
+                onChange={(e) => handleResolutionChange("compensationNotes", e.target.value)}
                 placeholder="Details about any compensation or goodwill gestures offered..."
                 rows={3}
               />
@@ -766,7 +794,9 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
               <h4 className="text-sm font-medium text-blue-800 mb-2">Resolution Recording</h4>
               <div className="text-sm text-blue-700 space-y-1">
-                <p>• This missed load will be marked as <strong>RESOLVED</strong></p>
+                <p>
+                  • This missed load will be marked as <strong>RESOLVED</strong>
+                </p>
                 <p>• Resolution details will be recorded for future reference</p>
                 <p>• Customer relationship impact will be tracked</p>
                 <p>• Resolution will be logged with timestamp and user information</p>
@@ -780,9 +810,9 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
                   setShowResolutionModal(false);
                   setResolvingLoad(null);
                   setResolutionData({
-                    resolutionNotes: '',
-                    compensationOffered: '',
-                    compensationNotes: ''
+                    resolutionNotes: "",
+                    compensationOffered: "",
+                    compensationNotes: "",
                   });
                   setErrors({});
                 }}
@@ -790,10 +820,7 @@ const MissedLoadsTracker: React.FC<MissedLoadsTrackerProps> = ({
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleResolutionSubmit}
-                icon={<CheckCircle className="w-4 h-4" />}
-              >
+              <Button onClick={handleResolutionSubmit} icon={<CheckCircle className="w-4 h-4" />}>
                 Mark as Resolved
               </Button>
             </div>

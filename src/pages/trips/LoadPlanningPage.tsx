@@ -1,8 +1,8 @@
-import React from 'react';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import { Layers, Package, ChevronRight, RefreshCw, Plus } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import { useAppContext } from '../../context/AppContext';
+import { Button } from "@/components/ui/Button";
+import { ChevronRight, Layers, Package, Plus, RefreshCw } from "lucide-react";
+import React from "react";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import { useAppContext } from "../../context/AppContext";
 
 const LoadPlanningPage: React.FC = () => {
   const { isLoading } = useAppContext();
@@ -15,16 +15,10 @@ const LoadPlanningPage: React.FC = () => {
           <p className="text-gray-600">Optimize cargo loading for maximum efficiency</p>
         </div>
         <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            icon={<RefreshCw className="w-4 h-4" />}
-          >
+          <Button variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
             Refresh
           </Button>
-          <Button
-            icon={<Plus className="w-4 h-4" />}
-            disabled={isLoading.trips}
-          >
+          <Button icon={<Plus className="w-4 h-4" />} disabled={isLoading.trips}>
             New Load Plan
           </Button>
         </div>
@@ -84,26 +78,40 @@ const LoadPlanningPage: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Vehicle ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Capacity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Current Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {[1, 2, 3, 4].map((index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">VH-{2000 + index}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                      VH-{2000 + index}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {['Semi-Trailer', 'Box Truck', 'Flatbed', 'Container Truck'][index - 1]}
+                      {["Semi-Trailer", "Box Truck", "Flatbed", "Container Truck"][index - 1]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {[15000, 8000, 12000, 20000][index - 1]} kg
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {['Windhoek', 'Walvis Bay', 'Windhoek', 'Swakopmund'][index - 1]}
+                      {["Windhoek", "Walvis Bay", "Windhoek", "Swakopmund"][index - 1]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -111,7 +119,9 @@ const LoadPlanningPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <Button size="sm" variant="outline">Assign Load</Button>
+                      <Button size="sm" variant="outline">
+                        Assign Load
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -138,10 +148,10 @@ const LoadPlanningPage: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="font-medium">
-                        {['Standard Container', 'Mixed Cargo'][index - 1]}
+                        {["Standard Container", "Mixed Cargo"][index - 1]}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        {['40ft Container', 'Semi-Trailer'][index - 1]}
+                        {["40ft Container", "Semi-Trailer"][index - 1]}
                       </p>
                     </div>
                   </div>

@@ -1,18 +1,12 @@
-import {
-  AlertTriangle,
-  Flag,
-  Send,
-  X
-} from 'lucide-react';
-import React, { useState } from 'react';
-import { AdditionalCost, Trip } from '../../../types';
-import { calculateKPIs, formatCurrency, formatDateTime } from '../../../utils/helpers';
-import AdditionalCostsForm from '../../forms/cost/AdditionalCostsForm';
-import Button from '../../ui/Button';
-import FileUpload from '../../ui/FileUpload';
-import { Input } from '../../ui/FormElements';
-import Modal from '../../ui/Modal';
-import { TextArea } from "../../ui/FormElements";
+import { Button } from "@/components/ui/Button";
+import { AlertTriangle, Flag, Send, X } from "lucide-react";
+import React, { useState } from "react";
+import { AdditionalCost, Trip } from "../../../types";
+import { calculateKPIs, formatCurrency, formatDateTime } from "../../../utils/helpers";
+import AdditionalCostsForm from "../../forms/cost/AdditionalCostsForm";
+import FileUpload from "../../ui/FileUpload";
+import { Input, TextArea } from "../../ui/FormElements";
+import Modal from "../../ui/Modal";
 
 interface InvoiceSubmissionModalProps {
   isOpen: boolean;
@@ -31,7 +25,7 @@ interface InvoiceSubmissionModalProps {
     proofOfDelivery: FileList | null;
     signedInvoice: FileList | null;
   }) => void;
-  onAddAdditionalCost: (cost: Omit<AdditionalCost, 'id'>, files?: FileList) => void;
+  onAddAdditionalCost: (cost: Omit<AdditionalCost, "id">, files?: FileList) => void;
   onRemoveAdditionalCost: (costId: string) => void;
 }
 
@@ -41,16 +35,16 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
   onClose,
   onSubmit,
   onAddAdditionalCost,
-  onRemoveAdditionalCost
+  onRemoveAdditionalCost,
 }) => {
   const [formData, setFormData] = useState({
-    invoiceNumber: '',
-    invoiceDate: new Date().toISOString().split('T')[0],
-    invoiceDueDate: '',
-    finalArrivalDateTime: trip.actualArrivalDateTime || trip.plannedArrivalDateTime || '',
-    finalOffloadDateTime: trip.actualOffloadDateTime || trip.plannedOffloadDateTime || '',
-    finalDepartureDateTime: trip.actualDepartureDateTime || trip.plannedDepartureDateTime || '',
-    validationNotes: ''
+    invoiceNumber: "",
+    invoiceDate: new Date().toISOString().split("T")[0],
+    invoiceDueDate: "",
+    finalArrivalDateTime: trip.actualArrivalDateTime || trip.plannedArrivalDateTime || "",
+    finalOffloadDateTime: trip.actualOffloadDateTime || trip.plannedOffloadDateTime || "",
+    finalDepartureDateTime: trip.actualDepartureDateTime || trip.plannedDepartureDateTime || "",
+    validationNotes: "",
   });
 
   const [proofOfDelivery, setProofOfDelivery] = useState<FileList | null>(null);
@@ -68,11 +62,12 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
 
       if (Math.abs(diffHours) > 1) {
         discrepancies.push({
-          type: 'Arrival',
+          type: "Arrival",
           planned: formatDateTime(planned),
           final: formatDateTime(final),
-          difference: `${diffHours > 0 ? '+' : ''}${diffHours.toFixed(1)} hours`,
-          severity: Math.abs(diffHours) > 4 ? 'major' : Math.abs(diffHours) > 2 ? 'moderate' : 'minor'
+          difference: `${diffHours > 0 ? "+" : ""}${diffHours.toFixed(1)} hours`,
+          severity:
+            Math.abs(diffHours) > 4 ? "major" : Math.abs(diffHours) > 2 ? "moderate" : "minor",
         });
       }
     }
@@ -84,11 +79,12 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
 
       if (Math.abs(diffHours) > 1) {
         discrepancies.push({
-          type: 'Offload',
+          type: "Offload",
           planned: formatDateTime(planned),
           final: formatDateTime(final),
-          difference: `${diffHours > 0 ? '+' : ''}${diffHours.toFixed(1)} hours`,
-          severity: Math.abs(diffHours) > 4 ? 'major' : Math.abs(diffHours) > 2 ? 'moderate' : 'minor'
+          difference: `${diffHours > 0 ? "+" : ""}${diffHours.toFixed(1)} hours`,
+          severity:
+            Math.abs(diffHours) > 4 ? "major" : Math.abs(diffHours) > 2 ? "moderate" : "minor",
         });
       }
     }
@@ -100,11 +96,12 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
 
       if (Math.abs(diffHours) > 1) {
         discrepancies.push({
-          type: 'Departure',
+          type: "Departure",
           planned: formatDateTime(planned),
           final: formatDateTime(final),
-          difference: `${diffHours > 0 ? '+' : ''}${diffHours.toFixed(1)} hours`,
-          severity: Math.abs(diffHours) > 4 ? 'major' : Math.abs(diffHours) > 2 ? 'moderate' : 'minor'
+          difference: `${diffHours > 0 ? "+" : ""}${diffHours.toFixed(1)} hours`,
+          severity:
+            Math.abs(diffHours) > 4 ? "major" : Math.abs(diffHours) > 2 ? "moderate" : "minor",
         });
       }
     }
@@ -113,22 +110,22 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
   };
 
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Auto-calculate due date based on currency
-    if (field === 'invoiceDate') {
+    if (field === "invoiceDate") {
       const invoiceDate = new Date(value);
-      const daysToAdd = trip.revenueCurrency === 'USD' ? 14 : 30;
-      const dueDate = new Date(invoiceDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
-      setFormData(prev => ({
+      const daysToAdd = trip.revenueCurrency === "USD" ? 14 : 30;
+      const dueDate = new Date(invoiceDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+      setFormData((prev) => ({
         ...prev,
         invoiceDate: value,
-        invoiceDueDate: dueDate.toISOString().split('T')[0]
+        invoiceDueDate: dueDate.toISOString().split("T")[0],
       }));
     }
 
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -136,37 +133,38 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.invoiceNumber.trim()) {
-      newErrors.invoiceNumber = 'Invoice number is required';
+      newErrors.invoiceNumber = "Invoice number is required";
     }
 
     if (!formData.invoiceDate) {
-      newErrors.invoiceDate = 'Invoice date is required';
+      newErrors.invoiceDate = "Invoice date is required";
     }
 
     if (!formData.invoiceDueDate) {
-      newErrors.invoiceDueDate = 'Due date is required';
+      newErrors.invoiceDueDate = "Due date is required";
     }
 
     if (!formData.finalArrivalDateTime) {
-      newErrors.finalArrivalDateTime = 'Final arrival time is required';
+      newErrors.finalArrivalDateTime = "Final arrival time is required";
     }
 
     if (!formData.finalOffloadDateTime) {
-      newErrors.finalOffloadDateTime = 'Final offload time is required';
+      newErrors.finalOffloadDateTime = "Final offload time is required";
     }
 
     if (!formData.finalDepartureDateTime) {
-      newErrors.finalDepartureDateTime = 'Final departure time is required';
+      newErrors.finalDepartureDateTime = "Final departure time is required";
     }
 
     // Check for required documents
     if (!proofOfDelivery || proofOfDelivery.length === 0) {
-      newErrors.proofOfDelivery = 'Proof of delivery is required for invoicing';
+      newErrors.proofOfDelivery = "Proof of delivery is required for invoicing";
     }
 
     const discrepancies = calculateDiscrepancies();
     if (discrepancies.length > 0 && !formData.validationNotes.trim()) {
-      newErrors.validationNotes = 'Validation notes are required when there are timeline discrepancies';
+      newErrors.validationNotes =
+        "Validation notes are required when there are timeline discrepancies";
     }
 
     setErrors(newErrors);
@@ -183,27 +181,23 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
       finalTimeline: {
         finalArrivalDateTime: formData.finalArrivalDateTime,
         finalOffloadDateTime: formData.finalOffloadDateTime,
-        finalDepartureDateTime: formData.finalDepartureDateTime
+        finalDepartureDateTime: formData.finalDepartureDateTime,
       },
       validationNotes: formData.validationNotes.trim(),
       proofOfDelivery,
-      signedInvoice
+      signedInvoice,
     });
   };
 
   const kpis = calculateKPIs(trip);
   const discrepancies = calculateDiscrepancies();
   const hasDiscrepancies = discrepancies.length > 0;
-  const totalAdditionalCosts = trip.additionalCosts?.reduce((sum, cost) => sum + cost.amount, 0) || 0;
+  const totalAdditionalCosts =
+    trip.additionalCosts?.reduce((sum, cost) => sum + cost.amount, 0) || 0;
   const finalInvoiceAmount = kpis.totalRevenue + totalAdditionalCosts;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Submit Trip for Invoicing"
-      maxWidth="2xl"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Submit Trip for Invoicing" maxWidth="2xl">
       <div className="space-y-6">
         {/* Trip Summary */}
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
@@ -211,7 +205,9 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-blue-600 font-medium">Fleet & Driver</p>
-              <p className="text-blue-800">{trip.fleetNumber} - {trip.driverName}</p>
+              <p className="text-blue-800">
+                {trip.fleetNumber} - {trip.driverName}
+              </p>
             </div>
             <div>
               <p className="text-blue-600 font-medium">Route</p>
@@ -223,7 +219,9 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
             </div>
             <div>
               <p className="text-blue-600 font-medium">Period</p>
-              <p className="text-blue-800">{trip.startDate} to {trip.endDate}</p>
+              <p className="text-blue-800">
+                {trip.startDate} to {trip.endDate}
+              </p>
             </div>
           </div>
         </div>
@@ -267,19 +265,32 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
               <div className="flex items-start space-x-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-medium text-amber-800">Timeline Discrepancies Detected</h4>
+                  <h4 className="text-sm font-medium text-amber-800">
+                    Timeline Discrepancies Detected
+                  </h4>
                   <p className="text-sm text-amber-700 mt-1">
-                    Significant differences found between planned and final times. Please review and provide validation notes.
+                    Significant differences found between planned and final times. Please review and
+                    provide validation notes.
                   </p>
                   <div className="mt-3 space-y-2">
                     {discrepancies.map((disc, index) => (
-                      <div key={index} className="text-sm bg-amber-100 p-2 rounded border border-amber-300">
+                      <div
+                        key={index}
+                        className="text-sm bg-amber-100 p-2 rounded border border-amber-300"
+                      >
                         <div className="flex items-center space-x-2">
-                          <Flag className={`w-4 h-4 ${
-                            disc.severity === 'major' ? 'text-red-600' :
-                            disc.severity === 'moderate' ? 'text-orange-600' : 'text-yellow-600'
-                          }`} />
-                          <span className="font-medium text-amber-800">{disc.type} Time Variance ({disc.severity})</span>
+                          <Flag
+                            className={`w-4 h-4 ${
+                              disc.severity === "major"
+                                ? "text-red-600"
+                                : disc.severity === "moderate"
+                                  ? "text-orange-600"
+                                  : "text-yellow-600"
+                            }`}
+                          />
+                          <span className="font-medium text-amber-800">
+                            {disc.type} Time Variance ({disc.severity})
+                          </span>
                         </div>
                         <div className="ml-6 mt-1 space-y-1">
                           <div className="text-amber-700">
@@ -305,21 +316,21 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
               label="Final Arrival Date & Time *"
               type="datetime-local"
               value={formData.finalArrivalDateTime}
-              onChange={(e) => handleChange('finalArrivalDateTime', e.target.value)}
+              onChange={(e) => handleChange("finalArrivalDateTime", e.target.value)}
               error={errors.finalArrivalDateTime}
             />
             <Input
               label="Final Offload Date & Time *"
               type="datetime-local"
               value={formData.finalOffloadDateTime}
-              onChange={(e) => handleChange('finalOffloadDateTime', e.target.value)}
+              onChange={(e) => handleChange("finalOffloadDateTime", e.target.value)}
               error={errors.finalOffloadDateTime}
             />
             <Input
               label="Final Departure Date & Time *"
               type="datetime-local"
               value={formData.finalDepartureDateTime}
-              onChange={(e) => handleChange('finalDepartureDateTime', e.target.value)}
+              onChange={(e) => handleChange("finalDepartureDateTime", e.target.value)}
               error={errors.finalDepartureDateTime}
             />
           </div>
@@ -328,7 +339,7 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
             <TextArea
               label="Timeline Validation Notes *"
               value={formData.validationNotes}
-              onChange={(e) => handleChange('validationNotes', e.target.value)}
+              onChange={(e) => handleChange("validationNotes", e.target.value)}
               placeholder="Explain the timeline discrepancies and any delays encountered..."
               rows={3}
               error={errors.validationNotes}
@@ -339,13 +350,17 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
         {/* Delay Reasons Summary */}
         {trip.delayReasons && trip.delayReasons.length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <h4 className="text-sm font-medium text-red-800 mb-2">Recorded Delays ({trip.delayReasons.length})</h4>
+            <h4 className="text-sm font-medium text-red-800 mb-2">
+              Recorded Delays ({trip.delayReasons.length})
+            </h4>
             <div className="space-y-2">
               {trip.delayReasons.map((delay, index) => (
                 <div key={index} className="text-sm bg-white p-2 rounded border border-red-200">
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="font-medium text-red-800">{delay.delayType.replace(/_/g, ' ').toUpperCase()}</span>
+                      <span className="font-medium text-red-800">
+                        {delay.delayType.replace(/_/g, " ").toUpperCase()}
+                      </span>
                       <p className="text-red-700">{delay.description}</p>
                     </div>
                     <span className="text-red-600 font-medium">{delay.delayDuration}h</span>
@@ -374,7 +389,7 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
             <Input
               label="Invoice Number *"
               value={formData.invoiceNumber}
-              onChange={(e) => handleChange('invoiceNumber', e.target.value)}
+              onChange={(e) => handleChange("invoiceNumber", e.target.value)}
               placeholder="INV-2025-001"
               error={errors.invoiceNumber}
             />
@@ -382,14 +397,14 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
               label="Invoice Date *"
               type="date"
               value={formData.invoiceDate}
-              onChange={(e) => handleChange('invoiceDate', e.target.value)}
+              onChange={(e) => handleChange("invoiceDate", e.target.value)}
               error={errors.invoiceDate}
             />
             <Input
-              label={`Due Date * (${trip.revenueCurrency === 'USD' ? '14' : '30'} days default)`}
+              label={`Due Date * (${trip.revenueCurrency === "USD" ? "14" : "30"} days default)`}
               type="date"
               value={formData.invoiceDueDate}
-              onChange={(e) => handleChange('invoiceDueDate', e.target.value)}
+              onChange={(e) => handleChange("invoiceDueDate", e.target.value)}
               error={errors.invoiceDueDate}
             />
           </div>
@@ -451,7 +466,9 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
         <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
           <h4 className="text-sm font-medium text-gray-800 mb-2">Submission Summary</h4>
           <div className="text-sm text-gray-700 space-y-1">
-            <p>• Trip will be marked as <strong>INVOICED</strong></p>
+            <p>
+              • Trip will be marked as <strong>INVOICED</strong>
+            </p>
             <p>• Invoice aging tracking will begin automatically</p>
             <p>• Payment follow-up alerts will be scheduled based on currency thresholds</p>
             <p>• Timeline validation will be recorded for compliance reporting</p>
@@ -463,17 +480,10 @@ const InvoiceSubmissionModal: React.FC<InvoiceSubmissionModalProps> = ({
 
         {/* Actions */}
         <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            icon={<X className="w-4 h-4" />}
-          >
+          <Button variant="outline" onClick={onClose} icon={<X className="w-4 h-4" />}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            icon={<Send className="w-4 h-4" />}
-          >
+          <Button onClick={handleSubmit} icon={<Send className="w-4 h-4" />}>
             Submit for Invoicing
           </Button>
         </div>

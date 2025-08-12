@@ -12,7 +12,7 @@ import DieselDashboardSummary from "../../components/diesel/DieselDashboardSumma
 import DieselRecordsCards from "../../components/diesel/DieselRecordsCards";
 import DieselRecordsTable from "../../components/diesel/DieselRecordsTable";
 import AutomaticProbeVerificationModal from "../../components/Models/Diesel/AutomaticProbeVerificationModal";
-import Button from "../../components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "../../components/ui/Card";
 import { useAppContext } from "../../context/AppContext";
 import { useSyncContext } from "../../context/SyncContext";

@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/Button";
+import { Plus, RefreshCw, Upload } from "lucide-react";
 import React from "react";
-import { Plus, Upload, RefreshCw } from "lucide-react";
-import Button from "../ui/Button";
 import SyncIndicator from "../ui/SyncIndicator";
 
 interface DieselDashboardHeaderProps {

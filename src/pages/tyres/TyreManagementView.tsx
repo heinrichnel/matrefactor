@@ -1,4 +1,4 @@
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import Modal from "@/components/ui/Modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
@@ -20,8 +20,8 @@ import {
 import React, { useState } from "react";
 
 // Import type utilities from the tyreConstants file
-import TyreInspectionModal from "@/components/Models/Tyre/TyreInspectionModal";
 import MoveTyreModal from "@/components/Models/Tyre/MoveTyreModal";
+import TyreInspectionModal from "@/components/Models/Tyre/TyreInspectionModal";
 import TyreForm from "@/components/forms/tyre/TyreForm";
 import { useTyreStores } from "@/context/TyreStoresContext";
 import type { StockEntry } from "@/types/tyre";

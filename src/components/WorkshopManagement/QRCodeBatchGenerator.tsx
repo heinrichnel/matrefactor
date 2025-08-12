@@ -1,9 +1,9 @@
+import { ArrowLeft, Printer, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { QrCode, Printer, ArrowLeft } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import { Button } from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
 import { useFleetData, Vehicle } from "../../hooks/useFleetData";
 
 type QRCodeType = "inspection" | "jobcard" | "fleet";
@@ -71,9 +71,9 @@ export const QRCodeBatchGenerator: React.FC = () => {
                 <h2 className="text-xl font-bold">QR Code Batch Generator</h2>
               </div>
               <Button
-                variant="outline" // Corrected from "ghost" to "outline"
+                variant="outline"
                 className="flex items-center gap-1"
-                onClick={() => navigate(-1)} // Corrected `onClick` to a function call
+                onClick={() => navigate(-1)}
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Single QR Generator
@@ -95,16 +95,12 @@ export const QRCodeBatchGenerator: React.FC = () => {
                 </select>
               </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll} // Corrected `onClick` to a function call
-              >
+              <Button variant="outline" size="sm" onClick={handleSelectAll}>
                 {selectedVehicles.length === vehicles.length ? "Deselect All" : "Select All"}
               </Button>
 
               <Button
-                onClick={handlePrint} // Corrected `onClick` to a function call
+                onClick={handlePrint}
                 className="flex items-center gap-2"
                 disabled={vehiclesToShow.length === 0}
               >

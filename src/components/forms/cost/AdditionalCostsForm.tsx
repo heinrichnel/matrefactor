@@ -2,12 +2,12 @@
 import React, { useState } from "react";
 
 // ─── Types ───────────────────────────────────────────────────────
-import { AdditionalCost, ADDITIONAL_COST_TYPES } from "../../../types/index";
+import { ADDITIONAL_COST_TYPES, AdditionalCost } from "../../../types/index";
 
 // ─── UI Components ───────────────────────────────────────────────
-import Button from "../../ui/Button";
+import { Button } from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../ui/Card";
-import { Input, Select, TextArea, FileUpload } from "../../ui/FormElements";
+import { FileUpload, Input, Select, TextArea } from "../../ui/FormElements";
 
 // ─── Icons ───────────────────────────────────────────────────────
 import { DollarSign, Plus, Upload, X } from "lucide-react";
@@ -287,7 +287,7 @@ const AdditionalCostsForm: React.FC<AdditionalCostsFormProps> = ({
                     {!readOnly && (
                       <Button
                         size="sm"
-                        variant="danger"
+                        variant="destructive"
                         onClick={() => onRemoveCost(cost.id)}
                         icon={<X className="w-3 h-3" />}
                       >

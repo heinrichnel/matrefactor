@@ -1,10 +1,16 @@
-import { AlertTriangle, Save, Shield, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { useAppContext } from '../../../context/AppContext';
-import { DRIVER_BEHAVIOR_EVENT_TYPES, DriverBehaviorEvent, DriverBehaviorEventType, DRIVERS, FLEET_NUMBERS } from '../../../types';
-import Button from '../../ui/Button';
-import { Input, Select, TextArea } from '../../ui/FormElements';
-import Modal from '../../ui/Modal';
+import { Button } from "@/components/ui/Button";
+import { AlertTriangle, Save, Shield, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useAppContext } from "../../../context/AppContext";
+import {
+  DRIVER_BEHAVIOR_EVENT_TYPES,
+  DriverBehaviorEvent,
+  DriverBehaviorEventType,
+  DRIVERS,
+  FLEET_NUMBERS,
+} from "../../../types";
+import { Input, Select, TextArea } from "../../ui/FormElements";
+import Modal from "../../ui/Modal";
 
 interface DriverBehaviorEventFormProps {
   isOpen: boolean;
@@ -17,23 +23,23 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
   isOpen,
   onClose,
   event,
-  onInitiateCAR
+  onInitiateCAR,
 }) => {
   const { addDriverBehaviorEvent, updateDriverBehaviorEvent } = useAppContext();
 
   const [formData, setFormData] = useState({
-    driverName: '',
-    fleetNumber: '',
-    eventDate: new Date().toISOString().split('T')[0],
-    eventTime: new Date().toTimeString().split(' ')[0].substring(0, 5),
-    eventType: '' as DriverBehaviorEventType,
-    description: '',
-    location: '',
-    severity: 'medium' as 'low' | 'medium' | 'high' | 'critical',
-    status: 'pending' as 'pending' | 'acknowledged' | 'resolved' | 'disputed',
-    actionTaken: '',
+    driverName: "",
+    fleetNumber: "",
+    eventDate: new Date().toISOString().split("T")[0],
+    eventTime: new Date().toTimeString().split(" ")[0].substring(0, 5),
+    eventType: "" as DriverBehaviorEventType,
+    description: "",
+    location: "",
+    severity: "medium" as "low" | "medium" | "high" | "critical",
+    status: "pending" as "pending" | "acknowledged" | "resolved" | "disputed",
+    actionTaken: "",
     points: 0,
-    followUpRequired: false // Adding missing required property
+    followUpRequired: false, // Adding missing required property
   });
 
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -49,28 +55,28 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
         eventTime: event.eventTime,
         eventType: event.eventType,
         description: event.description,
-        location: event.location || '',
+        location: event.location || "",
         severity: event.severity,
         status: event.status,
-        actionTaken: event.actionTaken || '',
+        actionTaken: event.actionTaken || "",
         points: event.points,
-        followUpRequired: event.followUpRequired
+        followUpRequired: event.followUpRequired,
       });
     } else {
       // Reset form for new event
       setFormData({
-        driverName: '',
-        fleetNumber: '',
-        eventDate: new Date().toISOString().split('T')[0],
-        eventTime: new Date().toTimeString().split(' ')[0].substring(0, 5),
-        eventType: '' as DriverBehaviorEventType,
-        description: '',
-        location: '',
-        severity: 'medium',
-        status: 'pending',
-        actionTaken: '',
+        driverName: "",
+        fleetNumber: "",
+        eventDate: new Date().toISOString().split("T")[0],
+        eventTime: new Date().toTimeString().split(" ")[0].substring(0, 5),
+        eventType: "" as DriverBehaviorEventType,
+        description: "",
+        location: "",
+        severity: "medium",
+        status: "pending",
+        actionTaken: "",
         points: 0,
-        followUpRequired: false
+        followUpRequired: false,
       });
     }
 
@@ -80,12 +86,12 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
 
   // Handle form changes
   const handleChange = (field: string, value: string | number | boolean) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const updated = { ...prev, [field]: value };
 
       // Auto-calculate points based on event type
-      if (field === 'eventType') {
-        const eventType = DRIVER_BEHAVIOR_EVENT_TYPES.find(t => t.value === value);
+      if (field === "eventType") {
+        const eventType = DRIVER_BEHAVIOR_EVENT_TYPES.find((t) => t.value === value);
         if (eventType) {
           updated.points = eventType.points;
         }
@@ -96,7 +102,7 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
 
     // Clear error for this field
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -104,13 +110,13 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.driverName) newErrors.driverName = 'Driver name is required';
-    if (!formData.fleetNumber) newErrors.fleetNumber = 'Fleet number is required';
-    if (!formData.eventDate) newErrors.eventDate = 'Event date is required';
-    if (!formData.eventTime) newErrors.eventTime = 'Event time is required';
-    if (!formData.eventType) newErrors.eventType = 'Event type is required';
-    if (!formData.description) newErrors.description = 'Description is required';
-    if (!formData.severity) newErrors.severity = 'Severity is required';
+    if (!formData.driverName) newErrors.driverName = "Driver name is required";
+    if (!formData.fleetNumber) newErrors.fleetNumber = "Fleet number is required";
+    if (!formData.eventDate) newErrors.eventDate = "Event date is required";
+    if (!formData.eventTime) newErrors.eventTime = "Event time is required";
+    if (!formData.eventType) newErrors.eventType = "Event type is required";
+    if (!formData.description) newErrors.description = "Description is required";
+    if (!formData.severity) newErrors.severity = "Severity is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -120,8 +126,8 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
   const handleSubmit = () => {
     if (!validateForm()) return;
 
-    const eventData: Omit<DriverBehaviorEvent, 'id'> = {
-      driverId: 'unknown', // Placeholder - in a real app, get from selected driver
+    const eventData: Omit<DriverBehaviorEvent, "id"> = {
+      driverId: "unknown", // Placeholder - in a real app, get from selected driver
       driverName: formData.driverName,
       fleetNumber: formData.fleetNumber,
       eventDate: formData.eventDate,
@@ -130,25 +136,25 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
       description: formData.description,
       location: formData.location,
       severity: formData.severity,
-      reportedBy: 'Current User', // In a real app, use the logged-in user
+      reportedBy: "Current User", // In a real app, use the logged-in user
       reportedAt: new Date().toISOString(),
       status: formData.status,
       actionTaken: formData.actionTaken,
       points: formData.points,
-      followUpRequired: formData.followUpRequired
+      followUpRequired: formData.followUpRequired,
     };
 
     if (event) {
       // Update existing event
       updateDriverBehaviorEvent({
         ...event,
-        ...eventData
+        ...eventData,
       });
-      alert('Driver behavior event updated successfully');
+      alert("Driver behavior event updated successfully");
     } else {
       // Add new event
       addDriverBehaviorEvent(eventData, selectedFiles || undefined);
-      alert('Driver behavior event recorded successfully');
+      alert("Driver behavior event recorded successfully");
     }
 
     onClose();
@@ -180,8 +186,9 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
             <div>
               <h4 className="text-sm font-medium text-blue-800">Driver Behavior Reporting</h4>
               <p className="text-sm text-blue-700 mt-1">
-                Record driver behavior events to track performance and identify training needs.
-                Each event type has associated demerit points that affect the driver's overall risk score.
+                Record driver behavior events to track performance and identify training needs. Each
+                event type has associated demerit points that affect the driver's overall risk
+                score.
               </p>
             </div>
           </div>
@@ -192,10 +199,10 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
           <Select
             label="Driver *"
             value={formData.driverName}
-            onChange={(e) => handleChange('driverName', e.target.value)}
+            onChange={(e) => handleChange("driverName", e.target.value)}
             options={[
-              { label: 'Select driver...', value: '' },
-              ...DRIVERS.map(driver => ({ label: driver, value: driver }))
+              { label: "Select driver...", value: "" },
+              ...DRIVERS.map((driver) => ({ label: driver, value: driver })),
             ]}
             error={errors.driverName}
           />
@@ -203,10 +210,10 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
           <Select
             label="Fleet Number *"
             value={formData.fleetNumber}
-            onChange={(e) => handleChange('fleetNumber', e.target.value)}
+            onChange={(e) => handleChange("fleetNumber", e.target.value)}
             options={[
-              { label: 'Select fleet...', value: '' },
-              ...FLEET_NUMBERS.map(fleet => ({ label: fleet, value: fleet }))
+              { label: "Select fleet...", value: "" },
+              ...FLEET_NUMBERS.map((fleet) => ({ label: fleet, value: fleet })),
             ]}
             error={errors.fleetNumber}
           />
@@ -215,7 +222,7 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
             label="Event Date *"
             type="date"
             value={formData.eventDate}
-            onChange={(e) => handleChange('eventDate', e.target.value)}
+            onChange={(e) => handleChange("eventDate", e.target.value)}
             error={errors.eventDate}
           />
 
@@ -223,17 +230,20 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
             label="Event Time *"
             type="time"
             value={formData.eventTime}
-            onChange={(e) => handleChange('eventTime', e.target.value)}
+            onChange={(e) => handleChange("eventTime", e.target.value)}
             error={errors.eventTime}
           />
 
           <Select
             label="Event Type *"
             value={formData.eventType}
-            onChange={(e) => handleChange('eventType', e.target.value)}
+            onChange={(e) => handleChange("eventType", e.target.value)}
             options={[
-              { label: 'Select event type...', value: '' },
-              ...DRIVER_BEHAVIOR_EVENT_TYPES.map(type => ({ label: type.label, value: type.value }))
+              { label: "Select event type...", value: "" },
+              ...DRIVER_BEHAVIOR_EVENT_TYPES.map((type) => ({
+                label: type.label,
+                value: type.value,
+              })),
             ]}
             error={errors.eventType}
           />
@@ -241,12 +251,12 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
           <Select
             label="Severity *"
             value={formData.severity}
-            onChange={(e) => handleChange('severity', e.target.value)}
+            onChange={(e) => handleChange("severity", e.target.value)}
             options={[
-              { label: 'Critical', value: 'critical' },
-              { label: 'High', value: 'high' },
-              { label: 'Medium', value: 'medium' },
-              { label: 'Low', value: 'low' }
+              { label: "Critical", value: "critical" },
+              { label: "High", value: "high" },
+              { label: "Medium", value: "medium" },
+              { label: "Low", value: "low" },
             ]}
             error={errors.severity}
           />
@@ -254,19 +264,19 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
           <Input
             label="Location"
             value={formData.location}
-            onChange={(e) => handleChange('location', e.target.value)}
+            onChange={(e) => handleChange("location", e.target.value)}
             placeholder="e.g., Highway A1, Kilometer 45"
           />
 
           <Select
             label="Status"
             value={formData.status}
-            onChange={(e) => handleChange('status', e.target.value)}
+            onChange={(e) => handleChange("status", e.target.value)}
             options={[
-              { label: 'Pending', value: 'pending' },
-              { label: 'Acknowledged', value: 'acknowledged' },
-              { label: 'Resolved', value: 'resolved' },
-              { label: 'Disputed', value: 'disputed' }
+              { label: "Pending", value: "pending" },
+              { label: "Acknowledged", value: "acknowledged" },
+              { label: "Resolved", value: "resolved" },
+              { label: "Disputed", value: "disputed" },
             ]}
           />
         </div>
@@ -274,7 +284,7 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
         <TextArea
           label="Description *"
           value={formData.description}
-          onChange={(e) => handleChange('description', e.target.value)}
+          onChange={(e) => handleChange("description", e.target.value)}
           placeholder="Provide details about the behavior event..."
           rows={3}
           error={errors.description}
@@ -283,7 +293,7 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
         <TextArea
           label="Action Taken"
           value={formData.actionTaken}
-          onChange={(e) => handleChange('actionTaken', e.target.value)}
+          onChange={(e) => handleChange("actionTaken", e.target.value)}
           placeholder="Describe any actions taken to address this behavior..."
           rows={2}
         />
@@ -300,7 +310,7 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
               min="0"
               max="25"
               value={formData.points.toString()}
-              onChange={(e) => handleChange('points', parseInt(e.target.value))}
+              onChange={(e) => handleChange("points", parseInt(e.target.value))}
               className="w-20"
             />
             <span className="text-sm text-gray-500">points</span>
@@ -323,50 +333,41 @@ const DriverBehaviorEventForm: React.FC<DriverBehaviorEventFormProps> = ({
           />
           {selectedFiles && selectedFiles.length > 0 && (
             <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
-              <p className="font-medium text-blue-800">
-                Selected {selectedFiles.length} file(s)
-              </p>
+              <p className="font-medium text-blue-800">Selected {selectedFiles.length} file(s)</p>
             </div>
           )}
         </div>
 
         {/* Initiate CAR option for existing events */}
-        {event && (event.severity === 'critical' || event.severity === 'high') && !event.carReportId && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-md">
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
-              <div>
-                <h4 className="text-sm font-medium text-amber-800">Corrective Action Required</h4>
-                <p className="text-sm text-amber-700 mt-1">
-                  This is a {event.severity} severity event that requires a Corrective Action Report (CAR).
-                </p>
-                <div className="mt-3">
-                  <Button
-                    onClick={handleInitiateCAR}
-                    variant="primary"
-                  >
-                    Initiate CAR Report
-                  </Button>
+        {event &&
+          (event.severity === "critical" || event.severity === "high") &&
+          !event.carReportId && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-md">
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium text-amber-800">Corrective Action Required</h4>
+                  <p className="text-sm text-amber-700 mt-1">
+                    This is a {event.severity} severity event that requires a Corrective Action
+                    Report (CAR).
+                  </p>
+                  <div className="mt-3">
+                    <Button onClick={handleInitiateCAR} variant="primary">
+                      Initiate CAR Report
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Form Actions */}
         <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            icon={<X className="w-4 h-4" />}
-          >
+          <Button variant="outline" onClick={onClose} icon={<X className="w-4 h-4" />}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            icon={<Save className="w-4 h-4" />}
-          >
-            {event ? 'Update Event' : 'Record Event'}
+          <Button onClick={handleSubmit} icon={<Save className="w-4 h-4" />}>
+            {event ? "Update Event" : "Record Event"}
           </Button>
         </div>
       </div>

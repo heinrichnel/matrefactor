@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { format } from "date-fns";
-import Button from "../../ui/Button";
-import Card, { CardContent } from "../../ui/Card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../ui/Tabs";
-import { Printer, Download, Edit2, Check, X, FileText } from "lucide-react";
-import { RCAModal, RCAEntry } from "./RCAModal";
-import { db } from "../../../firebase"; // Import Firestore
 import { doc, setDoc } from "firebase/firestore"; // Import doc and setDoc
+import { Check, Download, Edit2, FileText, Printer, X } from "lucide-react";
+import React, { useState } from "react";
+import { db } from "../../../firebase"; // Import Firestore
+import Card, { CardContent } from "../../ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs";
+import { RCAEntry, RCAModal } from "./RCAModal";
 
 export interface JobCardDetail {
   id: string;

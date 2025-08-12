@@ -1,84 +1,84 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Card, { CardHeader, CardContent } from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import { Save, ArrowLeft, Upload, Trash2, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Save, Trash2, Upload } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "../../components/ui/Button";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 
 // Mock driver data - same as used in DriverDetails.tsx
 const mockDrivers = [
   {
-    id: 'drv-001',
-    name: 'John Doe',
-    email: 'john.doe@matanuska.com',
-    phone: '+233 20 123 4567',
-    address: '123 Accra Road, Tema, Ghana',
-    dateOfBirth: '1985-05-15',
-    dateJoined: '2020-03-10',
-    licenseNumber: 'GH-DL-123456',
-    licenseExpiry: '2026-03-14',
-    licenseClass: 'Commercial',
-    status: 'active',
+    id: "drv-001",
+    name: "John Doe",
+    email: "john.doe@matanuska.com",
+    phone: "+233 20 123 4567",
+    address: "123 Accra Road, Tema, Ghana",
+    dateOfBirth: "1985-05-15",
+    dateJoined: "2020-03-10",
+    licenseNumber: "GH-DL-123456",
+    licenseExpiry: "2026-03-14",
+    licenseClass: "Commercial",
+    status: "active",
     emergencyContact: {
-      name: 'Sarah Doe',
-      relationship: 'Spouse',
-      phone: '+233 20 123 9876'
+      name: "Sarah Doe",
+      relationship: "Spouse",
+      phone: "+233 20 123 9876",
     },
-    nationality: 'Ghanaian',
-    nationalId: 'GHA-98765432',
+    nationality: "Ghanaian",
+    nationalId: "GHA-98765432",
     bankDetails: {
-      bankName: 'Ghana Commercial Bank',
-      accountNumber: '1234567890',
-      branch: 'Accra Main'
-    }
+      bankName: "Ghana Commercial Bank",
+      accountNumber: "1234567890",
+      branch: "Accra Main",
+    },
   },
   {
-    id: 'drv-002',
-    name: 'Jane Smith',
-    email: 'jane.smith@matanuska.com',
-    phone: '+233 20 987 6543',
-    address: '456 Kumasi Road, Accra, Ghana',
-    dateOfBirth: '1990-08-22',
-    dateJoined: '2021-02-15',
-    licenseNumber: 'GH-DL-789012',
-    licenseExpiry: '2025-05-19',
-    licenseClass: 'Commercial',
-    status: 'active',
+    id: "drv-002",
+    name: "Jane Smith",
+    email: "jane.smith@matanuska.com",
+    phone: "+233 20 987 6543",
+    address: "456 Kumasi Road, Accra, Ghana",
+    dateOfBirth: "1990-08-22",
+    dateJoined: "2021-02-15",
+    licenseNumber: "GH-DL-789012",
+    licenseExpiry: "2025-05-19",
+    licenseClass: "Commercial",
+    status: "active",
     emergencyContact: {
-      name: 'Robert Smith',
-      relationship: 'Father',
-      phone: '+233 20 876 5432'
+      name: "Robert Smith",
+      relationship: "Father",
+      phone: "+233 20 876 5432",
     },
-    nationality: 'Ghanaian',
-    nationalId: 'GHA-12345678',
+    nationality: "Ghanaian",
+    nationalId: "GHA-12345678",
     bankDetails: {
-      bankName: 'Ecobank Ghana',
-      accountNumber: '0987654321',
-      branch: 'Kumasi Branch'
-    }
-  }
+      bankName: "Ecobank Ghana",
+      accountNumber: "0987654321",
+      branch: "Kumasi Branch",
+    },
+  },
 ];
 
 const EditDriver: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<any>({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    dateOfBirth: '',
-    licenseNumber: '',
-    licenseExpiry: '',
-    licenseClass: '',
-    status: 'active',
-    emergencyContactName: '',
-    emergencyContactRelationship: '',
-    emergencyContactPhone: '',
-    nationality: '',
-    nationalId: '',
-    bankName: '',
-    accountNumber: '',
-    branch: ''
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    dateOfBirth: "",
+    licenseNumber: "",
+    licenseExpiry: "",
+    licenseClass: "",
+    status: "active",
+    emergencyContactName: "",
+    emergencyContactRelationship: "",
+    emergencyContactPhone: "",
+    nationality: "",
+    nationalId: "",
+    bankName: "",
+    accountNumber: "",
+    branch: "",
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
@@ -86,7 +86,7 @@ const EditDriver: React.FC = () => {
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
-      const driver = mockDrivers.find(d => d.id === id);
+      const driver = mockDrivers.find((d) => d.id === id);
       if (driver) {
         setFormData({
           name: driver.name,
@@ -105,25 +105,27 @@ const EditDriver: React.FC = () => {
           nationalId: driver.nationalId,
           bankName: driver.bankDetails.bankName,
           accountNumber: driver.bankDetails.accountNumber,
-          branch: driver.bankDetails.branch
+          branch: driver.bankDetails.branch,
         });
       }
       setLoading(false);
     }, 500);
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       setSaving(false);
@@ -154,9 +156,9 @@ const EditDriver: React.FC = () => {
             </div>
           </div>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/drivers/profiles')}
+        <Button
+          variant="outline"
+          onClick={() => navigate("/drivers/profiles")}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -170,8 +172,8 @@ const EditDriver: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => navigate(`/drivers/profiles/${id}`)}
             className="mr-4"
           >
@@ -179,7 +181,9 @@ const EditDriver: React.FC = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Edit Driver Profile</h1>
-            <p className="text-gray-600">{formData.name} (ID: {id})</p>
+            <p className="text-gray-600">
+              {formData.name} (ID: {id})
+            </p>
           </div>
         </div>
       </div>
@@ -217,7 +221,9 @@ const EditDriver: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
                   <input
                     type="tel"
                     name="phone"
@@ -228,7 +234,9 @@ const EditDriver: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date of Birth
+                  </label>
                   <input
                     type="date"
                     name="dateOfBirth"
@@ -254,7 +262,9 @@ const EditDriver: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nationality
+                  </label>
                   <input
                     type="text"
                     name="nationality"
@@ -265,7 +275,9 @@ const EditDriver: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">National ID</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    National ID
+                  </label>
                   <input
                     type="text"
                     name="nationalId"
@@ -299,7 +311,9 @@ const EditDriver: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    License Number
+                  </label>
                   <input
                     type="text"
                     name="licenseNumber"
@@ -310,7 +324,9 @@ const EditDriver: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">License Class</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    License Class
+                  </label>
                   <input
                     type="text"
                     name="licenseClass"
@@ -323,7 +339,9 @@ const EditDriver: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">License Expiry Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  License Expiry Date
+                </label>
                 <input
                   type="date"
                   name="licenseExpiry"
@@ -335,14 +353,24 @@ const EditDriver: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Upload License Document</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Upload License Document
+                </label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                   <div className="space-y-1 text-center">
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     <div className="flex text-sm text-gray-600">
-                      <label htmlFor="license-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                      <label
+                        htmlFor="license-upload"
+                        className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500"
+                      >
                         <span>Upload a file</span>
-                        <input id="license-upload" name="license-upload" type="file" className="sr-only" />
+                        <input
+                          id="license-upload"
+                          name="license-upload"
+                          type="file"
+                          className="sr-only"
+                        />
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>
@@ -353,7 +381,7 @@ const EditDriver: React.FC = () => {
 
               <div className="pt-4 border-t border-gray-200 mt-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Emergency Contact</h3>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                   <input
@@ -365,10 +393,12 @@ const EditDriver: React.FC = () => {
                     required
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Relationship
+                    </label>
                     <input
                       type="text"
                       name="emergencyContactRelationship"
@@ -379,7 +409,9 @@ const EditDriver: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
                     <input
                       type="tel"
                       name="emergencyContactPhone"
@@ -413,7 +445,9 @@ const EditDriver: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Account Number
+                  </label>
                   <input
                     type="text"
                     name="accountNumber"
@@ -441,32 +475,28 @@ const EditDriver: React.FC = () => {
 
         {/* Form Actions */}
         <div className="mt-6 flex justify-between">
-          <Button 
+          <Button
             type="button"
-            variant="outline" 
+            variant="outline"
             onClick={() => navigate(`/drivers/profiles/${id}`)}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Cancel
           </Button>
-          
+
           <div className="flex space-x-2">
-            <Button 
+            <Button
               type="button"
-              variant="outline" 
+              variant="outline"
               className="flex items-center gap-2 text-red-600 hover:bg-red-50"
             >
               <Trash2 className="w-4 h-4" />
               Delete
             </Button>
-            <Button 
-              type="submit"
-              className="flex items-center gap-2"
-              disabled={saving}
-            >
+            <Button type="submit" className="flex items-center gap-2" disabled={saving}>
               <Save className="w-4 h-4" />
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>

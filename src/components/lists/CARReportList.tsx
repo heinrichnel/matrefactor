@@ -8,7 +8,7 @@ import { useAppContext } from "../../context/AppContext";
 import { CARReport } from "../../types";
 
 // ─── UI Components ───────────────────────────────────────────────
-import Button from "../ui/Button";
+import { Button } from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "../ui/Card";
 import { Input, Select } from "../ui/FormElements";
 
@@ -379,10 +379,10 @@ const CARReportList: React.FC = () => {
                       report.status === "completed"
                         ? "bg-green-50 border-green-200"
                         : isOverdue
-                          ? "bg-red-50 border-l-4 border-l-red-500"
-                          : report.severity === "high"
-                            ? "bg-amber-50 border-l-4 border-l-amber-500"
-                            : "bg-white border-gray-200"
+                        ? "bg-red-50 border-l-4 border-l-red-500"
+                        : report.severity === "high"
+                        ? "bg-amber-50 border-l-4 border-l-amber-500"
+                        : "bg-white border-gray-200"
                     }`}
                   >
                     <div className="flex justify-between items-start">
@@ -507,7 +507,7 @@ const CARReportList: React.FC = () => {
 
                         <Button
                           size="sm"
-                          variant="danger"
+                          variant="destructive"
                           onClick={() => handleDeleteReport(report.id)}
                           icon={<Trash2 className="w-3 h-3" />}
                         >

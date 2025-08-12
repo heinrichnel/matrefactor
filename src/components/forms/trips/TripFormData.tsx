@@ -1,7 +1,7 @@
+import { Button } from "@/components/ui/Button";
 import React, { useEffect, useState } from "react";
 import { useWialonUnits } from "../../../hooks/useWialonUnits";
 import { CLIENTS, DRIVERS, FLEET_NUMBERS, Trip } from "../../../types/index";
-import Button from "../../ui/Button";
 import { Input, Select, TextArea } from "../../ui/FormElements";
 
 interface TripFormProps {

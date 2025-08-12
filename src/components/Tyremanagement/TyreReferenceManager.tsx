@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useTyreReferenceData } from '../../context/TyreReferenceDataContext';
-import { Card, CardContent } from '../ui/Card';
-import Button from '../ui/Button';
-import { Plus, Edit, Trash, Save, X, RefreshCcw } from 'lucide-react';
+import { Button } from "@/components/ui/Button";
+import { Edit, Plus, RefreshCcw, Save, Trash, X } from "lucide-react";
+import React, { useState } from "react";
+import { useTyreReferenceData } from "../../context/TyreReferenceDataContext";
+import { Card, CardContent } from "../ui/Card";
 
 // Tab management for the different sections
-type TabType = 'brands' | 'sizes' | 'patterns' | 'positions';
+type TabType = "brands" | "sizes" | "patterns" | "positions";
 
 const TyreReferenceManager: React.FC = () => {
   const {
@@ -27,47 +27,47 @@ const TyreReferenceManager: React.FC = () => {
     addVehiclePosition,
     updateVehiclePosition,
     deleteVehiclePosition,
-    refreshData
+    refreshData,
   } = useTyreReferenceData();
-  
-  const [activeTab, setActiveTab] = useState<TabType>('brands');
+
+  const [activeTab, setActiveTab] = useState<TabType>("brands");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   // Brand form state
-  const [brandForm, setBrandForm] = useState({ id: '', name: '' });
+  const [brandForm, setBrandForm] = useState({ id: "", name: "" });
   const [editingBrand, setEditingBrand] = useState(false);
-  
+
   // Size form state
-  const [sizeForm, setSizeForm] = useState({ id: '', size: '' });
+  const [sizeForm, setSizeForm] = useState({ id: "", size: "" });
   const [editingSize, setEditingSize] = useState(false);
-  
+
   // Pattern form state
-  const [patternForm, setPatternForm] = useState({ 
-    id: '', 
-    brand: '', 
-    pattern: '', 
-    size: '', 
-    position: 'Drive' 
+  const [patternForm, setPatternForm] = useState({
+    id: "",
+    brand: "",
+    pattern: "",
+    size: "",
+    position: "Drive",
   });
   const [editingPattern, setEditingPattern] = useState(false);
-  
+
   // Vehicle Position form state
   const [positionForm, setPositionForm] = useState({
-    id: '',
-    vehicleType: '',
-    name: '',
-    positions: [] as { id: string, name: string }[]
+    id: "",
+    vehicleType: "",
+    name: "",
+    positions: [] as { id: string; name: string }[],
   });
-  const [newPosition, setNewPosition] = useState({ id: '', name: '' });
+  const [newPosition, setNewPosition] = useState({ id: "", name: "" });
   const [editingPosition, setEditingPosition] = useState(false);
-  
+
   // Handle refreshing data
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await refreshData();
     setIsRefreshing(false);
   };
-  
+
   // --- BRAND MANAGEMENT ---
   const handleBrandSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,28 +77,28 @@ const TyreReferenceManager: React.FC = () => {
       } else {
         await addBrand(brandForm.name);
       }
-      setBrandForm({ id: '', name: '' });
+      setBrandForm({ id: "", name: "" });
       setEditingBrand(false);
     } catch (error) {
-      console.error('Error saving brand:', error);
+      console.error("Error saving brand:", error);
     }
   };
-  
+
   const handleEditBrand = (brand: { id: string; name: string }) => {
     setBrandForm({ id: brand.id, name: brand.name });
     setEditingBrand(true);
   };
-  
+
   const handleDeleteBrand = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this brand?')) {
+    if (window.confirm("Are you sure you want to delete this brand?")) {
       try {
         await deleteBrand(id);
       } catch (error) {
-        console.error('Error deleting brand:', error);
+        console.error("Error deleting brand:", error);
       }
     }
   };
-  
+
   const renderBrandsTab = () => (
     <div>
       <form onSubmit={handleBrandSubmit} className="mb-6">
@@ -118,8 +118,12 @@ const TyreReferenceManager: React.FC = () => {
           </div>
           <div className="self-end">
             <Button type="submit" className="h-10">
-              {editingBrand ? <Save size={16} className="mr-1" /> : <Plus size={16} className="mr-1" />}
-              {editingBrand ? 'Update' : 'Add'} Brand
+              {editingBrand ? (
+                <Save size={16} className="mr-1" />
+              ) : (
+                <Plus size={16} className="mr-1" />
+              )}
+              {editingBrand ? "Update" : "Add"} Brand
             </Button>
           </div>
           {editingBrand && (
@@ -129,7 +133,7 @@ const TyreReferenceManager: React.FC = () => {
                 variant="outline"
                 className="h-10"
                 onClick={() => {
-                  setBrandForm({ id: '', name: '' });
+                  setBrandForm({ id: "", name: "" });
                   setEditingBrand(false);
                 }}
               >
@@ -140,7 +144,7 @@ const TyreReferenceManager: React.FC = () => {
           )}
         </div>
       </form>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {brands.map((brand) => (
           <div key={brand.id} className="p-3 border rounded-md flex justify-between items-center">
@@ -164,7 +168,7 @@ const TyreReferenceManager: React.FC = () => {
       </div>
     </div>
   );
-  
+
   // --- SIZE MANAGEMENT ---
   const handleSizeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,28 +178,28 @@ const TyreReferenceManager: React.FC = () => {
       } else {
         await addSize(sizeForm.size);
       }
-      setSizeForm({ id: '', size: '' });
+      setSizeForm({ id: "", size: "" });
       setEditingSize(false);
     } catch (error) {
-      console.error('Error saving size:', error);
+      console.error("Error saving size:", error);
     }
   };
-  
+
   const handleEditSize = (size: { id: string; size: string }) => {
     setSizeForm({ id: size.id, size: size.size });
     setEditingSize(true);
   };
-  
+
   const handleDeleteSize = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this size?')) {
+    if (window.confirm("Are you sure you want to delete this size?")) {
       try {
         await deleteSize(id);
       } catch (error) {
-        console.error('Error deleting size:', error);
+        console.error("Error deleting size:", error);
       }
     }
   };
-  
+
   const renderSizesTab = () => (
     <div>
       <form onSubmit={handleSizeSubmit} className="mb-6">
@@ -216,8 +220,12 @@ const TyreReferenceManager: React.FC = () => {
           </div>
           <div className="self-end">
             <Button type="submit" className="h-10">
-              {editingSize ? <Save size={16} className="mr-1" /> : <Plus size={16} className="mr-1" />}
-              {editingSize ? 'Update' : 'Add'} Size
+              {editingSize ? (
+                <Save size={16} className="mr-1" />
+              ) : (
+                <Plus size={16} className="mr-1" />
+              )}
+              {editingSize ? "Update" : "Add"} Size
             </Button>
           </div>
           {editingSize && (
@@ -227,7 +235,7 @@ const TyreReferenceManager: React.FC = () => {
                 variant="outline"
                 className="h-10"
                 onClick={() => {
-                  setSizeForm({ id: '', size: '' });
+                  setSizeForm({ id: "", size: "" });
                   setEditingSize(false);
                 }}
               >
@@ -238,7 +246,7 @@ const TyreReferenceManager: React.FC = () => {
           )}
         </div>
       </form>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sizes.map((size) => (
           <div key={size.id} className="p-3 border rounded-md flex justify-between items-center">
@@ -262,7 +270,7 @@ const TyreReferenceManager: React.FC = () => {
       </div>
     </div>
   );
-  
+
   // --- PATTERN MANAGEMENT ---
   const handlePatternSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -272,44 +280,50 @@ const TyreReferenceManager: React.FC = () => {
           brand: patternForm.brand,
           pattern: patternForm.pattern,
           size: patternForm.size,
-          position: patternForm.position
+          position: patternForm.position,
         });
       } else {
         await addPattern({
           brand: patternForm.brand,
           pattern: patternForm.pattern,
           size: patternForm.size,
-          position: patternForm.position
+          position: patternForm.position,
         });
       }
-      setPatternForm({ id: '', brand: '', pattern: '', size: '', position: 'Drive' });
+      setPatternForm({ id: "", brand: "", pattern: "", size: "", position: "Drive" });
       setEditingPattern(false);
     } catch (error) {
-      console.error('Error saving pattern:', error);
+      console.error("Error saving pattern:", error);
     }
   };
-  
-  const handleEditPattern = (pattern: { id: string; brand: string; pattern: string; size: string; position: string }) => {
+
+  const handleEditPattern = (pattern: {
+    id: string;
+    brand: string;
+    pattern: string;
+    size: string;
+    position: string;
+  }) => {
     setPatternForm({
       id: pattern.id,
       brand: pattern.brand,
       pattern: pattern.pattern,
       size: pattern.size,
-      position: pattern.position
+      position: pattern.position,
     });
     setEditingPattern(true);
   };
-  
+
   const handleDeletePattern = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this pattern?')) {
+    if (window.confirm("Are you sure you want to delete this pattern?")) {
       try {
         await deletePattern(id);
       } catch (error) {
-        console.error('Error deleting pattern:', error);
+        console.error("Error deleting pattern:", error);
       }
     }
   };
-  
+
   const renderPatternsTab = () => (
     <div>
       <form onSubmit={handlePatternSubmit} className="mb-6">
@@ -327,11 +341,13 @@ const TyreReferenceManager: React.FC = () => {
             >
               <option value="">Select Brand</option>
               {brands.map((brand) => (
-                <option key={brand.id} value={brand.name}>{brand.name}</option>
+                <option key={brand.id} value={brand.name}>
+                  {brand.name}
+                </option>
               ))}
             </select>
           </div>
-          
+
           <div>
             <label htmlFor="patternSize" className="block text-sm font-medium text-gray-700 mb-1">
               Size
@@ -345,11 +361,13 @@ const TyreReferenceManager: React.FC = () => {
             >
               <option value="">Select Size</option>
               {sizes.map((size) => (
-                <option key={size.id} value={size.size}>{size.size}</option>
+                <option key={size.id} value={size.size}>
+                  {size.size}
+                </option>
               ))}
             </select>
           </div>
-          
+
           <div>
             <label htmlFor="patternName" className="block text-sm font-medium text-gray-700 mb-1">
               Pattern Name
@@ -364,9 +382,12 @@ const TyreReferenceManager: React.FC = () => {
               required
             />
           </div>
-          
+
           <div>
-            <label htmlFor="patternPosition" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="patternPosition"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Recommended Position
             </label>
             <select
@@ -383,19 +404,23 @@ const TyreReferenceManager: React.FC = () => {
             </select>
           </div>
         </div>
-        
+
         <div className="flex gap-3">
           <Button type="submit">
-            {editingPattern ? <Save size={16} className="mr-1" /> : <Plus size={16} className="mr-1" />}
-            {editingPattern ? 'Update' : 'Add'} Pattern
+            {editingPattern ? (
+              <Save size={16} className="mr-1" />
+            ) : (
+              <Plus size={16} className="mr-1" />
+            )}
+            {editingPattern ? "Update" : "Add"} Pattern
           </Button>
-          
+
           {editingPattern && (
             <Button
               type="button"
               variant="outline"
               onClick={() => {
-                setPatternForm({ id: '', brand: '', pattern: '', size: '', position: 'Drive' });
+                setPatternForm({ id: "", brand: "", pattern: "", size: "", position: "Drive" });
                 setEditingPattern(false);
               }}
             >
@@ -405,24 +430,39 @@ const TyreReferenceManager: React.FC = () => {
           )}
         </div>
       </form>
-      
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Brand
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Pattern
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Size
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Position
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -434,7 +474,7 @@ const TyreReferenceManager: React.FC = () => {
                   {pattern.brand}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {pattern.pattern || '-'}
+                  {pattern.pattern || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {pattern.size}
@@ -463,7 +503,7 @@ const TyreReferenceManager: React.FC = () => {
       </div>
     </div>
   );
-  
+
   // --- VEHICLE POSITION MANAGEMENT ---
   const handlePositionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -472,72 +512,74 @@ const TyreReferenceManager: React.FC = () => {
         await updateVehiclePosition(positionForm.id, {
           vehicleType: positionForm.vehicleType,
           name: positionForm.name,
-          positions: positionForm.positions
+          positions: positionForm.positions,
         });
       } else {
         await addVehiclePosition({
           vehicleType: positionForm.vehicleType,
           name: positionForm.name,
-          positions: positionForm.positions
+          positions: positionForm.positions,
         });
       }
       setPositionForm({
-        id: '',
-        vehicleType: '',
-        name: '',
-        positions: []
+        id: "",
+        vehicleType: "",
+        name: "",
+        positions: [],
       });
       setEditingPosition(false);
     } catch (error) {
-      console.error('Error saving vehicle position:', error);
+      console.error("Error saving vehicle position:", error);
     }
   };
-  
-  const handleEditPosition = (position: { id: string; vehicleType: string; name: string; positions: { id: string, name: string }[] }) => {
+
+  const handleEditPosition = (position: {
+    id: string;
+    vehicleType: string;
+    name: string;
+    positions: { id: string; name: string }[];
+  }) => {
     setPositionForm({
       id: position.id,
       vehicleType: position.vehicleType,
       name: position.name,
-      positions: [...position.positions]
+      positions: [...position.positions],
     });
     setEditingPosition(true);
   };
-  
+
   const handleDeletePosition = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this vehicle position configuration?')) {
+    if (window.confirm("Are you sure you want to delete this vehicle position configuration?")) {
       try {
         await deleteVehiclePosition(id);
       } catch (error) {
-        console.error('Error deleting vehicle position:', error);
+        console.error("Error deleting vehicle position:", error);
       }
     }
   };
-  
+
   const handleAddPositionItem = () => {
-    if (newPosition.name.trim() === '') return;
-    
+    if (newPosition.name.trim() === "") return;
+
     // Generate a temporary ID for the new position
     const tempId = Date.now().toString();
-    
+
     setPositionForm({
       ...positionForm,
-      positions: [
-        ...positionForm.positions,
-        { id: tempId, name: newPosition.name }
-      ]
+      positions: [...positionForm.positions, { id: tempId, name: newPosition.name }],
     });
-    
+
     // Reset the new position input
-    setNewPosition({ id: '', name: '' });
+    setNewPosition({ id: "", name: "" });
   };
-  
+
   const handleRemovePositionItem = (id: string) => {
     setPositionForm({
       ...positionForm,
-      positions: positionForm.positions.filter(pos => pos.id !== id)
+      positions: positionForm.positions.filter((pos) => pos.id !== id),
     });
   };
-  
+
   const renderPositionsTab = () => (
     <div>
       <form onSubmit={handlePositionSubmit} className="mb-6">
@@ -556,7 +598,7 @@ const TyreReferenceManager: React.FC = () => {
               required
             />
           </div>
-          
+
           <div>
             <label htmlFor="positionName" className="block text-sm font-medium text-gray-700 mb-1">
               Configuration Name
@@ -572,7 +614,7 @@ const TyreReferenceManager: React.FC = () => {
             />
           </div>
         </div>
-        
+
         <div className="mb-4">
           <h3 className="text-lg font-medium mb-2">Tyre Positions</h3>
           <div className="flex flex-wrap gap-3 mb-2">
@@ -589,21 +631,26 @@ const TyreReferenceManager: React.FC = () => {
               <Button
                 type="button"
                 onClick={handleAddPositionItem}
-                disabled={newPosition.name.trim() === ''}
+                disabled={newPosition.name.trim() === ""}
               >
                 <Plus size={16} className="mr-1" />
                 Add Position
               </Button>
             </div>
           </div>
-          
+
           <div className="mt-3">
             {positionForm.positions.length === 0 ? (
-              <p className="text-gray-500 italic">No positions added yet. Add at least one position.</p>
+              <p className="text-gray-500 italic">
+                No positions added yet. Add at least one position.
+              </p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {positionForm.positions.map((pos) => (
-                  <div key={pos.id} className="flex items-center justify-between p-2 border rounded-md">
+                  <div
+                    key={pos.id}
+                    className="flex items-center justify-between p-2 border rounded-md"
+                  >
                     <span>{pos.name}</span>
                     <button
                       type="button"
@@ -618,26 +665,27 @@ const TyreReferenceManager: React.FC = () => {
             )}
           </div>
         </div>
-        
+
         <div className="flex gap-3">
-          <Button
-            type="submit"
-            disabled={positionForm.positions.length === 0}
-          >
-            {editingPosition ? <Save size={16} className="mr-1" /> : <Plus size={16} className="mr-1" />}
-            {editingPosition ? 'Update' : 'Add'} Vehicle Position
+          <Button type="submit" disabled={positionForm.positions.length === 0}>
+            {editingPosition ? (
+              <Save size={16} className="mr-1" />
+            ) : (
+              <Plus size={16} className="mr-1" />
+            )}
+            {editingPosition ? "Update" : "Add"} Vehicle Position
           </Button>
-          
+
           {editingPosition && (
             <Button
               type="button"
               variant="outline"
               onClick={() => {
                 setPositionForm({
-                  id: '',
-                  vehicleType: '',
-                  name: '',
-                  positions: []
+                  id: "",
+                  vehicleType: "",
+                  name: "",
+                  positions: [],
                 });
                 setEditingPosition(false);
               }}
@@ -648,21 +696,33 @@ const TyreReferenceManager: React.FC = () => {
           )}
         </div>
       </form>
-      
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Vehicle Type
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Configuration Name
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Positions
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -706,26 +766,26 @@ const TyreReferenceManager: React.FC = () => {
       </div>
     </div>
   );
-  
+
   // Tab navigation
   const tabs: { id: TabType; label: string }[] = [
-    { id: 'brands', label: 'Brands' },
-    { id: 'sizes', label: 'Sizes' },
-    { id: 'patterns', label: 'Patterns' },
-    { id: 'positions', label: 'Vehicle Positions' }
+    { id: "brands", label: "Brands" },
+    { id: "sizes", label: "Sizes" },
+    { id: "patterns", label: "Patterns" },
+    { id: "positions", label: "Vehicle Positions" },
   ];
-  
+
   return (
     <Card className="w-full">
       <CardContent className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Tyre Reference Data Manager</h2>
           <Button onClick={handleRefresh} disabled={isRefreshing}>
-            <RefreshCcw size={16} className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCcw size={16} className={`mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         </div>
-        
+
         {/* Tab navigation */}
         <div className="border-b border-gray-200 mb-6">
           <nav className="flex -mb-px">
@@ -735,19 +795,19 @@ const TyreReferenceManager: React.FC = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-3 px-4 font-medium text-sm border-b-2 ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 {tab.label}
-                {loading[tab.id === 'positions' ? 'vehiclePositions' : tab.id] && (
+                {loading[tab.id === "positions" ? "vehiclePositions" : tab.id] && (
                   <span className="ml-2 inline-block h-2 w-2 bg-blue-600 rounded-full animate-pulse"></span>
                 )}
               </button>
             ))}
           </nav>
         </div>
-        
+
         {/* Error display */}
         {error && (
           <div className="bg-red-50 p-4 rounded-md mb-6">
@@ -761,12 +821,12 @@ const TyreReferenceManager: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         {/* Tab content */}
-        {activeTab === 'brands' && renderBrandsTab()}
-        {activeTab === 'sizes' && renderSizesTab()}
-        {activeTab === 'patterns' && renderPatternsTab()}
-        {activeTab === 'positions' && renderPositionsTab()}
+        {activeTab === "brands" && renderBrandsTab()}
+        {activeTab === "sizes" && renderSizesTab()}
+        {activeTab === "patterns" && renderPatternsTab()}
+        {activeTab === "positions" && renderPositionsTab()}
       </CardContent>
     </Card>
   );

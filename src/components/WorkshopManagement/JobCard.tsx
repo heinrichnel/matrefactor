@@ -1,17 +1,16 @@
-import React, { useState } from "react";
 import JobCardHeader from "@/components/WorkshopManagement/JobCardHeader";
-import TaskManager from "@/components/WorkshopManagement/TaskManager";
+import React, { useState } from "react";
 // import InventoryPanel from './InventoryPanel'; // Component commented out - missing file
 import JobCardNotes from "@/components/WorkshopManagement/JobCardNotes";
 import TaskHistoryList from "./TaskHistoryList";
 // import QAReviewPanel from './QAReviewPanel'; // Component commented out - missing file
 // import CompletionPanel from './CompletionPanel'; // Component commented out - missing file
+import { Button } from "@/components/ui/Button";
 import { doc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "../../firebase";
 import { JobCardTask, TaskHistoryEntry } from "../../types";
 import { logStatusChange, logTaskAssignment, logTaskEdit } from "../../utils/taskHistory";
-import Button from "../ui/Button";
 
 // Mock data for a job card
 const mockJobCard = {

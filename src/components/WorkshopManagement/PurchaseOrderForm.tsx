@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import Card, { CardContent } from '../ui/Card';
-import Button from '../ui/Button';
-import { format } from 'date-fns';
-import { Download, X, Check, Plus, Trash2 } from 'lucide-react';
+import { Button } from "@/components/ui/Button";
+import { format } from "date-fns";
+import { Check, Download, Plus, Trash2, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import Card, { CardContent } from "../ui/Card";
 
 export interface PurchaseOrderItem {
   id: string;
@@ -22,8 +22,8 @@ export interface PurchaseOrder {
   dueDate: string;
   vendor: string;
   requester: string;
-  priority: 'Low' | 'Medium' | 'High' | 'Urgent';
-  status: 'Draft' | 'Pending' | 'Approved' | 'Rejected' | 'Ordered' | 'Received' | 'Completed';
+  priority: "Low" | "Medium" | "High" | "Urgent";
+  status: "Draft" | "Pending" | "Approved" | "Rejected" | "Ordered" | "Received" | "Completed";
   terms: string;
   poType: string;
   linkedWorkorder?: string;
@@ -52,22 +52,22 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
   initialData,
   onSave,
   onCancel,
-  onGeneratePDF
+  onGeneratePDF,
 }) => {
   const [data, setData] = useState<PurchaseOrder>(
     initialData || {
       id: `po-${Date.now()}`,
       poNumber: `PO-${Date.now().toString().slice(-6)}`,
-      title: '',
-      description: '',
-      dueDate: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-      vendor: '',
-      requester: '',
-      priority: 'Medium',
-      status: 'Draft',
-      terms: 'Net 30',
-      poType: 'Standard',
-      shippingAddress: '',
+      title: "",
+      description: "",
+      dueDate: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
+      vendor: "",
+      requester: "",
+      priority: "Medium",
+      status: "Draft",
+      terms: "Net 30",
+      poType: "Standard",
+      shippingAddress: "",
       items: [],
       subTotal: 0,
       tax: 0,
@@ -75,7 +75,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
       grandTotal: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      createdBy: '',
+      createdBy: "",
       attachments: [],
     }
   );
@@ -93,19 +93,17 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
   const handleItemChange = (itemId: string, field: keyof PurchaseOrderItem, value: any) => {
     setData((prev) => ({
       ...prev,
-      items: prev.items.map((item) =>
-        item.id === itemId ? { ...item, [field]: value } : item
-      ),
+      items: prev.items.map((item) => (item.id === itemId ? { ...item, [field]: value } : item)),
     }));
 
     // Auto-calculate item total
-    if (field === 'quantity' || field === 'unitPrice') {
+    if (field === "quantity" || field === "unitPrice") {
       setData((prev) => {
         const items = prev.items.map((item) => {
           if (item.id === itemId) {
             return {
               ...item,
-              total: item.quantity * item.unitPrice
+              total: item.quantity * item.unitPrice,
             };
           }
           return item;
@@ -118,23 +116,23 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
   const handleAddItem = () => {
     const newItem: PurchaseOrderItem = {
       id: `item-${Date.now()}`,
-      sku: '',
-      name: '',
-      description: '',
+      sku: "",
+      name: "",
+      description: "",
       quantity: 1,
       unitPrice: 0,
-      total: 0
+      total: 0,
     };
     setData((prev) => ({
       ...prev,
-      items: [...prev.items, newItem]
+      items: [...prev.items, newItem],
     }));
   };
 
   const handleRemoveItem = (itemId: string) => {
     setData((prev) => ({
       ...prev,
-      items: prev.items.filter((item) => item.id !== itemId)
+      items: prev.items.filter((item) => item.id !== itemId),
     }));
   };
 
@@ -146,7 +144,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
     setData((prev) => ({
       ...prev,
       subTotal,
-      grandTotal
+      grandTotal,
     }));
   };
 
@@ -155,14 +153,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
     const mockUrl = URL.createObjectURL(file);
     setData((prev) => ({
       ...prev,
-      attachments: [...(prev.attachments || []), mockUrl]
+      attachments: [...(prev.attachments || []), mockUrl],
     }));
   };
 
   const handleSave = () => {
     const updatedData = {
       ...data,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
     onSave(updatedData);
   };
@@ -172,25 +170,38 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
   };
 
   const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'Draft': return 'bg-gray-100 text-gray-800';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Approved': return 'bg-green-100 text-green-800';
-      case 'Rejected': return 'bg-red-100 text-red-800';
-      case 'Ordered': return 'bg-blue-100 text-blue-800';
-      case 'Received': return 'bg-purple-100 text-purple-800';
-      case 'Completed': return 'bg-emerald-100 text-emerald-800';
-      default: return 'bg-gray-100 text-gray-800';
+    switch (status) {
+      case "Draft":
+        return "bg-gray-100 text-gray-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Approved":
+        return "bg-green-100 text-green-800";
+      case "Rejected":
+        return "bg-red-100 text-red-800";
+      case "Ordered":
+        return "bg-blue-100 text-blue-800";
+      case "Received":
+        return "bg-purple-100 text-purple-800";
+      case "Completed":
+        return "bg-emerald-100 text-emerald-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPriorityColor = (priority: string) => {
-    switch(priority) {
-      case 'Low': return 'bg-gray-100 text-gray-800';
-      case 'Medium': return 'bg-blue-100 text-blue-800';
-      case 'High': return 'bg-yellow-100 text-yellow-800';
-      case 'Urgent': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+    switch (priority) {
+      case "Low":
+        return "bg-gray-100 text-gray-800";
+      case "Medium":
+        return "bg-blue-100 text-blue-800";
+      case "High":
+        return "bg-yellow-100 text-yellow-800";
+      case "Urgent":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -232,12 +243,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   </tr>
                   <tr>
                     <td className="py-2 pr-4 font-medium">Due Date:</td>
-                    <td>{format(new Date(data.dueDate), 'dd-MMM-yyyy')}</td>
+                    <td>{format(new Date(data.dueDate), "dd-MMM-yyyy")}</td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4 font-medium">Status:</td>
                     <td>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(data.status)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(data.status)}`}
+                      >
                         {data.status}
                       </span>
                     </td>
@@ -245,7 +258,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   <tr>
                     <td className="py-2 pr-4 font-medium">Priority:</td>
                     <td>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(data.priority)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(data.priority)}`}
+                      >
                         {data.priority}
                       </span>
                     </td>
@@ -288,13 +303,11 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   )}
                 </tbody>
               </table>
-              
+
               {data.description && (
                 <div className="mt-4">
                   <h4 className="font-medium mb-2">Description</h4>
-                  <div className="bg-gray-50 p-3 rounded-md">
-                    {data.description}
-                  </div>
+                  <div className="bg-gray-50 p-3 rounded-md">{data.description}</div>
                 </div>
               )}
             </div>
@@ -327,7 +340,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   ))}
                   {data.items.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-4 px-4 text-center text-gray-500">No items added to this purchase order.</td>
+                      <td colSpan={6} className="py-4 px-4 text-center text-gray-500">
+                        No items added to this purchase order.
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -338,8 +353,12 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                     <td className="py-2 px-4 border-b text-right">${data.subTotal.toFixed(2)}</td>
                   </tr>
                   <tr>
-                    <td className="py-2 px-4 border-b text-right font-medium">Tax ({data.tax}%):</td>
-                    <td className="py-2 px-4 border-b text-right">${(data.subTotal * (data.tax / 100)).toFixed(2)}</td>
+                    <td className="py-2 px-4 border-b text-right font-medium">
+                      Tax ({data.tax}%):
+                    </td>
+                    <td className="py-2 px-4 border-b text-right">
+                      ${(data.subTotal * (data.tax / 100)).toFixed(2)}
+                    </td>
                   </tr>
                   <tr>
                     <td className="py-2 px-4 border-b text-right font-medium">Shipping:</td>
@@ -347,7 +366,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   </tr>
                   <tr>
                     <td className="py-2 px-4 border-b text-right font-medium">Grand Total:</td>
-                    <td className="py-2 px-4 border-b text-right font-bold">${data.grandTotal.toFixed(2)}</td>
+                    <td className="py-2 px-4 border-b text-right font-bold">
+                      ${data.grandTotal.toFixed(2)}
+                    </td>
                   </tr>
                 </tfoot>
               </table>
@@ -357,9 +378,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
           {data.notes && (
             <div className="mt-6">
               <h3 className="font-medium text-lg mb-3">Notes</h3>
-              <div className="bg-gray-50 p-3 rounded-md">
-                {data.notes}
-              </div>
+              <div className="bg-gray-50 p-3 rounded-md">{data.notes}</div>
             </div>
           )}
 
@@ -370,7 +389,11 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                 {data.attachments.map((attachment, idx) => (
                   <div key={idx} className="border rounded-md p-2 flex flex-col items-center">
                     <div className="w-24 h-24 bg-gray-100 rounded flex items-center justify-center">
-                      <img src={attachment} alt={`Attachment ${idx + 1}`} className="max-w-full max-h-full" />
+                      <img
+                        src={attachment}
+                        alt={`Attachment ${idx + 1}`}
+                        className="max-w-full max-h-full"
+                      />
                     </div>
                     <span className="text-sm mt-2">Attachment {idx + 1}</span>
                   </div>
@@ -378,19 +401,24 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
               </div>
             </div>
           )}
-          
+
           <div className="mt-8 pt-6 border-t">
             <div className="flex justify-between">
               <div>
                 <h4 className="font-medium">Terms and Conditions</h4>
                 <p className="text-sm text-gray-600 mt-2">
-                  All items in this purchase order are subject to the terms and conditions specified by the vendor.
-                  Payment will be processed according to the terms specified in this document.
+                  All items in this purchase order are subject to the terms and conditions specified
+                  by the vendor. Payment will be processed according to the terms specified in this
+                  document.
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-500">Created on {format(new Date(data.createdAt), 'dd-MMM-yyyy')}</p>
-                <p className="text-sm text-gray-500">Updated on {format(new Date(data.updatedAt), 'dd-MMM-yyyy')}</p>
+                <p className="text-sm text-gray-500">
+                  Created on {format(new Date(data.createdAt), "dd-MMM-yyyy")}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Updated on {format(new Date(data.updatedAt), "dd-MMM-yyyy")}
+                </p>
                 <p className="text-sm text-gray-500">Created by {data.createdBy || "System"}</p>
               </div>
             </div>
@@ -405,14 +433,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
       <CardContent>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">
-            {initialData ? `Edit Purchase Order: ${data.poNumber}` : 'Create Purchase Order'}
+            {initialData ? `Edit Purchase Order: ${data.poNumber}` : "Create Purchase Order"}
           </h2>
           <div className="space-x-2">
             <Button onClick={() => setIsPreview(true)} variant="outline">
               Preview
             </Button>
             <Button onClick={handleSave} variant="primary" icon={<Check size={16} />}>
-              {initialData ? 'Update' : 'Create'} Purchase Order
+              {initialData ? "Update" : "Create"} Purchase Order
             </Button>
             <Button onClick={onCancel} variant="secondary" icon={<X size={16} />}>
               Cancel
@@ -425,72 +453,60 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
             <h3 className="font-medium text-lg mb-3">PO Information</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PO Number
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">PO Number</label>
                 <input
                   type="text"
                   className="form-input rounded-md w-full border-gray-300"
                   value={data.poNumber}
-                  onChange={(e) => handleChange('poNumber', e.target.value)}
+                  onChange={(e) => handleChange("poNumber", e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input
                   type="text"
                   className="form-input rounded-md w-full border-gray-300"
                   value={data.title}
-                  onChange={(e) => handleChange('title', e.target.value)}
+                  onChange={(e) => handleChange("title", e.target.value)}
                   placeholder="Brief title for this purchase order"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vendor
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
                 <input
                   type="text"
                   className="form-input rounded-md w-full border-gray-300"
                   value={data.vendor}
-                  onChange={(e) => handleChange('vendor', e.target.value)}
+                  onChange={(e) => handleChange("vendor", e.target.value)}
                   placeholder="Supplier or vendor name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Due Date
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
                 <input
                   type="date"
                   className="form-input rounded-md w-full border-gray-300"
                   value={data.dueDate}
-                  onChange={(e) => handleChange('dueDate', e.target.value)}
+                  onChange={(e) => handleChange("dueDate", e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Requester
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Requester</label>
                 <input
                   type="text"
                   className="form-input rounded-md w-full border-gray-300"
                   value={data.requester}
-                  onChange={(e) => handleChange('requester', e.target.value)}
+                  onChange={(e) => handleChange("requester", e.target.value)}
                   placeholder="Person requesting this purchase"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <select
                     className="form-select rounded-md w-full border-gray-300"
                     value={data.status}
-                    onChange={(e) => handleChange('status', e.target.value)}
+                    onChange={(e) => handleChange("status", e.target.value)}
                   >
                     <option value="Draft">Draft</option>
                     <option value="Pending">Pending</option>
@@ -502,13 +518,11 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Priority
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                   <select
                     className="form-select rounded-md w-full border-gray-300"
                     value={data.priority}
-                    onChange={(e) => handleChange('priority', e.target.value as any)}
+                    onChange={(e) => handleChange("priority", e.target.value as any)}
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -524,14 +538,12 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
             <h3 className="font-medium text-lg mb-3">Additional Details</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   className="form-textarea rounded-md w-full border-gray-300"
                   rows={2}
-                  value={data.description || ''}
-                  onChange={(e) => handleChange('description', e.target.value)}
+                  value={data.description || ""}
+                  onChange={(e) => handleChange("description", e.target.value)}
                   placeholder="Detailed description or purpose of this purchase order..."
                 />
               </div>
@@ -542,20 +554,18 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                 <textarea
                   className="form-textarea rounded-md w-full border-gray-300"
                   rows={2}
-                  value={data.shippingAddress || ''}
-                  onChange={(e) => handleChange('shippingAddress', e.target.value)}
+                  value={data.shippingAddress || ""}
+                  onChange={(e) => handleChange("shippingAddress", e.target.value)}
                   placeholder="Delivery address for this purchase..."
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    PO Type
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">PO Type</label>
                   <select
                     className="form-select rounded-md w-full border-gray-300"
                     value={data.poType}
-                    onChange={(e) => handleChange('poType', e.target.value)}
+                    onChange={(e) => handleChange("poType", e.target.value)}
                   >
                     <option value="Standard">Standard</option>
                     <option value="Blanket">Blanket</option>
@@ -570,7 +580,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   <select
                     className="form-select rounded-md w-full border-gray-300"
                     value={data.terms}
-                    onChange={(e) => handleChange('terms', e.target.value)}
+                    onChange={(e) => handleChange("terms", e.target.value)}
                   >
                     <option value="Net 30">Net 30</option>
                     <option value="Net 15">Net 15</option>
@@ -588,8 +598,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   <input
                     type="text"
                     className="form-input rounded-md w-full border-gray-300"
-                    value={data.linkedWorkorder || ''}
-                    onChange={(e) => handleChange('linkedWorkorder', e.target.value)}
+                    value={data.linkedWorkorder || ""}
+                    onChange={(e) => handleChange("linkedWorkorder", e.target.value)}
                     placeholder="Related job/work order"
                   />
                 </div>
@@ -600,28 +610,24 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                   <input
                     type="text"
                     className="form-input rounded-md w-full border-gray-300"
-                    value={data.linkedVehicle || ''}
-                    onChange={(e) => handleChange('linkedVehicle', e.target.value)}
+                    value={data.linkedVehicle || ""}
+                    onChange={(e) => handleChange("linkedVehicle", e.target.value)}
                     placeholder="Related vehicle ID"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                 <textarea
                   className="form-textarea rounded-md w-full border-gray-300"
                   rows={2}
-                  value={data.notes || ''}
-                  onChange={(e) => handleChange('notes', e.target.value)}
+                  value={data.notes || ""}
+                  onChange={(e) => handleChange("notes", e.target.value)}
                   placeholder="Additional notes or special instructions..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Attachments
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Attachments</label>
                 <label className="cursor-pointer">
                   <div className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm font-medium inline-flex items-center">
                     <Plus size={16} className="mr-1" />
@@ -645,7 +651,11 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                         key={idx}
                         className="relative group border rounded-md overflow-hidden w-16 h-16"
                       >
-                        <img src={url} alt={`Attachment ${idx}`} className="w-full h-full object-cover" />
+                        <img
+                          src={url}
+                          alt={`Attachment ${idx}`}
+                          className="w-full h-full object-cover"
+                        />
                         <button
                           className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() =>
@@ -694,7 +704,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                         type="text"
                         className="form-input rounded-md w-full border-gray-300"
                         value={item.sku}
-                        onChange={(e) => handleItemChange(item.id, 'sku', e.target.value)}
+                        onChange={(e) => handleItemChange(item.id, "sku", e.target.value)}
                         placeholder="SKU"
                       />
                     </td>
@@ -703,7 +713,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                         type="text"
                         className="form-input rounded-md w-full border-gray-300"
                         value={item.name}
-                        onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
+                        onChange={(e) => handleItemChange(item.id, "name", e.target.value)}
                         placeholder="Item name"
                       />
                     </td>
@@ -712,7 +722,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                         type="text"
                         className="form-input rounded-md w-full border-gray-300"
                         value={item.description}
-                        onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
+                        onChange={(e) => handleItemChange(item.id, "description", e.target.value)}
                         placeholder="Description"
                       />
                     </td>
@@ -722,7 +732,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                         className="form-input rounded-md w-24 border-gray-300"
                         value={item.quantity}
                         min="1"
-                        onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleItemChange(item.id, "quantity", parseInt(e.target.value) || 0)
+                        }
                       />
                     </td>
                     <td className="py-2 px-3">
@@ -732,7 +744,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                         min="0"
                         className="form-input rounded-md w-28 border-gray-300"
                         value={item.unitPrice}
-                        onChange={(e) => handleItemChange(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleItemChange(item.id, "unitPrice", parseFloat(e.target.value) || 0)
+                        }
                       />
                     </td>
                     <td className="py-2 px-3">
@@ -775,7 +789,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                       min="0"
                       className="form-input rounded-md w-28 border-gray-300"
                       value={data.tax}
-                      onChange={(e) => handleChange('tax', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => handleChange("tax", parseFloat(e.target.value) || 0)}
                     />
                   </td>
                 </tr>
@@ -788,7 +802,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                       min="0"
                       className="form-input rounded-md w-28 border-gray-300"
                       value={data.shipping}
-                      onChange={(e) => handleChange('shipping', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => handleChange("shipping", parseFloat(e.target.value) || 0)}
                     />
                   </td>
                 </tr>

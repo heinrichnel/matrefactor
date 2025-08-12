@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { AlertTriangle, CheckCircle, Database, Info, RefreshCw, Save, X } from "lucide-react";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { useAppContext } from "../../../context/AppContext";
@@ -11,7 +12,6 @@ import {
   isSensorDataRecent,
   VehicleSensorData,
 } from "../../../utils/wialonSensorData";
-import Button from "../../ui/Button";
 import { Input, TextArea } from "../../ui/FormElements";
 import Modal from "../../ui/Modal";
 

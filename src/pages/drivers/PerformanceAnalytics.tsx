@@ -1,6 +1,6 @@
+import { Button } from "@/components/ui/Button";
 import { Calendar, Download, Filter } from "lucide-react";
 import React from "react";
-import Button from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 
 const PerformanceAnalytics: React.FC = () => {

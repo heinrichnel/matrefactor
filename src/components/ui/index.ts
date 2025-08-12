@@ -4,7 +4,7 @@
  */
 
 // Re-export Button component
-export { default as Button } from "./Button";
+export { Button } from "./Button";
 
 // Re-export Card components
 export { Card, CardContent, CardHeader, CardTitle } from "./Card";

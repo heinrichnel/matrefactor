@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import React, { useEffect, useState } from "react";
 import {
   Bar,
@@ -13,7 +14,6 @@ import {
   YAxis,
 } from "recharts";
 import { useAppContext } from "../../context/AppContext";
-import Button from "../ui/Button";
 import { Card, CardContent, CardHeader } from "../ui/Card";
 import SyncIndicator from "../ui/SyncIndicator";
 

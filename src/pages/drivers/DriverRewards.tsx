@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   Award,
   ChevronDown,
@@ -10,7 +11,6 @@ import {
   User,
 } from "lucide-react";
 import React, { useState } from "react";
-import Button from "../../components/ui/Button";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 
 // Mock rewards data

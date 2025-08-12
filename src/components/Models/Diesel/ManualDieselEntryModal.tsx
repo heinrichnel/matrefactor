@@ -1,29 +1,19 @@
 // ─── // ─── UI Components ───────────────────────────────────────────────────
-import Modal from '../../../components/ui/Modal';
-import Button from '../../../components/ui/Button';
-import { Input, Select, TextArea } from '../../ui/FormElements';
-import FleetSelector from '../../common/FleetSelector';
-import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../../../context/AppContext';
+import { Button } from "@/components/ui/Button";
+import React, { useEffect, useState } from "react";
+import Modal from "../../../components/ui/Modal";
+import { useAppContext } from "../../../context/AppContext";
+import FleetSelector from "../../common/FleetSelector";
+import { Input, Select, TextArea } from "../../ui/FormElements";
 
 // ─── Types ───────────────────────────────────────────────────────
-import { DRIVERS, FUEL_STATIONS, FLEET_NUMBERS, DieselConsumptionRecord, FLEETS_WITH_PROBES } from '../../../types';
+import { DieselConsumptionRecord, DRIVERS, FUEL_STATIONS } from "../../../types";
 
 // ─── Icons ───────────────────────────────────────────────────────
-import {
-  Save,
-  X,
-  Calculator,
-  AlertTriangle,
-  Fuel,
-  Link,
-  Building,
-  Clock
-} from 'lucide-react';
+import { AlertTriangle, Building, Calculator, Clock, Fuel, Link, Save, X } from "lucide-react";
 
 // ─── Utilities ───────────────────────────────────────────────────
-import { formatDate } from '../../../utils/helpers';
-
+import { formatDate } from "../../../utils/helpers";
 
 interface ManualDieselEntryModalProps {
   isOpen: boolean;
@@ -31,28 +21,25 @@ interface ManualDieselEntryModalProps {
   dieselRecords?: DieselConsumptionRecord[];
 }
 
-const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
-  isOpen,
-  onClose
-}) => {
+const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({ isOpen, onClose }) => {
   const { addDieselRecord, trips, dieselRecords, connectionStatus } = useAppContext();
 
   const [formData, setFormData] = useState({
-    fleetNumber: '',
-    date: new Date().toISOString().split('T')[0],
-    kmReading: '',
-    previousKmReading: '',
-    litresFilled: '',
-    costPerLitre: '',
-    totalCost: '',
-    fuelStation: '',
-    driverName: '',
-    notes: '',
-    tripId: '', // Link to trip
-    currency: 'ZAR' as 'USD' | 'ZAR', // Add currency field with default value
+    fleetNumber: "",
+    date: new Date().toISOString().split("T")[0],
+    kmReading: "",
+    previousKmReading: "",
+    litresFilled: "",
+    costPerLitre: "",
+    totalCost: "",
+    fuelStation: "",
+    driverName: "",
+    notes: "",
+    tripId: "", // Link to trip
+    currency: "ZAR" as "USD" | "ZAR", // Add currency field with default value
     isReeferUnit: false, // Add flag for reefer units
-    linkedHorseId: '', // For reefer units
-    hoursOperated: '' // For reefer units - hours of operation
+    linkedHorseId: "", // For reefer units
+    hoursOperated: "", // For reefer units - hours of operation
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,25 +48,40 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
   const [possibleDuplicates, setPossibleDuplicates] = useState<DieselConsumptionRecord[]>([]);
 
   // Get available trips for the selected fleet
-  const availableTrips = trips.filter(trip =>
-    trip.fleetNumber === formData.fleetNumber &&
-    trip.status === 'active'
+  const availableTrips = trips.filter(
+    (trip) => trip.fleetNumber === formData.fleetNumber && trip.status === "active"
   );
 
   // Get available horses for reefer units
-  const availableHorses = formData.isReeferUnit ?
-    dieselRecords.filter(record =>
-      !record.isReeferUnit &&
-      ['4H', '6H', '21H', '22H', '23H', '24H', '26H', '28H', '29H', '30H', '31H', '32H', '33H', 'UD'].includes(record.fleetNumber)
-    ) : [];
+  const availableHorses = formData.isReeferUnit
+    ? dieselRecords.filter(
+        (record) =>
+          !record.isReeferUnit &&
+          [
+            "4H",
+            "6H",
+            "21H",
+            "22H",
+            "23H",
+            "24H",
+            "26H",
+            "28H",
+            "29H",
+            "30H",
+            "31H",
+            "32H",
+            "33H",
+            "UD",
+          ].includes(record.fleetNumber)
+      )
+    : [];
 
   // Check for possible duplicates when fields change
   useEffect(() => {
     if (formData.fleetNumber && formData.date) {
       // Find records with the same fleet and date
-      const potentialDuplicates = dieselRecords.filter(record =>
-        record.fleetNumber === formData.fleetNumber &&
-        record.date === formData.date
+      const potentialDuplicates = dieselRecords.filter(
+        (record) => record.fleetNumber === formData.fleetNumber && record.date === formData.date
       );
 
       setPossibleDuplicates(potentialDuplicates);
@@ -88,18 +90,32 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
     }
   }, [formData.fleetNumber, formData.date, dieselRecords]);
 
-  const handleChange = (field: string, event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> | string | boolean) => {
-    const value = typeof event === 'object' ? (event as React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>).target.value : event;
+  const handleChange = (
+    field: string,
+    event:
+      | React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+      | string
+      | boolean
+  ) => {
+    const value =
+      typeof event === "object"
+        ? (event as React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>)
+            .target.value
+        : event;
 
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear errors
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
 
     // Auto-calculate when relevant fields change
-    if (autoCalculate && ['litresFilled', 'costPerLitre', 'totalCost', 'hoursOperated'].includes(field) && typeof value === 'string') {
+    if (
+      autoCalculate &&
+      ["litresFilled", "costPerLitre", "totalCost", "hoursOperated"].includes(field) &&
+      typeof value === "string"
+    ) {
       autoCalculateFields(field, value);
     }
   };
@@ -108,18 +124,20 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return;
 
-    setFormData(prev => {
-      const litres = changedField === 'litresFilled' ? numValue : parseFloat(prev.litresFilled) || 0;
-      const costPerLitre = changedField === 'costPerLitre' ? numValue : parseFloat(prev.costPerLitre) || 0;
-      const totalCost = changedField === 'totalCost' ? numValue : parseFloat(prev.totalCost) || 0;
+    setFormData((prev) => {
+      const litres =
+        changedField === "litresFilled" ? numValue : parseFloat(prev.litresFilled) || 0;
+      const costPerLitre =
+        changedField === "costPerLitre" ? numValue : parseFloat(prev.costPerLitre) || 0;
+      const totalCost = changedField === "totalCost" ? numValue : parseFloat(prev.totalCost) || 0;
 
       const newData = { ...prev };
 
-      if (changedField === 'litresFilled' && costPerLitre > 0) {
+      if (changedField === "litresFilled" && costPerLitre > 0) {
         newData.totalCost = (litres * costPerLitre).toFixed(2);
-      } else if (changedField === 'costPerLitre' && litres > 0) {
+      } else if (changedField === "costPerLitre" && litres > 0) {
         newData.totalCost = (litres * costPerLitre).toFixed(2);
-      } else if (changedField === 'totalCost' && litres > 0) {
+      } else if (changedField === "totalCost" && litres > 0) {
         newData.costPerLitre = (totalCost / litres).toFixed(2);
       }
 
@@ -130,33 +148,43 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.fleetNumber) newErrors.fleetNumber = 'Fleet number is required';
-    if (!formData.date) newErrors.date = 'Date is required';
-    if (!formData.litresFilled) newErrors.litresFilled = 'Litres filled is required';
-    if (!formData.totalCost) newErrors.totalCost = 'Total cost is required';
-    if (!formData.fuelStation) newErrors.fuelStation = 'Fuel station is required';
-    if (!formData.driverName) newErrors.driverName = 'Driver name is required';
-    if (!formData.currency) newErrors.currency = 'Currency is required';
+    if (!formData.fleetNumber) newErrors.fleetNumber = "Fleet number is required";
+    if (!formData.date) newErrors.date = "Date is required";
+    if (!formData.litresFilled) newErrors.litresFilled = "Litres filled is required";
+    if (!formData.totalCost) newErrors.totalCost = "Total cost is required";
+    if (!formData.fuelStation) newErrors.fuelStation = "Fuel station is required";
+    if (!formData.driverName) newErrors.driverName = "Driver name is required";
+    if (!formData.currency) newErrors.currency = "Currency is required";
 
     // Validate numbers
-    if (formData.litresFilled && (isNaN(Number(formData.litresFilled)) || Number(formData.litresFilled) <= 0)) {
-      newErrors.litresFilled = 'Must be a valid positive number';
+    if (
+      formData.litresFilled &&
+      (isNaN(Number(formData.litresFilled)) || Number(formData.litresFilled) <= 0)
+    ) {
+      newErrors.litresFilled = "Must be a valid positive number";
     }
-    if (formData.totalCost && (isNaN(Number(formData.totalCost)) || Number(formData.totalCost) <= 0)) {
-      newErrors.totalCost = 'Must be a valid positive number';
+    if (
+      formData.totalCost &&
+      (isNaN(Number(formData.totalCost)) || Number(formData.totalCost) <= 0)
+    ) {
+      newErrors.totalCost = "Must be a valid positive number";
     }
 
     // For reefer units, validate hours operated
     if (formData.isReeferUnit) {
       if (!formData.hoursOperated) {
-        newErrors.hoursOperated = 'Hours operated is required for reefer units';
+        newErrors.hoursOperated = "Hours operated is required for reefer units";
       } else if (isNaN(Number(formData.hoursOperated)) || Number(formData.hoursOperated) <= 0) {
-        newErrors.hoursOperated = 'Hours operated must be a positive number';
+        newErrors.hoursOperated = "Hours operated must be a positive number";
       }
     } else {
       // For regular units, validate KM reading
-      if (!formData.kmReading || isNaN(Number(formData.kmReading)) || Number(formData.kmReading) <= 0) {
-        newErrors.kmReading = 'KM reading must be a valid positive number';
+      if (
+        !formData.kmReading ||
+        isNaN(Number(formData.kmReading)) ||
+        Number(formData.kmReading) <= 0
+      ) {
+        newErrors.kmReading = "KM reading must be a valid positive number";
       }
 
       // Validate KM readings
@@ -164,7 +192,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
         const current = Number(formData.kmReading);
         const previous = Number(formData.previousKmReading);
         if (current <= previous) {
-          newErrors.kmReading = 'Current KM must be greater than previous KM';
+          newErrors.kmReading = "Current KM must be greater than previous KM";
         }
       }
     }
@@ -180,16 +208,27 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
       setIsSubmitting(true);
 
       const kmReading = Number(formData.kmReading);
-      const previousKmReading = formData.previousKmReading ? Number(formData.previousKmReading) : undefined;
+      const previousKmReading = formData.previousKmReading
+        ? Number(formData.previousKmReading)
+        : undefined;
       const litresFilled = Number(formData.litresFilled);
       const totalCost = Number(formData.totalCost);
-      const costPerLitre = formData.costPerLitre ? Number(formData.costPerLitre) : totalCost / litresFilled;
+      const costPerLitre = formData.costPerLitre
+        ? Number(formData.costPerLitre)
+        : totalCost / litresFilled;
       const hoursOperated = formData.hoursOperated ? Number(formData.hoursOperated) : undefined;
 
       // Calculate derived values
-      const distanceTravelled = !formData.isReeferUnit && previousKmReading !== undefined ? kmReading - previousKmReading : undefined;
-      const kmPerLitre = !formData.isReeferUnit && distanceTravelled && litresFilled > 0 ? distanceTravelled / litresFilled : undefined;
-      const litresPerHour = formData.isReeferUnit && hoursOperated ? litresFilled / hoursOperated : undefined;
+      const distanceTravelled =
+        !formData.isReeferUnit && previousKmReading !== undefined
+          ? kmReading - previousKmReading
+          : undefined;
+      const kmPerLitre =
+        !formData.isReeferUnit && distanceTravelled && litresFilled > 0
+          ? distanceTravelled / litresFilled
+          : undefined;
+      const litresPerHour =
+        formData.isReeferUnit && hoursOperated ? litresFilled / hoursOperated : undefined;
 
       // Create a unique ID for the diesel record
       const newId = `diesel-${Date.now()}`;
@@ -203,22 +242,32 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
         litresFilled,
         costPerLitre,
         totalCost,
-        fuelStation: String(formData.fuelStation ?? '').trim(),
+        fuelStation: String(formData.fuelStation ?? "").trim(),
         driverName: formData.driverName,
-        notes: String(formData.notes ?? '').trim(),
+        notes: String(formData.notes ?? "").trim(),
         previousKmReading: formData.isReeferUnit ? undefined : previousKmReading,
         distanceTravelled,
         kmPerLitre,
         currency: formData.currency,
         isReeferUnit: formData.isReeferUnit,
         hoursOperated,
-        litresPerHour
+        litresPerHour,
       };
 
       // Add trip ID for regular diesel or linked horse ID for reefer units
-      if (!formData.isReeferUnit && formData.tripId && typeof formData.tripId === 'string' && formData.tripId.trim() !== '') {
+      if (
+        !formData.isReeferUnit &&
+        formData.tripId &&
+        typeof formData.tripId === "string" &&
+        formData.tripId.trim() !== ""
+      ) {
         recordData.tripId = formData.tripId;
-      } else if (formData.isReeferUnit && formData.linkedHorseId && typeof formData.linkedHorseId === 'string' && formData.linkedHorseId.trim() !== '') {
+      } else if (
+        formData.isReeferUnit &&
+        formData.linkedHorseId &&
+        typeof formData.linkedHorseId === "string" &&
+        formData.linkedHorseId.trim() !== ""
+      ) {
         recordData.linkedHorseId = formData.linkedHorseId;
       }
 
@@ -233,50 +282,53 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
         successMessage += `Consumption Rate: ${(litresFilled / (hoursOperated || 1)).toFixed(2)} L/hr\n`;
 
         if (formData.linkedHorseId) {
-          const horseRecord = dieselRecords.find(r => r.id === formData.linkedHorseId);
+          const horseRecord = dieselRecords.find((r) => r.id === formData.linkedHorseId);
           successMessage += `Linked to Horse: ${horseRecord?.fleetNumber || formData.linkedHorseId}\n`;
 
           // If the horse is linked to a trip, mention that costs will be allocated
           if (horseRecord?.tripId) {
-            const trip = trips.find(t => t.id === horseRecord.tripId);
+            const trip = trips.find((t) => t.id === horseRecord.tripId);
             successMessage += `Cost will be allocated to trip: ${trip?.route || horseRecord.tripId}\n`;
           }
         }
       } else {
-        successMessage += `KM/L: ${kmPerLitre?.toFixed(2) || 'N/A'}\n`;
+        successMessage += `KM/L: ${kmPerLitre?.toFixed(2) || "N/A"}\n`;
         if (formData.tripId) {
-          const trip = trips.find(t => t.id === formData.tripId);
+          const trip = trips.find((t) => t.id === formData.tripId);
           successMessage += `Linked to Trip: ${trip?.route || formData.tripId}\n`;
           successMessage += `Cost will be allocated to trip expenses\n`;
         }
       }
 
-      successMessage += `Cost: ${formData.currency === 'USD' ? '$' : 'R'}${totalCost.toFixed(2)}\n`;
+      successMessage += `Cost: ${formData.currency === "USD" ? "$" : "R"}${totalCost.toFixed(2)}\n`;
 
       alert(successMessage);
 
       // Reset form
       setFormData({
-        fleetNumber: '',
-        date: new Date().toISOString().split('T')[0],
-        kmReading: '',
-        previousKmReading: '',
-        litresFilled: '',
-        costPerLitre: '',
-        totalCost: '',
-        fuelStation: '',
-        driverName: '',
-        notes: '',
-        tripId: '',
-        currency: 'ZAR',
+        fleetNumber: "",
+        date: new Date().toISOString().split("T")[0],
+        kmReading: "",
+        previousKmReading: "",
+        litresFilled: "",
+        costPerLitre: "",
+        totalCost: "",
+        fuelStation: "",
+        driverName: "",
+        notes: "",
+        tripId: "",
+        currency: "ZAR",
         isReeferUnit: false,
-        linkedHorseId: '',
-        hoursOperated: ''
+        linkedHorseId: "",
+        hoursOperated: "",
       });
       setErrors({});
       onClose();
     } catch (err: any) {
-      alert('Failed to add diesel record. Please check all fields and try again.\n' + (err?.message || ''));
+      alert(
+        "Failed to add diesel record. Please check all fields and try again.\n" +
+          (err?.message || "")
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -304,20 +356,15 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
 
   // Update isReeferUnit when fleet number changes
   useEffect(() => {
-    if (['4F', '5F', '6F', '7F', '8F'].includes(formData.fleetNumber)) {
-      setFormData(prev => ({ ...prev, isReeferUnit: true }));
+    if (["4F", "5F", "6F", "7F", "8F"].includes(formData.fleetNumber)) {
+      setFormData((prev) => ({ ...prev, isReeferUnit: true }));
     } else {
-      setFormData(prev => ({ ...prev, isReeferUnit: false }));
+      setFormData((prev) => ({ ...prev, isReeferUnit: false }));
     }
   }, [formData.fleetNumber]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Manual Diesel Entry"
-      maxWidth="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Manual Diesel Entry" maxWidth="lg">
       <div className="space-y-6">
         {/* Header Info */}
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
@@ -326,8 +373,9 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             <div>
               <h4 className="text-sm font-medium text-blue-800">Manual Diesel Record Entry</h4>
               <p className="text-sm text-blue-700 mt-1">
-                Add diesel consumption records manually. All efficiency calculations will be performed automatically.
-                You can optionally link this record to an active trip for cost allocation.
+                Add diesel consumption records manually. All efficiency calculations will be
+                performed automatically. You can optionally link this record to an active trip for
+                cost allocation.
               </p>
             </div>
           </div>
@@ -342,7 +390,10 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             onChange={(e) => setAutoCalculate(e.target.checked)}
             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="autoCalculate" className="flex items-center text-sm font-medium text-gray-700">
+          <label
+            htmlFor="autoCalculate"
+            className="flex items-center text-sm font-medium text-gray-700"
+          >
             <Calculator className="w-4 h-4 mr-2" />
             Auto-calculate costs and efficiency
           </label>
@@ -354,10 +405,13 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             type="checkbox"
             id="isReeferUnit"
             checked={formData.isReeferUnit}
-            onChange={(e) => handleChange('isReeferUnit', e.target.checked)}
+            onChange={(e) => handleChange("isReeferUnit", e.target.checked)}
             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="isReeferUnit" className="flex items-center text-sm font-medium text-gray-700">
+          <label
+            htmlFor="isReeferUnit"
+            className="flex items-center text-sm font-medium text-gray-700"
+          >
             <Building className="w-4 h-4 mr-2" />
             This is a refrigeration trailer (4F, 5F, 6F, 7F, 8F)
           </label>
@@ -368,9 +422,9 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
           <FleetSelector
             label="Fleet Number"
             value={formData.fleetNumber}
-            onChange={(value: string) => handleChange('fleetNumber', value)}
+            onChange={(value: string) => handleChange("fleetNumber", value)}
             required
-            filterType={formData.isReeferUnit ? 'Reefer' : 'Truck'} // Filter by vehicle type
+            filterType={formData.isReeferUnit ? "Reefer" : "Truck"} // Filter by vehicle type
             error={errors.fleetNumber}
             className="w-full px-3 py-2 border rounded-md"
           />
@@ -379,7 +433,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             label="Date *"
             type="date"
             value={formData.date}
-            onChange={val => handleChange('date', val)}
+            onChange={(val) => handleChange("date", val)}
             error={errors.date}
           />
 
@@ -391,7 +445,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
                 step="1"
                 min="0"
                 value={formData.kmReading}
-                onChange={val => handleChange('kmReading', val)}
+                onChange={(val) => handleChange("kmReading", val)}
                 placeholder="125000"
                 error={errors.kmReading}
               />
@@ -402,7 +456,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
                 step="1"
                 min="0"
                 value={formData.previousKmReading}
-                onChange={val => handleChange('previousKmReading', val)}
+                onChange={(val) => handleChange("previousKmReading", val)}
                 placeholder="123560"
                 error={errors.previousKmReading}
               />
@@ -414,7 +468,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
               step="0.1"
               min="0.1"
               value={formData.hoursOperated}
-              onChange={val => handleChange('hoursOperated', val)}
+              onChange={(val) => handleChange("hoursOperated", val)}
               placeholder="5.5"
               error={errors.hoursOperated}
             />
@@ -426,7 +480,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             step="0.1"
             min="0.1"
             value={formData.litresFilled}
-            onChange={val => handleChange('litresFilled', val)}
+            onChange={(val) => handleChange("litresFilled", val)}
             placeholder="450"
             error={errors.litresFilled}
           />
@@ -437,7 +491,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             step="0.01"
             min="0"
             value={formData.costPerLitre}
-            onChange={val => handleChange('costPerLitre', val)}
+            onChange={(val) => handleChange("costPerLitre", val)}
             placeholder="18.50"
             error={errors.costPerLitre}
           />
@@ -446,10 +500,10 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             <Select
               label="Currency *"
               value={formData.currency}
-              onChange={val => handleChange('currency', val)}
+              onChange={(val) => handleChange("currency", val)}
               options={[
-                { label: 'ZAR (R)', value: 'ZAR' },
-                { label: 'USD ($)', value: 'USD' }
+                { label: "ZAR (R)", value: "ZAR" },
+                { label: "USD ($)", value: "USD" },
               ]}
               error={errors.currency}
             />
@@ -460,7 +514,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
               step="0.01"
               min="0.01"
               value={formData.totalCost}
-              onChange={val => handleChange('totalCost', val)}
+              onChange={(val) => handleChange("totalCost", val)}
               placeholder="8325.00"
               error={errors.totalCost}
             />
@@ -469,10 +523,10 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
           <Select
             label="Fuel Station *"
             value={formData.fuelStation}
-            onChange={val => handleChange('fuelStation', val)}
+            onChange={(val) => handleChange("fuelStation", val)}
             options={[
-              { label: 'Select fuel station...', value: '' },
-              ...FUEL_STATIONS.map(station => ({ label: station, value: station }))
+              { label: "Select fuel station...", value: "" },
+              ...FUEL_STATIONS.map((station) => ({ label: station, value: station })),
             ]}
             error={errors.fuelStation}
           />
@@ -480,10 +534,10 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
           <Select
             label="Driver *"
             value={formData.driverName}
-            onChange={val => handleChange('driverName', val)}
+            onChange={(val) => handleChange("driverName", val)}
             options={[
-              { label: 'Select driver...', value: '' },
-              ...DRIVERS.map(d => ({ label: d, value: d }))
+              { label: "Select driver...", value: "" },
+              ...DRIVERS.map((d) => ({ label: d, value: d })),
             ]}
             error={errors.driverName}
           />
@@ -492,13 +546,13 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             <Select
               label="Link to Trip (Optional)"
               value={formData.tripId}
-              onChange={val => handleChange('tripId', val)}
+              onChange={(val) => handleChange("tripId", val)}
               options={[
-                { label: 'No trip linkage', value: '' },
-                ...availableTrips.map(trip => ({
+                { label: "No trip linkage", value: "" },
+                ...availableTrips.map((trip) => ({
                   label: `${trip.route} (${formatDate(trip.startDate)} - ${formatDate(trip.endDate)})`,
-                  value: trip.id
-                }))
+                  value: trip.id,
+                })),
               ]}
               disabled={!formData.fleetNumber}
             />
@@ -506,18 +560,18 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             <Select
               label="Link to Horse (Optional)"
               value={formData.linkedHorseId}
-              onChange={val => handleChange('linkedHorseId', val)}
+              onChange={(val) => handleChange("linkedHorseId", val)}
               options={[
-                { label: 'No horse linkage', value: '' },
-                ...availableHorses.map(horse => {
-                  const tripInfo = horse.tripId ?
-                    ` - ${trips.find(t => t.id === horse.tripId)?.route || 'Unknown Trip'}` :
-                    ' - No active trip';
+                { label: "No horse linkage", value: "" },
+                ...availableHorses.map((horse) => {
+                  const tripInfo = horse.tripId
+                    ? ` - ${trips.find((t) => t.id === horse.tripId)?.route || "Unknown Trip"}`
+                    : " - No active trip";
                   return {
                     label: `${horse.fleetNumber} (${horse.driverName})${tripInfo}`,
-                    value: horse.id
+                    value: horse.id,
                   };
-                })
+                }),
               ]}
               disabled={!formData.fleetNumber}
             />
@@ -527,33 +581,43 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
         <TextArea
           label="Notes"
           value={formData.notes}
-          onChange={val => handleChange('notes', val)}
+          onChange={(val) => handleChange("notes", val)}
           placeholder="Additional notes about this fuel entry..."
           rows={3}
         />
 
         {/* Calculation Preview */}
-        {!formData.isReeferUnit && (formData.kmReading && formData.previousKmReading && formData.litresFilled) && (
-          <div className="bg-green-50 border border-green-200 rounded-md p-4">
-            <h4 className="text-sm font-medium text-green-800 mb-2">Calculated Metrics</h4>
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-green-600">Distance Travelled</p>
-                <p className="font-bold text-green-800">{calculateDistance().toLocaleString()} km</p>
-              </div>
-              <div>
-                <p className="text-green-600">Efficiency</p>
-                <p className="font-bold text-green-800">{calculateKmPerLitre().toFixed(2)} KM/L</p>
-              </div>
-              <div>
-                <p className="text-green-600">Cost per KM</p>
-                <p className="font-bold text-green-800">
-                  {formData.currency === 'USD' ? '$' : 'R'}{calculateDistance() > 0 ? (Number(formData.totalCost) / calculateDistance()).toFixed(2) : '0.00'}
-                </p>
+        {!formData.isReeferUnit &&
+          formData.kmReading &&
+          formData.previousKmReading &&
+          formData.litresFilled && (
+            <div className="bg-green-50 border border-green-200 rounded-md p-4">
+              <h4 className="text-sm font-medium text-green-800 mb-2">Calculated Metrics</h4>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-green-600">Distance Travelled</p>
+                  <p className="font-bold text-green-800">
+                    {calculateDistance().toLocaleString()} km
+                  </p>
+                </div>
+                <div>
+                  <p className="text-green-600">Efficiency</p>
+                  <p className="font-bold text-green-800">
+                    {calculateKmPerLitre().toFixed(2)} KM/L
+                  </p>
+                </div>
+                <div>
+                  <p className="text-green-600">Cost per KM</p>
+                  <p className="font-bold text-green-800">
+                    {formData.currency === "USD" ? "$" : "R"}
+                    {calculateDistance() > 0
+                      ? (Number(formData.totalCost) / calculateDistance()).toFixed(2)
+                      : "0.00"}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Reefer Unit Calculation Preview */}
         {formData.isReeferUnit && formData.litresFilled && formData.hoursOperated && (
@@ -562,16 +626,23 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-purple-600">Hours Operated</p>
-                <p className="font-bold text-purple-800">{Number(formData.hoursOperated).toFixed(1)} hours</p>
+                <p className="font-bold text-purple-800">
+                  {Number(formData.hoursOperated).toFixed(1)} hours
+                </p>
               </div>
               <div>
                 <p className="text-purple-600">Consumption Rate</p>
-                <p className="font-bold text-purple-800">{calculateLitresPerHour().toFixed(2)} L/hr</p>
+                <p className="font-bold text-purple-800">
+                  {calculateLitresPerHour().toFixed(2)} L/hr
+                </p>
               </div>
               <div>
                 <p className="text-purple-600">Cost per Hour</p>
                 <p className="font-bold text-purple-800">
-                  {formData.currency === 'USD' ? '$' : 'R'}{Number(formData.hoursOperated) > 0 ? (Number(formData.totalCost) / Number(formData.hoursOperated)).toFixed(2) : '0.00'}
+                  {formData.currency === "USD" ? "$" : "R"}
+                  {Number(formData.hoursOperated) > 0
+                    ? (Number(formData.totalCost) / Number(formData.hoursOperated)).toFixed(2)
+                    : "0.00"}
                 </p>
               </div>
             </div>
@@ -584,10 +655,12 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             <div className="flex items-start space-x-3">
               <Clock className="w-5 h-5 text-purple-600 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-purple-800">Refrigeration Trailer Information</h4>
+                <h4 className="text-sm font-medium text-purple-800">
+                  Refrigeration Trailer Information
+                </h4>
                 <p className="text-sm text-purple-700 mt-1">
-                  Refrigeration trailers are measured in litres per hour instead of kilometers per litre.
-                  Please enter the number of hours the reefer unit was operated.
+                  Refrigeration trailers are measured in litres per hour instead of kilometers per
+                  litre. Please enter the number of hours the reefer unit was operated.
                 </p>
               </div>
             </div>
@@ -602,16 +675,31 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
               <div>
                 <h4 className="text-sm font-medium text-amber-800">Possible Duplicate Entries</h4>
                 <p className="text-sm text-amber-700 mt-1">
-                  {possibleDuplicates.length} diesel {possibleDuplicates.length === 1 ? 'record' : 'records'} already exist for this fleet on {formData.date}.
+                  {possibleDuplicates.length} diesel{" "}
+                  {possibleDuplicates.length === 1 ? "record" : "records"} already exist for this
+                  fleet on {formData.date}.
                 </p>
                 <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
-                  {possibleDuplicates.map(record => (
-                    <div key={record.id} className="p-2 bg-amber-100 rounded text-xs text-amber-800">
+                  {possibleDuplicates.map((record) => (
+                    <div
+                      key={record.id}
+                      className="p-2 bg-amber-100 rounded text-xs text-amber-800"
+                    >
                       <div className="grid grid-cols-2 gap-2">
-                        <p><span className="font-medium">Station:</span> {record.fuelStation}</p>
-                        <p><span className="font-medium">Driver:</span> {record.driverName}</p>
-                        <p><span className="font-medium">Litres:</span> {record.litresFilled.toFixed(1)} L</p>
-                        <p><span className="font-medium">Cost:</span> {(record.currency === 'USD' ? '$' : 'R') + record.totalCost.toFixed(2)}</p>
+                        <p>
+                          <span className="font-medium">Station:</span> {record.fuelStation}
+                        </p>
+                        <p>
+                          <span className="font-medium">Driver:</span> {record.driverName}
+                        </p>
+                        <p>
+                          <span className="font-medium">Litres:</span>{" "}
+                          {record.litresFilled.toFixed(1)} L
+                        </p>
+                        <p>
+                          <span className="font-medium">Cost:</span>{" "}
+                          {(record.currency === "USD" ? "$" : "R") + record.totalCost.toFixed(2)}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -629,8 +717,8 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
               <div>
                 <h4 className="text-sm font-medium text-blue-800">Trip Cost Allocation</h4>
                 <p className="text-sm text-blue-700 mt-1">
-                  This diesel cost will be automatically allocated to the selected trip for accurate profitability tracking.
-                  The cost will appear in the trip's expense breakdown.
+                  This diesel cost will be automatically allocated to the selected trip for accurate
+                  profitability tracking. The cost will appear in the trip's expense breakdown.
                 </p>
               </div>
             </div>
@@ -645,8 +733,8 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
               <div>
                 <h4 className="text-sm font-medium text-purple-800">Horse Linkage</h4>
                 <p className="text-sm text-purple-700 mt-1">
-                  This reefer diesel cost will be linked to the selected horse. If the horse is linked to a trip,
-                  the cost will be automatically allocated to that trip.
+                  This reefer diesel cost will be linked to the selected horse. If the horse is
+                  linked to a trip, the cost will be automatically allocated to that trip.
                 </p>
               </div>
             </div>
@@ -659,7 +747,9 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             <div className="flex items-start space-x-3">
               <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-red-800">Please fix the following errors:</h4>
+                <h4 className="text-sm font-medium text-red-800">
+                  Please fix the following errors:
+                </h4>
                 <ul className="text-sm text-red-700 mt-1 list-disc list-inside">
                   {Object.values(errors).map((error, index) => (
                     <li key={index}>{error}</li>
@@ -684,7 +774,7 @@ const ManualDieselEntryModal: React.FC<ManualDieselEntryModalProps> = ({
             onClick={handleSubmit}
             icon={<Save className="w-4 h-4" />}
             isLoading={isSubmitting}
-            disabled={isSubmitting || connectionStatus !== 'connected'}
+            disabled={isSubmitting || connectionStatus !== "connected"}
           >
             Add Diesel Record
           </Button>

@@ -5,9 +5,9 @@ import React, { useState } from "react";
 import { Trip } from "../../../types";
 
 // ─── UI Components ───────────────────────────────────────────────
-import Modal from "../../ui/Modal";
-import Button from "../../ui/Button";
+import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "../../ui/FormElements";
+import Modal from "../../ui/Modal";
 
 // ─── Icons ───────────────────────────────────────────────────────
 import { Save, X } from "lucide-react";
