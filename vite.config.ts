@@ -30,8 +30,7 @@ export default defineConfig(() => {
     },
     resolve: {
       alias: {
-        "@": resolve(__dirname, "src"),
-        // Add specific aliases to handle case sensitivity issues
+        "@": "/src",
         "~/components/TyreManagement": resolve(__dirname, "src/components/Tyremanagement"),
         "@vis.gl/react-google-maps/examples.js":
           "https://visgl.github.io/react-google-maps/scripts/examples.js",
@@ -53,35 +52,18 @@ export default defineConfig(() => {
     build: {
       outDir: "dist",
       sourcemap: true,
-      // Increase warning limit slightly to reduce noise while we optimize
       chunkSizeWarningLimit: 1800,
-      // Ensure the output directory is emptied before building
       emptyOutDir: true,
-      // Create output folder structure based on src
       assetsDir: "assets",
       rollupOptions: {
-        external: [
-          // Add the TyreReports file to handle the casing issue
-          "/src/components/TyreManagement/TyreReports",
-          // Explicitly externalize Node.js tools that shouldn't be bundled for browser
-          "jiti",
-          "v8",
-          "perf_hooks",
-        ],
+        external: ["/src/components/TyreManagement/TyreReports", "jiti", "v8", "perf_hooks"],
         output: {
-          // Create more granular chunks to optimize loading
           manualChunks: {
-            // Core vendor libraries
             "react-vendor": ["react", "react-dom", "react-router-dom"],
-            // Firebase modules - grouped to prevent mixed import issues
             "firebase-core": ["firebase/app", "firebase/auth", "firebase/firestore"],
-            // Scanning/barcode functionality
             scanner: ["@capacitor-community/barcode-scanner", "@capacitor/core"],
-            // Document generation libraries
             "document-tools": ["jspdf", "jspdf-autotable", "xlsx"],
-            // Date handling
             "date-utils": ["date-fns"],
-            // UI components and icons
             "ui-components": [
               "lucide-react",
               "tailwindcss",

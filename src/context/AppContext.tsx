@@ -1,9 +1,8 @@
-import { addDoc, collection, deleteDoc, doc, getFirestore } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getFirestore, Timestamp } from "firebase/firestore";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {
   ActionItem,
   AdditionalCost,
-  // RoutePoint, // Commented out since unused
   Attachment,
   CARReport,
   CostEntry,
@@ -24,6 +23,7 @@ import { VehicleInspection } from "../types/vehicle";
 import { JobCard as JobCardType } from "../types/workshop-job-card";
 import { loadGoogleMapsScript } from "../utils/googleMapsLoader";
 import { TyreInventoryItem } from "../utils/tyreConstants";
+import { DieselNorm } from "@/types/diesel";
 
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -1029,7 +1029,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
-    return await addDieselToFirebase(newRecord as DieselConsumptionRecord);
+    // Convert the date string to a Timestamp for Firebase
+    // Import Timestamp from firebase/firestore at the top of the file if not already
+    const { Timestamp } = require("firebase/firestore");
+    const recordForFirebase = {
+      ...newRecord,
+      date:
+        typeof newRecord.date === "string"
+          ? Timestamp.fromDate(new Date(newRecord.date))
+          : newRecord.date,
+    };
+
+    return await addDieselToFirebase(recordForFirebase);
   };
 
   const triggerTripImport = async (): Promise<void> => {

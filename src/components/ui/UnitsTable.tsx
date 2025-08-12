@@ -1,4 +1,4 @@
-import { useWialonUnits } from "../hooks/useWialonUnits";
+import { useWialonUnits } from "@/hooks/useWialonUnits";
 
 export default function UnitsTable({ sdkReady }: { sdkReady: boolean }) {
   const { units, loading, error } = useWialonUnits(sdkReady);
@@ -9,10 +9,14 @@ export default function UnitsTable({ sdkReady }: { sdkReady: boolean }) {
       {error && <div>{error}</div>}
       <table>
         <thead>
-          <tr><th>ID</th><th>Name</th><th>Position</th></tr>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Position</th>
+          </tr>
         </thead>
         <tbody>
-          {units.map(u => (
+          {units.map((u: any) => (
             <tr key={u.id}>
               <td>{u.id}</td>
               <td>{u.name}</td>
@@ -28,4 +32,3 @@ export default function UnitsTable({ sdkReady }: { sdkReady: boolean }) {
     </div>
   );
 }
-

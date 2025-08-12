@@ -1,6 +1,6 @@
 /**
  * Inventory Management Types
- * 
+ *
  * This file contains TypeScript interfaces for the inventory management system,
  * including purchase orders, vendors, and inventory items.
  */
@@ -16,9 +16,16 @@ export interface PurchaseOrder {
   vendorId?: string;
   orderDate: string;
   expectedDelivery?: string;
-  status: 'draft' | 'pending' | 'approved' | 'ordered' | 'partially_received' | 'received' | 'cancelled';
+  status:
+    | "draft"
+    | "pending"
+    | "approved"
+    | "ordered"
+    | "partially_received"
+    | "received"
+    | "cancelled";
   totalAmount: number;
-  paymentStatus: 'unpaid' | 'partially_paid' | 'paid';
+  paymentStatus: "unpaid" | "partially_paid" | "paid";
   items: POItem[];
   notes?: string;
   approvedBy?: string;
@@ -40,7 +47,7 @@ export interface POItem {
   unitPrice: number;
   totalPrice: number;
   receivedQuantity?: number;
-  deliveryStatus?: 'pending' | 'partial' | 'complete';
+  deliveryStatus?: "pending" | "partial" | "complete";
 }
 
 /**
@@ -57,7 +64,7 @@ export interface Vendor {
   city?: string;
   paymentTerms?: number;
   taxNumber?: string;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
   reliability?: number;
   qualityScore?: number;
   costScore?: number;
@@ -80,7 +87,7 @@ export interface InventoryItem {
   unitPrice: number;
   category: string;
   reorderLevel?: number;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
   stockValue?: number;
   location?: string;
   lastReceived?: string;
@@ -95,11 +102,11 @@ export interface StockMovement {
   id: string;
   itemId: string;
   sageId?: string;
-  type: 'receipt' | 'issue' | 'adjustment' | 'transfer' | 'return' | 'scrap';
+  type: "receipt" | "issue" | "adjustment" | "transfer" | "return" | "scrap";
   quantity: number;
   date: string;
   referenceNumber?: string;
-  documentType?: 'po' | 'jo' | 'transfer' | 'manual';
+  documentType?: "po" | "jo" | "transfer" | "manual";
   documentId?: string;
   notes?: string;
   createdBy?: string;
@@ -129,8 +136,8 @@ export interface PurchaseOrderRequest {
   requestedBy: string;
   requestedDate: string;
   dueDate?: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'ordered';
+  priority: "low" | "medium" | "high" | "critical";
+  status: "draft" | "pending" | "approved" | "rejected" | "ordered";
   items: RequestItem[];
   notes?: string;
   approvedBy?: string;
@@ -150,7 +157,7 @@ export interface RequestItem {
   quantity: number;
   estimatedCost?: number;
   reason?: string;
-  urgency: 'low' | 'medium' | 'high' | 'critical';
+  urgency: "low" | "medium" | "high" | "critical";
   notes?: string;
 }
 
@@ -162,7 +169,7 @@ export interface POApproval {
   poId: string;
   requestId?: string;
   approver: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   comments?: string;
   timestamp: string;
 }
@@ -172,10 +179,10 @@ export interface POApproval {
  */
 export interface IntegrationSettings {
   id: string;
-  name: 'sage' | 'wialon' | 'google_maps';
+  name: "sage" | "wialon" | "google_maps";
   enabled: boolean;
   lastSynced?: string;
-  syncFrequency?: 'manual' | 'hourly' | 'daily' | 'weekly';
+  syncFrequency?: "manual" | "hourly" | "daily" | "weekly";
   syncSchedule?: string;
   apiKey?: string;
   apiEndpoint?: string;
@@ -190,10 +197,29 @@ export interface SyncLog {
   id: string;
   integrationId: string;
   timestamp: string;
-  status: 'success' | 'partial' | 'failed';
+  status: "success" | "partial" | "failed";
   entitiesProcessed?: number;
   entitiesSucceeded?: number;
   entitiesFailed?: number;
   errorDetails?: string;
   duration?: number;
+}
+
+// src/types/inventory.ts
+export type OrderPartStatus =
+  | "PENDING"
+  | "ORDERED"
+  | "PARTIALLY_RECEIVED"
+  | "RECEIVED"
+  | "CANCELLED";
+
+export interface OrderPart {
+  id: string;
+  sku: string;
+  description: string;
+  quantityOrdered: number;
+  unitPrice: number;
+  /** how many have been received so far */
+  quantityReceived: number;
+  status: OrderPartStatus;
 }

@@ -130,6 +130,7 @@ function convertToTyreDashboardFormat(tyre: any): TyreDoc {
     kmRun: tyre.kmRun || 0,
     kmRunLimit: tyre.kmRunLimit || 0,
     notes: tyre.notes || "",
+    location: tyre.location || tyre.storeLocation || "",
     // If we have installation data, extract vehicle and position
     vehicleReg: tyre.installation?.vehicleId || tyre.vehicleReg || "",
     position: tyre.installation?.position || tyre.position || "",

@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { db } from "../firebase/config";
+import { db } from "../firebase";
 
 export interface ClientData {
   id: string;

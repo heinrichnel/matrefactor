@@ -26,7 +26,9 @@ import { Badge } from "../../components/ui/badge";
 // Firebase will be dynamically imported when needed
 
 // Import related forms
-import DemandPartsForm, { DemandPartsFormData } from "../../components/forms/workshop/DemandPartsForm";
+import DemandPartsForm, {
+  DemandPartsFormData,
+} from "../../components/forms/workshop/DemandPartsForm";
 import PartsReceivingForm from "../../components/forms/workshop/PartsReceivingForm";
 
 interface PartOrder {
@@ -52,7 +54,7 @@ interface OrderPart {
   quantityOrdered: number;
   quantityReceived: number;
   unitPrice: number;
-  status: "PENDING" | "ORDERED" | "RECEIVED" | "CANCELLED";
+  status: "PENDING" | "ORDERED" | "PARTIALLY_RECEIVED" | "RECEIVED" | "CANCELLED";
 }
 
 const PartsOrderingPage: React.FC = () => {
@@ -493,6 +495,7 @@ const PartsOrderingPage: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
+                  label={"Search"}
                   placeholder="Search orders..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -503,7 +506,7 @@ const PartsOrderingPage: React.FC = () => {
               <Select
                 label=""
                 value={statusFilter}
-                onChange={(value) => setStatusFilter(value)}
+                onChange={(e) => setStatusFilter((e.target as HTMLSelectElement).value)}
                 options={[
                   { label: "All Statuses", value: "ALL" },
                   { label: "Pending", value: "PENDING" },
@@ -517,7 +520,7 @@ const PartsOrderingPage: React.FC = () => {
               <Select
                 label=""
                 value={urgencyFilter}
-                onChange={(value) => setUrgencyFilter(value)}
+                onChange={(e) => setUrgencyFilter((e.target as HTMLSelectElement).value)}
                 options={[
                   { label: "All Urgencies", value: "ALL" },
                   { label: "Low", value: "LOW" },
@@ -678,7 +681,7 @@ const PartsOrderingPage: React.FC = () => {
                           {order.status !== "CANCELLED" && order.status !== "RECEIVED" && (
                             <Button
                               size="sm"
-                              variant="destructive"
+                              variant="danger"
                               onClick={() => handleCancelOrder(order.id)}
                               icon={<Trash2 className="w-4 h-4" />}
                             ></Button>
@@ -710,7 +713,6 @@ const PartsOrderingPage: React.FC = () => {
           isOpen={isCreateOrderModalOpen}
           onClose={() => setIsCreateOrderModalOpen(false)}
           title="Create Parts Order"
-          size="xl"
         >
           <DemandPartsForm
             onSubmit={handleCreateOrder}
@@ -725,7 +727,6 @@ const PartsOrderingPage: React.FC = () => {
           isOpen={isReceivePartsModalOpen}
           onClose={() => setIsReceivePartsModalOpen(false)}
           title="Receive Parts"
-          size="xl"
         >
           <PartsReceivingForm
             poNumber={selectedOrder?.orderNumber}
@@ -739,7 +740,6 @@ const PartsOrderingPage: React.FC = () => {
           isOpen={isViewOrderModalOpen}
           onClose={() => setIsViewOrderModalOpen(false)}
           title="Order Details"
-          size="lg"
         >
           {selectedOrder && (
             <div className="space-y-6">

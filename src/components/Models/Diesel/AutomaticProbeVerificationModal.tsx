@@ -1,13 +1,19 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
-import Modal from '../../ui/Modal';
-import Button from '../../ui/Button';
-import { Input, TextArea } from '../../ui/FormElements';
-import { useAppContext } from '../../../context/AppContext';
-import { formatCurrency, formatDate } from '../../../utils/helpers';
-import { CheckCircle, X, Save, AlertTriangle, Info, RefreshCw, Database } from 'lucide-react';
-import { FLEETS_WITH_PROBES } from '../../../types';
-import { addAuditLogToFirebase } from '../../../firebase';
-import { getVehicleSensorData, getTotalFuelLevel, isSensorDataRecent, FuelTankData, VehicleSensorData } from '../../../utils/wialonSensorData';
+import { AlertTriangle, CheckCircle, Database, Info, RefreshCw, Save, X } from "lucide-react";
+import React, { ChangeEvent, useEffect, useState } from "react";
+import { useAppContext } from "../../../context/AppContext";
+import { addAuditLogToFirebase } from "../../../firebase";
+import { FLEETS_WITH_PROBES } from "../../../types";
+import { formatCurrency, formatDate } from "../../../utils/helpers";
+import {
+  FuelTankData,
+  getTotalFuelLevel,
+  getVehicleSensorData,
+  isSensorDataRecent,
+  VehicleSensorData,
+} from "../../../utils/wialonSensorData";
+import Button from "../../ui/Button";
+import { Input, TextArea } from "../../ui/FormElements";
+import Modal from "../../ui/Modal";
 
 interface AutomaticProbeVerificationModalProps {
   isOpen: boolean;
@@ -18,18 +24,18 @@ interface AutomaticProbeVerificationModalProps {
 const AutomaticProbeVerificationModal: React.FC<AutomaticProbeVerificationModalProps> = ({
   isOpen,
   onClose,
-  dieselRecordId
+  dieselRecordId,
 }) => {
   const { dieselRecords, updateDieselRecord } = useAppContext();
-  const [probeReading, setProbeReading] = useState('');
-  const [verificationNotes, setVerificationNotes] = useState('');
+  const [probeReading, setProbeReading] = useState("");
+  const [verificationNotes, setVerificationNotes] = useState("");
   const [photoEvidence, setPhotoEvidence] = useState<File | null>(null);
-  const [witnessName, setWitnessName] = useState('');
+  const [witnessName, setWitnessName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [discrepancy, setDiscrepancy] = useState<number | null>(null);
   const [discrepancyPercentage, setDiscrepancyPercentage] = useState<number | null>(null);
-  
+
   // States for real-time sensor data
   const [isFetchingSensorData, setIsFetchingSensorData] = useState(false);
   const [sensorData, setSensorData] = useState<VehicleSensorData | null>(null);
@@ -38,7 +44,7 @@ const AutomaticProbeVerificationModal: React.FC<AutomaticProbeVerificationModalP
   const [manualOverride, setManualOverride] = useState(false);
 
   // Find the diesel record
-  const record = dieselRecords.find(r => r.id === dieselRecordId);
+  const record = dieselRecords.find((r) => r.id === dieselRecordId);
 
   // Fetch sensor data when modal opens
   useEffect(() => {
@@ -54,25 +60,28 @@ const AutomaticProbeVerificationModal: React.FC<AutomaticProbeVerificationModalP
       if (sensorData && isSensorDataRecent(sensorData) && useSensorData && !manualOverride) {
         const totalFuelLevel = getTotalFuelLevel(sensorData);
         setProbeReading(totalFuelLevel.toString());
-        
+
         // Add note about using sensor data
-        const sensorDataNote = `Probe reading automatically populated from real-time sensor data. 
+        const sensorDataNote = `Probe reading automatically populated from real-time sensor data.
 Sensor data timestamp: ${sensorData.lastUpdated.toLocaleString()}
-Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) => 
-  `${tank.tankName}: ${tank.currentLevel.toFixed(1)}L (${tank.percentageFull.toFixed(1)}%)`
-).join(', ')}`;
-        
+Fuel tanks: ${sensorData.fuelTanks
+          .map(
+            (tank: FuelTankData) =>
+              `${tank.tankName}: ${tank.currentLevel.toFixed(1)}L (${tank.percentageFull.toFixed(1)}%)`
+          )
+          .join(", ")}`;
+
         setVerificationNotes(sensorDataNote);
       } else {
         // Otherwise use existing probe reading if available
-        setProbeReading(record.probeReading?.toString() || '');
-        setVerificationNotes(record.probeVerificationNotes || '');
+        setProbeReading(record.probeReading?.toString() || "");
+        setVerificationNotes(record.probeVerificationNotes || "");
       }
-      
-      setWitnessName('');
+
+      setWitnessName("");
       setPhotoEvidence(null);
       setErrors({});
-      
+
       // Calculate discrepancy if probe reading exists
       updateDiscrepancy();
     }
@@ -89,12 +98,7 @@ Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) =>
   const hasProbe = FLEETS_WITH_PROBES.includes(record.fleetNumber);
   if (!hasProbe) {
     return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Automatic Probe Verification"
-        maxWidth="md"
-      >
+      <Modal isOpen={isOpen} onClose={onClose} title="Automatic Probe Verification" maxWidth="md">
         <div className="space-y-6">
           <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
             <div className="flex items-start space-x-3">
@@ -102,13 +106,14 @@ Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) =>
               <div>
                 <h4 className="text-sm font-medium text-amber-800">No Probe Available</h4>
                 <p className="text-sm text-amber-700 mt-1">
-                  Fleet {record.fleetNumber} does not have a fuel probe installed. Probe verification is not available for this vehicle.
+                  Fleet {record.fleetNumber} does not have a fuel probe installed. Probe
+                  verification is not available for this vehicle.
                 </p>
               </div>
             </div>
           </div>
           <div className="flex justify-end">
-            <Button onClick={onClick}>Close</Button>
+            <Button onClick={onClose}>Close</Button>
           </div>
         </div>
       </Modal>
@@ -118,32 +123,36 @@ Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) =>
   // Fetch real-time sensor data from Wialon
   const fetchSensorData = async () => {
     if (!record) return;
-    
+
     try {
       setIsFetchingSensorData(true);
       setSensorDataError(null);
-      
+
       const data = await getVehicleSensorData(record.fleetNumber);
-      
+
       if (!data) {
         setSensorDataError(`No sensor data found for fleet ${record.fleetNumber}`);
         return;
       }
-      
+
       if (data.fuelTanks.length === 0) {
         setSensorDataError(`No fuel tank sensors found for fleet ${record.fleetNumber}`);
         return;
       }
-      
+
       setSensorData(data);
-      
+
       // If the data is not recent, show a warning
       if (!isSensorDataRecent(data)) {
-        setSensorDataError(`Sensor data is not recent (last updated: ${data.lastUpdated.toLocaleString()})`);
+        setSensorDataError(
+          `Sensor data is not recent (last updated: ${data.lastUpdated.toLocaleString()})`
+        );
       }
     } catch (error) {
-      console.error('Error fetching sensor data:', error);
-      setSensorDataError(`Error fetching sensor data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error fetching sensor data:", error);
+      setSensorDataError(
+        `Error fetching sensor data: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     } finally {
       setIsFetchingSensorData(false);
     }
@@ -156,7 +165,7 @@ Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) =>
       setDiscrepancyPercentage(null);
       return;
     }
-    
+
     const probeValue = parseFloat(probeReading);
     if (!isNaN(probeValue)) {
       const discrepancyValue = record.litresFilled - probeValue;
@@ -171,54 +180,59 @@ Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) =>
   // Handle probe reading change
   const handleProbeReadingChange = (e: ChangeEvent<HTMLInputElement>) => {
     setProbeReading(e.target.value);
-    
+
     // Clear error for this field
     if (errors.probeReading) {
-      setErrors(prev => ({ ...prev, probeReading: '' }));
+      setErrors((prev) => ({ ...prev, probeReading: "" }));
     }
   };
 
   // Handle witness name change
   const handleWitnessNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setWitnessName(e.target.value);
-    
+
     // Clear error for this field
     if (errors.witnessName) {
-      setErrors(prev => ({ ...prev, witnessName: '' }));
+      setErrors((prev) => ({ ...prev, witnessName: "" }));
     }
   };
 
   // Handle verification notes change
   const handleVerificationNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setVerificationNotes(e.target.value);
-    
+
     // Clear error for this field
     if (errors.verificationNotes) {
-      setErrors(prev => ({ ...prev, verificationNotes: '' }));
+      setErrors((prev) => ({ ...prev, verificationNotes: "" }));
     }
   };
 
   // Toggle between sensor data and manual entry
   const toggleManualOverride = () => {
     setManualOverride(!manualOverride);
-    
+
     if (!manualOverride) {
       // Switching to manual mode
-      setVerificationNotes(prev => 
-        prev + '\n\nManual override: User chose to manually enter probe reading instead of using sensor data.'
+      setVerificationNotes(
+        (prev) =>
+          prev +
+          "\n\nManual override: User chose to manually enter probe reading instead of using sensor data."
       );
     } else {
       // Switching back to sensor data
       if (sensorData && isSensorDataRecent(sensorData)) {
         const totalFuelLevel = getTotalFuelLevel(sensorData);
         setProbeReading(totalFuelLevel.toString());
-        
+
         // Update notes
-        setVerificationNotes(`Probe reading automatically populated from real-time sensor data. 
+        setVerificationNotes(`Probe reading automatically populated from real-time sensor data.
 Sensor data timestamp: ${sensorData.lastUpdated.toLocaleString()}
-Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) => 
-  `${tank.tankName}: ${tank.currentLevel.toFixed(1)}L (${tank.percentageFull.toFixed(1)}%)`
-).join(', ')}`);
+Fuel tanks: ${sensorData.fuelTanks
+          .map(
+            (tank: FuelTankData) =>
+              `${tank.tankName}: ${tank.currentLevel.toFixed(1)}L (${tank.percentageFull.toFixed(1)}%)`
+          )
+          .join(", ")}`);
       }
     }
   };
@@ -226,24 +240,24 @@ Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) =>
   // Validate form
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!probeReading.trim()) {
-      newErrors.probeReading = 'Probe reading is required';
+      newErrors.probeReading = "Probe reading is required";
     } else if (isNaN(Number(probeReading)) || Number(probeReading) < 0) {
-      newErrors.probeReading = 'Probe reading must be a valid positive number';
+      newErrors.probeReading = "Probe reading must be a valid positive number";
     }
-    
+
     // If discrepancy is large (more than 10%), require notes and witness
     if (discrepancyPercentage !== null && Math.abs(discrepancyPercentage) > 10) {
       if (!verificationNotes.trim()) {
-        newErrors.verificationNotes = 'Notes are required for large discrepancies';
+        newErrors.verificationNotes = "Notes are required for large discrepancies";
       }
-      
+
       if (!witnessName.trim()) {
-        newErrors.witnessName = 'Witness name is required for large discrepancies';
+        newErrors.witnessName = "Witness name is required for large discrepancies";
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -251,15 +265,16 @@ Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) =>
   // Handle form submission
   const handleSubmit = async () => {
     if (!validateForm()) return;
-    
+
     try {
       setIsSubmitting(true);
-      
+
       const probeReadingValue = Number(probeReading);
       const probeDiscrepancyValue = record.litresFilled - probeReadingValue;
-      const isSeriousDiscrepancy = Math.abs(probeDiscrepancyValue) > 50 || 
-                                  Math.abs(probeDiscrepancyValue / record.litresFilled) > 0.1;
-      
+      const isSeriousDiscrepancy =
+        Math.abs(probeDiscrepancyValue) > 50 ||
+        Math.abs(probeDiscrepancyValue / record.litresFilled) > 0.1;
+
       // Add information about sensor data to notes if it was used
       let finalNotes = verificationNotes;
       if (sensorData && !manualOverride) {
@@ -267,7 +282,7 @@ Fuel tanks: ${sensorData.fuelTanks.map((tank: FuelTankData) =>
 Data source: Wialon AVL unit
 Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
       }
-      
+
       // Update the diesel record
       const updatedRecord = {
         ...record,
@@ -276,16 +291,16 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
         probeVerified: true,
         probeVerificationNotes: finalNotes.trim() || undefined,
         probeVerifiedAt: new Date().toISOString(),
-        probeVerifiedBy: 'Current User', // In a real app, use the logged-in user
+        probeVerifiedBy: "Current User", // In a real app, use the logged-in user
         probeWitness: witnessName.trim() || undefined,
         // In a real implementation, you would upload the photo evidence and store the URL
-        probePhotoUrl: photoEvidence ? 'https://example.com/photo-evidence.jpg' : undefined,
+        probePhotoUrl: photoEvidence ? "https://example.com/photo-evidence.jpg" : undefined,
         updatedAt: new Date().toISOString(),
         // Add information about sensor data if it was used
         probeSensorDataUsed: !manualOverride && !!sensorData,
-        probeSensorDataTimestamp: sensorData ? sensorData.lastUpdated.toISOString() : undefined
+        probeSensorDataTimestamp: sensorData ? sensorData.lastUpdated.toISOString() : undefined,
       };
-      
+
       await updateDieselRecord(updatedRecord);
 
       // Add audit log for serious discrepancies
@@ -293,35 +308,37 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
         await addAuditLogToFirebase({
           id: `audit-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          user: 'Current User', // Use logged-in user in real app
-          action: 'update',
-          entity: 'diesel',
+          user: "Current User", // Use logged-in user in real app
+          action: "update",
+          entity: "diesel",
           entityId: record.id,
-          details: `Probe verification with large discrepancy of ${probeDiscrepancyValue.toFixed(1)} liters (${(probeDiscrepancyValue / record.litresFilled * 100).toFixed(1)}%) for ${record.fleetNumber}`,
+          details: `Probe verification with large discrepancy of ${probeDiscrepancyValue.toFixed(1)} liters (${((probeDiscrepancyValue / record.litresFilled) * 100).toFixed(1)}%) for ${record.fleetNumber}`,
           changes: {
             before: { litresFilled: record.litresFilled },
-            after: { 
-              probeReading: probeReadingValue, 
+            after: {
+              probeReading: probeReadingValue,
               probeDiscrepancy: probeDiscrepancyValue,
-              sensorDataUsed: !manualOverride && !!sensorData
-            }
-          }
+              sensorDataUsed: !manualOverride && !!sensorData,
+            },
+          },
         });
       }
 
       // Close modal and notify user
       if (isSeriousDiscrepancy) {
-        alert(`Probe verification completed with a significant discrepancy of ${probeDiscrepancyValue.toFixed(1)} liters. This has been flagged for investigation.`);
+        alert(
+          `Probe verification completed with a significant discrepancy of ${probeDiscrepancyValue.toFixed(1)} liters. This has been flagged for investigation.`
+        );
       } else {
-        alert('Probe verification completed successfully');
+        alert("Probe verification completed successfully");
       }
-      
+
       onClose();
     } catch (error) {
-      console.error('Error verifying probe:', error);
-      setErrors(prev => ({
+      console.error("Error verifying probe:", error);
+      setErrors((prev) => ({
         ...prev,
-        submit: `Failed to verify probe: ${error instanceof Error ? error.message : 'Unknown error'}`
+        submit: `Failed to verify probe: ${error instanceof Error ? error.message : "Unknown error"}`,
       }));
     } finally {
       setIsSubmitting(false);
@@ -331,20 +348,15 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
   // Get status class based on discrepancy
   const getDiscrepancyClass = (value: number) => {
     const absValue = Math.abs(value);
-    
+
     // Percentage discrepancy
-    if (absValue > 10) return 'text-red-600';
-    if (absValue > 5) return 'text-amber-600';
-    return 'text-green-600';
+    if (absValue > 10) return "text-red-600";
+    if (absValue > 5) return "text-amber-600";
+    return "text-green-600";
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Automatic Probe Verification"
-      maxWidth="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Automatic Probe Verification" maxWidth="lg">
       <div className="space-y-6">
         {/* Diesel Record Details */}
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
@@ -364,9 +376,11 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
             </div>
             <div>
               <p className="text-blue-700 font-semibold">Cost:</p>
-              <p className="text-blue-900">{formatCurrency(record.totalCost, record.currency || 'ZAR')}</p>
+              <p className="text-blue-900">
+                {formatCurrency(record.totalCost, record.currency || "ZAR")}
+              </p>
             </div>
-            
+
             <div>
               <p className="text-blue-700 font-semibold">Driver:</p>
               <p className="text-blue-900">{record.driverName}</p>
@@ -381,17 +395,21 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
             </div>
             <div>
               <p className="text-blue-700 font-semibold">Efficiency:</p>
-              <p className="text-blue-900">{record.kmPerLitre?.toFixed(2) || 'N/A'} km/L</p>
+              <p className="text-blue-900">{record.kmPerLitre?.toFixed(2) || "N/A"} km/L</p>
             </div>
           </div>
         </div>
 
         {/* Real-time Sensor Data Section */}
-        <div className={`border rounded-md ${
-          sensorData ? 'bg-green-50 border-green-200' : 
-          sensorDataError ? 'bg-amber-50 border-amber-200' : 
-          'bg-gray-50 border-gray-200'
-        } p-4`}>
+        <div
+          className={`border rounded-md ${
+            sensorData
+              ? "bg-green-50 border-green-200"
+              : sensorDataError
+                ? "bg-amber-50 border-amber-200"
+                : "bg-gray-50 border-gray-200"
+          } p-4`}
+        >
           <div className="flex justify-between items-start">
             <div className="flex items-start">
               {sensorData ? (
@@ -408,20 +426,24 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
                 ) : sensorData ? (
                   <div className="mt-2">
                     <p className="text-sm text-green-700">
-                      <span className="font-semibold">Last Updated:</span> {sensorData.lastUpdated.toLocaleString()}
+                      <span className="font-semibold">Last Updated:</span>{" "}
+                      {sensorData.lastUpdated.toLocaleString()}
                       {!isSensorDataRecent(sensorData) && (
                         <span className="text-amber-600 ml-2">(Data may be outdated)</span>
                       )}
                     </p>
-                    
+
                     {sensorData.fuelTanks.length > 0 ? (
                       <div className="mt-2">
                         <p className="text-sm font-medium text-gray-700">Fuel Tank Readings:</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
                           {sensorData.fuelTanks.map((tank: FuelTankData, index: number) => (
                             <div key={index} className="text-sm">
-                              <span className="font-semibold">{tank.tankName}:</span> {tank.currentLevel.toFixed(1)} L 
-                              <span className="text-gray-500 ml-1">({tank.percentageFull.toFixed(1)}% full)</span>
+                              <span className="font-semibold">{tank.tankName}:</span>{" "}
+                              {tank.currentLevel.toFixed(1)} L
+                              <span className="text-gray-500 ml-1">
+                                ({tank.percentageFull.toFixed(1)}% full)
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -435,40 +457,37 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
                   </div>
                 ) : (
                   <p className="text-sm text-amber-600 mt-1">
-                    {sensorDataError || 'No sensor data available'}
+                    {sensorDataError || "No sensor data available"}
                   </p>
                 )}
               </div>
             </div>
-            
-            <div>
+
+            <div className="flex flex-col items-end">
               <Button
                 size="sm"
                 variant="outline"
-                onClick={onClick}
+                onClick={fetchSensorData}
                 icon={<RefreshCw className="w-4 h-4" />}
                 isLoading={isFetchingSensorData}
                 disabled={isFetchingSensorData}
               >
                 Refresh
               </Button>
+              <div className="mt-4 flex items-center">
+                <input
+                  type="checkbox"
+                  id="useSensorData"
+                  checked={!manualOverride}
+                  onChange={toggleManualOverride}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="useSensorData" className="ml-2 block text-sm text-gray-700">
+                  Use sensor data for probe reading
+                </label>
+              </div>
             </div>
           </div>
-          
-          {sensorData && sensorData.fuelTanks.length > 0 && (
-            <div className="mt-4 flex items-center">
-              <input
-                type="checkbox"
-                id="useSensorData"
-                checked={!manualOverride}
-                onChange={toggleManualOverride}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="useSensorData" className="ml-2 block text-sm text-gray-700">
-                Use sensor data for probe reading
-              </label>
-            </div>
-          )}
         </div>
 
         {/* Verification Form */}
@@ -482,31 +501,36 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
               value={probeReading}
               onChange={handleProbeReadingChange}
               error={errors.probeReading}
-              disabled={!!((!manualOverride) && sensorData && sensorData.fuelTanks.length > 0)}
+              disabled={!!(!manualOverride && sensorData && sensorData.fuelTanks.length > 0)}
             />
-            
+
             {discrepancy !== null && (
-              <div className={`mt-2 p-3 rounded-md ${
-                Math.abs(discrepancy) > 50 
-                  ? 'bg-red-50 border border-red-200'
-                  : Math.abs(discrepancy) > 20
-                    ? 'bg-amber-50 border border-amber-200'
-                    : 'bg-green-50 border border-green-200'
-              }`}>
-                <div className="flex items-start">
-                  {Math.abs(discrepancy) > 50 
-                    ? <AlertTriangle className={`w-5 h-5 text-red-600 mt-0.5 mr-2`} />
+              <div
+                className={`mt-2 p-3 rounded-md ${
+                  Math.abs(discrepancy) > 50
+                    ? "bg-red-50 border border-red-200"
                     : Math.abs(discrepancy) > 20
-                      ? <AlertTriangle className={`w-5 h-5 text-amber-600 mt-0.5 mr-2`} />
-                      : <CheckCircle className={`w-5 h-5 text-green-600 mt-0.5 mr-2`} />
-                  }
+                      ? "bg-amber-50 border border-amber-200"
+                      : "bg-green-50 border border-green-200"
+                }`}
+              >
+                <div className="flex items-start">
+                  {Math.abs(discrepancy) > 50 ? (
+                    <AlertTriangle className={`w-5 h-5 text-red-600 mt-0.5 mr-2`} />
+                  ) : Math.abs(discrepancy) > 20 ? (
+                    <AlertTriangle className={`w-5 h-5 text-amber-600 mt-0.5 mr-2`} />
+                  ) : (
+                    <CheckCircle className={`w-5 h-5 text-green-600 mt-0.5 mr-2`} />
+                  )}
                   <div>
                     <p className={`text-sm font-medium ${getDiscrepancyClass(discrepancy)}`}>
-                      Discrepancy: {discrepancy > 0 ? '+' : ''}{discrepancy.toFixed(1)} litres
+                      Discrepancy: {discrepancy > 0 ? "+" : ""}
+                      {discrepancy.toFixed(1)} litres
                     </p>
                     {discrepancyPercentage !== null && (
                       <p className={`text-sm ${getDiscrepancyClass(discrepancyPercentage)}`}>
-                        {Math.abs(discrepancyPercentage).toFixed(1)}% {discrepancy > 0 ? 'more' : 'less'} than filled amount
+                        {Math.abs(discrepancyPercentage).toFixed(1)}%{" "}
+                        {discrepancy > 0 ? "more" : "less"} than filled amount
                       </p>
                     )}
                     {Math.abs(discrepancy) > 50 && (
@@ -528,7 +552,7 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
               placeholder="Person who verified the reading"
               error={errors.witnessName}
             />
-            
+
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Photo Evidence (Optional)
@@ -537,14 +561,12 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
                 type="file"
                 accept="image/*"
                 onChange={(e) => setPhotoEvidence(e.target.files?.[0] || null)}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
-                  file:rounded-md file:border-0 file:text-sm file:font-medium 
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                  file:rounded-md file:border-0 file:text-sm file:font-medium
                   file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
               {photoEvidence && (
-                <p className="mt-2 text-sm text-blue-600">
-                  Selected: {photoEvidence.name}
-                </p>
+                <p className="mt-2 text-sm text-blue-600">Selected: {photoEvidence.name}</p>
               )}
             </div>
           </div>
@@ -567,7 +589,9 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
             <li>Wait at least 10 minutes after filling before taking probe reading</li>
             <li>Discrepancies under 5% are considered normal due to measurement tolerances</li>
             <li>Discrepancies over 10% require thorough investigation and documentation</li>
-            <li>For significant discrepancies, photo evidence and witness verification are required</li>
+            <li>
+              For significant discrepancies, photo evidence and witness verification are required
+            </li>
             <li>Sensor data is automatically fetched from the vehicle's AVL unit when available</li>
           </ul>
         </div>
@@ -593,14 +617,14 @@ Data timestamp: ${sensorData.lastUpdated.toLocaleString()}`;
         <div className="flex justify-end space-x-3 pt-6 border-t">
           <Button
             variant="outline"
-            onClick={onClick}
+            onClick={onClose}
             icon={<X className="w-4 h-4" />}
             disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button
-            onClick={onClick}
+            onClick={handleSubmit}
             icon={<Save className="w-4 h-4" />}
             isLoading={isSubmitting}
             disabled={isSubmitting || !probeReading}

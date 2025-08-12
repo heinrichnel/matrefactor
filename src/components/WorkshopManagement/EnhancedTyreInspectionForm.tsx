@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { QRCode } from "qrcode.react";
+import QRCode from "qrcode.react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import SignaturePad from 'react-signature-canvas';
+import SignaturePad from "react-signature-canvas";
 
 // 1. Import your custom useCapacitor hook (update path as needed)
 import { useCapacitor } from "@/hooks/useCapacitor"; // <-- Update if needed
@@ -16,7 +16,7 @@ interface TyreInspectionFormProps {
 const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
   fleetNumber,
   position,
-  onComplete
+  onComplete,
 }) => {
   const params = useParams();
   const navigate = useNavigate();
@@ -24,8 +24,8 @@ const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
   const queryParams = new URLSearchParams(locationHook.search);
 
   // Use provided props or extract from URL params/query
-  const vehicleId = fleetNumber || params.fleetId || queryParams.get('fleet') || '';
-  const tyrePosition = position || params.position || queryParams.get('position') || '';
+  const vehicleId = fleetNumber || params.fleetId || queryParams.get("fleet") || "";
+  const tyrePosition = position || params.position || queryParams.get("position") || "";
 
   const [odometer, setOdometer] = useState<number | "">("");
   const [photo, setPhoto] = useState<string | null>(null);
@@ -44,14 +44,8 @@ const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
   const [sigPad, setSigPad] = useState<any>(null);
 
   // 2. Use the Capacitor hook
-  const {
-    isNative,
-    hasPermissions,
-    scanQRCode,
-    takePhoto,
-    stopScan,
-    requestPermissions
-  } = useCapacitor();
+  const { isNative, hasPermissions, scanQRCode, takePhoto, stopScan, requestPermissions } =
+    useCapacitor();
 
   // Load any existing inspection data
   useEffect(() => {
@@ -64,7 +58,7 @@ const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
     try {
       setIsLoading(true);
       const db = getFirestore();
-      const inspectionQuery = await getDoc(doc(db, 'tyre_inspections', `${fleet}-${position}`));
+      const inspectionQuery = await getDoc(doc(db, "tyre_inspections", `${fleet}-${position}`));
 
       if (inspectionQuery.exists()) {
         const data = inspectionQuery.data();
@@ -114,7 +108,7 @@ const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
 
   const saveSignature = () => {
     if (sigPad) {
-      setSignature(sigPad.getTrimmedCanvas().toDataURL('image/png'));
+      setSignature(sigPad.getTrimmedCanvas().toDataURL("image/png"));
       setShowSig(false);
     }
   };
@@ -163,13 +157,13 @@ const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
         signature,
         gpsLocation,
         inspectionDate: new Date().toISOString(),
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
 
       // Save to Firestore
       const db = getFirestore();
       const docId = `${vehicleId}-${tyrePosition}`;
-      await setDoc(doc(db, 'tyre_inspections', docId), inspectionDataToSave, { merge: true });
+      await setDoc(doc(db, "tyre_inspections", docId), inspectionDataToSave, { merge: true });
 
       setInspectionData(inspectionDataToSave);
 
@@ -203,7 +197,9 @@ const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
           {/* ... everything below remains unchanged ... */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-group">
-              <label className="block text-sm font-medium text-gray-700">Vehicle ID / Fleet Number</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Vehicle ID / Fleet Number
+              </label>
               <input
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -430,7 +426,7 @@ const EnhancedTyreInspectionForm: React.FC<TyreInspectionFormProps> = ({
               <SignaturePad
                 ref={setSigPad}
                 canvasProps={{
-                  className: 'w-full h-64'
+                  className: "w-full h-64",
                 }}
               />
             </div>

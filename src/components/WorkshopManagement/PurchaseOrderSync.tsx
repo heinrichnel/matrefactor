@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import { syncPurchaseOrderToSage } from '../../api/sageIntegration';
-import { PurchaseOrder, POItem } from '../../types/inventory';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader } from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import { syncPurchaseOrderToSage } from "../../api/sageIntegration";
+import { PurchaseOrder, POItem } from "../../types/inventory";
 
 const PurchaseOrderSync: React.FC = () => {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
@@ -20,49 +20,70 @@ const PurchaseOrderSync: React.FC = () => {
     setTimeout(() => {
       const mockPOs: PurchaseOrder[] = [
         {
-          id: 'po1',
-          poNumber: 'PO-2023-001',
-          vendor: 'AutoParts Inc',
-          vendorId: 'vendor1',
-          orderDate: '2023-06-15',
-          expectedDelivery: '2023-06-22',
-          status: 'approved',
+          id: "po1",
+          poNumber: "PO-2023-001",
+          vendor: "AutoParts Inc",
+          vendorId: "vendor1",
+          orderDate: "2023-06-15",
+          expectedDelivery: "2023-06-22",
+          status: "approved",
           totalAmount: 1245.75,
-          paymentStatus: 'unpaid',
+          paymentStatus: "unpaid",
           items: [
-            { id: 'item1', name: 'Brake Pads', sku: 'BP-1001', quantity: 10, unitPrice: 45.99, totalPrice: 459.90 }
-          ]
+            {
+              id: "item1",
+              name: "Brake Pads",
+              sku: "BP-1001",
+              quantity: 10,
+              unitPrice: 45.99,
+              totalPrice: 459.9,
+            },
+          ],
         },
         {
-          id: 'po2',
-          poNumber: 'PO-2023-002',
-          vendor: 'FilterMaster',
-          vendorId: 'vendor2',
-          orderDate: '2023-06-20',
-          expectedDelivery: '2023-06-28',
-          status: 'ordered',
+          id: "po2",
+          poNumber: "PO-2023-002",
+          vendor: "FilterMaster",
+          vendorId: "vendor2",
+          orderDate: "2023-06-20",
+          expectedDelivery: "2023-06-28",
+          status: "ordered",
           totalAmount: 876.25,
-          paymentStatus: 'unpaid',
+          paymentStatus: "unpaid",
           items: [
-            { id: 'item2', name: 'Air Filter', sku: 'AF-5005', quantity: 20, unitPrice: 18.25, totalPrice: 365.00 }
-          ]
+            {
+              id: "item2",
+              name: "Air Filter",
+              sku: "AF-5005",
+              quantity: 20,
+              unitPrice: 18.25,
+              totalPrice: 365.0,
+            },
+          ],
         },
         {
-          id: 'po3',
-          poNumber: 'PO-2023-003',
-          vendor: 'ElectroParts',
-          vendorId: 'vendor3',
-          orderDate: '2023-07-01',
-          expectedDelivery: '2023-07-10',
-          status: 'draft',
-          totalAmount: 1560.00,
-          paymentStatus: 'unpaid',
+          id: "po3",
+          poNumber: "PO-2023-003",
+          vendor: "ElectroParts",
+          vendorId: "vendor3",
+          orderDate: "2023-07-01",
+          expectedDelivery: "2023-07-10",
+          status: "draft",
+          totalAmount: 1560.0,
+          paymentStatus: "unpaid",
           items: [
-            { id: 'item3', name: 'Alternator', sku: 'ALT-7001', quantity: 3, unitPrice: 210.00, totalPrice: 630.00 }
-          ]
-        }
+            {
+              id: "item3",
+              name: "Alternator",
+              sku: "ALT-7001",
+              quantity: 3,
+              unitPrice: 210.0,
+              totalPrice: 630.0,
+            },
+          ],
+        },
       ];
-      
+
       setPurchaseOrders(mockPOs);
       setLoading(false);
     }, 1000);
@@ -81,58 +102,71 @@ const PurchaseOrderSync: React.FC = () => {
 
     try {
       const success = await syncPurchaseOrderToSage(selectedPO);
-      
+
       if (success) {
         setSyncResult({
           success: true,
-          message: `Successfully synced purchase order ${selectedPO.poNumber} to Sage`
+          message: `Successfully synced purchase order ${selectedPO.poNumber} to Sage`,
         });
-        
+
         // Update the local PO list with sync status if needed
-        setPurchaseOrders(prevPOs => 
-          prevPOs.map(po => 
-            po.id === selectedPO.id 
-              ? { ...po, sageId: po.sageId || `sage-${Date.now()}` }
-              : po
+        setPurchaseOrders((prevPOs) =>
+          prevPOs.map((po) =>
+            po.id === selectedPO.id ? { ...po, sageId: po.sageId || `sage-${Date.now()}` } : po
           )
         );
       } else {
         setSyncResult({
           success: false,
-          message: `Failed to sync purchase order ${selectedPO.poNumber} to Sage`
+          message: `Failed to sync purchase order ${selectedPO.poNumber} to Sage`,
         });
       }
     } catch (error) {
       setSyncResult({
         success: false,
-        message: `Error syncing to Sage: ${(error as Error).message}`
+        message: `Error syncing to Sage: ${(error as Error).message}`,
       });
     } finally {
       setSyncing(false);
     }
   };
 
-  const getStatusBadgeClass = (status: PurchaseOrder['status']) => {
+  const getStatusBadgeClass = (status: PurchaseOrder["status"]) => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-blue-100 text-blue-800';
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'ordered': return 'bg-purple-100 text-purple-800';
-      case 'partially_received': return 'bg-amber-100 text-amber-800';
-      case 'received': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "draft":
+        return "bg-gray-100 text-gray-800";
+      case "pending":
+        return "bg-blue-100 text-blue-800";
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "ordered":
+        return "bg-purple-100 text-purple-800";
+      case "partially_received":
+        return "bg-amber-100 text-amber-800";
+      case "received":
+        return "bg-green-100 text-green-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
     }).format(amount);
   };
 
+  const handlePOClick = (po: PurchaseOrder) => {
+    handleSelectPO(po);
+  };
+
+  const handleSyncClick = () => {
+    handleSyncPO();
+  };
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -140,38 +174,48 @@ const PurchaseOrderSync: React.FC = () => {
           <h1 className="text-2xl font-bold">Purchase Order Synchronization</h1>
           <p className="text-gray-600">Sync purchase orders with Sage accounting system</p>
         </div>
-        <Button
-          disabled={!selectedPO || syncing}
-          isLoading={syncing}
-          onClick={onClick}
-        >
+        <Button disabled={!selectedPO || syncing} isLoading={syncing} onClick={handleSyncClick}>
           Sync Selected PO to Sage
         </Button>
       </div>
 
       {/* Sync Result Alert */}
       {syncResult && (
-        <div className={`p-4 rounded-md ${
-          syncResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-        }`}>
+        <div
+          className={`p-4 rounded-md ${
+            syncResult.success
+              ? "bg-green-50 border border-green-200"
+              : "bg-red-50 border border-red-200"
+          }`}
+        >
           <div className="flex">
-            <div className={`flex-shrink-0 ${
-              syncResult.success ? 'text-green-400' : 'text-red-400'
-            }`}>
+            <div
+              className={`flex-shrink-0 ${syncResult.success ? "text-green-400" : "text-red-400"}`}
+            >
               {syncResult.success ? (
                 <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               ) : (
                 <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               )}
             </div>
             <div className="ml-3">
-              <p className={`text-sm font-medium ${
-                syncResult.success ? 'text-green-800' : 'text-red-800'
-              }`}>
+              <p
+                className={`text-sm font-medium ${
+                  syncResult.success ? "text-green-800" : "text-red-800"
+                }`}
+              >
                 {syncResult.message}
               </p>
             </div>
@@ -196,18 +240,20 @@ const PurchaseOrderSync: React.FC = () => {
             ) : (
               <ul className="divide-y divide-gray-200">
                 {purchaseOrders.map((po) => (
-                  <li 
-                    key={po.id} 
+                  <li
+                    key={po.id}
                     className={`cursor-pointer hover:bg-gray-50 ${
-                      selectedPO?.id === po.id ? 'bg-blue-50' : ''
+                      selectedPO?.id === po.id ? "bg-blue-50" : ""
                     }`}
-                    onClick={onClick}
+                    onClick={() => handlePOClick(po)}
                   >
                     <div className="p-4">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-medium text-gray-900">{po.poNumber}</h3>
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(po.status)}`}>
-                          {po.status.replace('_', ' ')}
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(po.status)}`}
+                        >
+                          {po.status.replace("_", " ")}
                         </span>
                       </div>
                       <div className="mt-1 text-sm text-gray-600">
@@ -248,8 +294,10 @@ const PurchaseOrderSync: React.FC = () => {
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Status</h3>
                     <p className="mt-1 text-sm">
-                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(selectedPO.status)}`}>
-                        {selectedPO.status.replace('_', ' ')}
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(selectedPO.status)}`}
+                      >
+                        {selectedPO.status.replace("_", " ")}
                       </span>
                     </p>
                   </div>
@@ -259,20 +307,23 @@ const PurchaseOrderSync: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Order Date</h3>
-                    <p className="mt-1 text-sm text-gray-900">{new Date(selectedPO.orderDate).toLocaleDateString()}</p>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {new Date(selectedPO.orderDate).toLocaleDateString()}
+                    </p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Expected Delivery</h3>
                     <p className="mt-1 text-sm text-gray-900">
-                      {selectedPO.expectedDelivery 
-                        ? new Date(selectedPO.expectedDelivery).toLocaleDateString() 
-                        : 'Not specified'
-                      }
+                      {selectedPO.expectedDelivery
+                        ? new Date(selectedPO.expectedDelivery).toLocaleDateString()
+                        : "Not specified"}
                     </p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Total Amount</h3>
-                    <p className="mt-1 text-sm font-medium text-gray-900">{formatCurrency(selectedPO.totalAmount)}</p>
+                    <p className="mt-1 text-sm font-medium text-gray-900">
+                      {formatCurrency(selectedPO.totalAmount)}
+                    </p>
                   </div>
                 </div>
 
@@ -282,11 +333,21 @@ const PurchaseOrderSync: React.FC = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Item
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            SKU
+                          </th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Quantity
+                          </th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Unit Price
+                          </th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -294,16 +355,26 @@ const PurchaseOrderSync: React.FC = () => {
                           <tr key={item.id}>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.name}</td>
                             <td className="px-4 py-3 text-sm text-gray-500">{item.sku}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900 text-right">{item.quantity}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900 text-right">{formatCurrency(item.unitPrice)}</td>
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">{formatCurrency(item.totalPrice)}</td>
+                            <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                              {item.quantity}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                              {formatCurrency(item.unitPrice)}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">
+                              {formatCurrency(item.totalPrice)}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
                         <tr className="bg-gray-50">
-                          <td colSpan={4} className="px-4 py-3 text-sm font-medium text-right">Total</td>
-                          <td className="px-4 py-3 text-sm font-medium text-right">{formatCurrency(selectedPO.totalAmount)}</td>
+                          <td colSpan={4} className="px-4 py-3 text-sm font-medium text-right">
+                            Total
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium text-right">
+                            {formatCurrency(selectedPO.totalAmount)}
+                          </td>
                         </tr>
                       </tfoot>
                     </table>
@@ -311,22 +382,23 @@ const PurchaseOrderSync: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Sage Integration Status</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-2">
+                    Sage Integration Status
+                  </h3>
                   <div className="bg-gray-50 p-4 rounded-md">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-900">
-                          {selectedPO.sageId 
-                            ? `This purchase order is synced with Sage (ID: ${selectedPO.sageId})` 
-                            : 'This purchase order has not been synced with Sage'
-                          }
+                          {selectedPO.sageId
+                            ? `This purchase order is synced with Sage (ID: ${selectedPO.sageId})`
+                            : "This purchase order has not been synced with Sage"}
                         </p>
                         {selectedPO.sageId && (
                           <p className="text-xs text-gray-500 mt-1">
-                            Last synced: {selectedPO.updatedAt 
-                              ? new Date(selectedPO.updatedAt).toLocaleString() 
-                              : 'Unknown'
-                            }
+                            Last synced:{" "}
+                            {selectedPO.updatedAt
+                              ? new Date(selectedPO.updatedAt).toLocaleString()
+                              : "Unknown"}
                           </p>
                         )}
                       </div>

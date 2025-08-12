@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import Button from "../../ui/Button";
 import Card, { CardContent } from "../../ui/Card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../ui/Tabs";
 import { Printer, Download, Edit2, Check, X, FileText } from "lucide-react";
 import { RCAModal, RCAEntry } from "./RCAModal";
+import { db } from "../../../firebase"; // Import Firestore
+import { doc, setDoc } from "firebase/firestore"; // Import doc and setDoc
 
 export interface JobCardDetail {
   id: string;
@@ -35,7 +37,7 @@ export interface JobCardDetail {
 interface JobCardTask {
   id: string;
   description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  status: "pending" | "in_progress" | "completed" | "failed";
   type: string;
   assigned: string;
   notes: string;
@@ -120,7 +122,12 @@ interface Props {
 }
 
 export const JobCardDetailModal: React.FC<Props> = ({
-  jobCard, onClose, onSave, onPDF, onPrint, userName
+  jobCard,
+  onClose,
+  onSave,
+  onPDF,
+  onPrint,
+  userName,
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [data, setData] = useState(jobCard);
@@ -128,122 +135,148 @@ export const JobCardDetailModal: React.FC<Props> = ({
   const [rcaModalOpen, setRcaModalOpen] = useState(false);
 
   const handleEdit = () => setEditMode(true);
-  const handleCancel = () => { setData(jobCard); setEditMode(false); };
-  const handleChange = (field: keyof JobCardDetail, value: any) => setData(d => ({ ...d, [field]: value }));
+  const handleCancel = () => {
+    setData(jobCard);
+    setEditMode(false);
+  };
+  const handleChange = (field: keyof JobCardDetail, value: any) =>
+    setData((d) => ({ ...d, [field]: value }));
 
   const handleTaskChange = (taskId: string, field: keyof JobCardTask, value: any) => {
-    setData(d => ({
+    setData((d) => ({
       ...d,
-      tasks: d.tasks.map(t => t.id === taskId ? { ...t, [field]: value } : t)
+      tasks: d.tasks.map((t) => (t.id === taskId ? { ...t, [field]: value } : t)),
     }));
   };
 
   const handlePartChange = (partId: string, field: keyof PartItem, value: any) => {
-    setData(d => ({
+    setData((d) => ({
       ...d,
-      parts: d.parts.map(p => p.id === partId ? { ...p, [field]: value } : p)
+      parts: d.parts.map((p) => (p.id === partId ? { ...p, [field]: value } : p)),
     }));
   };
 
   const handleLaborChange = (laborId: string, field: keyof LaborItem, value: any) => {
-    setData(d => ({
+    setData((d) => ({
       ...d,
-      labor: d.labor.map(l => l.id === laborId ? { ...l, [field]: value } : l)
+      labor: d.labor.map((l) => (l.id === laborId ? { ...l, [field]: value } : l)),
     }));
   };
 
   const handleAddTask = () => {
     const newTask: JobCardTask = {
       id: `task-${Date.now()}`,
-      description: '',
-      status: 'pending',
-      type: 'repair',
-      assigned: '',
-      notes: '',
+      description: "",
+      status: "pending",
+      type: "repair",
+      assigned: "",
+      notes: "",
       addedDate: new Date().toISOString(),
-      addedBy: userName
+      addedBy: userName,
     };
-    setData(d => ({ ...d, tasks: [...d.tasks, newTask] }));
+    setData((d) => ({ ...d, tasks: [...d.tasks, newTask] }));
   };
 
   const handleAddPart = () => {
     const newPart: PartItem = {
       id: `part-${Date.now()}`,
-      name: '',
-      partNumber: '',
+      name: "",
+      partNumber: "",
       quantity: 1,
       unitCost: 0,
       total: 0,
-      notes: '',
+      notes: "",
       date: new Date().toISOString(),
-      addedBy: userName
+      addedBy: userName,
     };
-    setData(d => ({ ...d, parts: [...d.parts, newPart] }));
+    setData((d) => ({ ...d, parts: [...d.parts, newPart] }));
   };
 
   const handleAddLabor = () => {
     const newLabor: LaborItem = {
       id: `labor-${Date.now()}`,
       worker: userName,
-      code: '',
+      code: "",
       rate: 0,
       hours: 0,
       cost: 0,
-      notes: '',
+      notes: "",
       date: new Date().toISOString(),
-      addedBy: userName
+      addedBy: userName,
     };
-    setData(d => ({ ...d, labor: [...d.labor, newLabor] }));
+    setData((d) => ({ ...d, labor: [...d.labor, newLabor] }));
   };
 
-  const handleSave = () => {
-    onSave({
+  const handleSave = async () => {
+    const updatedData = {
       ...data,
       auditLog: [
         ...data.auditLog,
         {
           id: `audit-${Date.now()}`,
-          action: 'Updated job card',
-          field: 'multiple',
-          oldValue: '',
-          newValue: '',
+          action: "Updated job card",
+          field: "multiple",
+          oldValue: "",
+          newValue: "",
           date: new Date().toISOString(),
-          by: userName
-        }
-      ]
-    });
+          by: userName,
+        },
+      ],
+    };
+
+    // Save to Firestore
+    try {
+      await setDoc(doc(db, "jobCards", updatedData.id), updatedData);
+      onSave(updatedData); // Call parent save handler
+    } catch (error) {
+      console.error("Error saving document: ", error);
+      // Handle error, e.g., show a toast notification
+    }
+
     setEditMode(false);
   };
 
   const handleRCASave = (entry: RCAEntry) => {
-    setData(d => ({ ...d, rcaEntry: entry }));
+    setData((d) => ({ ...d, rcaEntry: entry }));
     setRcaModalOpen(false);
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    return format(new Date(dateString), 'dd-MMM-yyyy HH:mm');
+    if (!dateString) return "";
+    return format(new Date(dateString), "dd-MMM-yyyy HH:mm");
   };
 
   const getStatusColor = (status: string) => {
-    switch(status.toLowerCase()) {
-      case 'initiated': return 'bg-blue-100 text-blue-800';
-      case 'scheduled': return 'bg-purple-100 text-purple-800';
-      case 'in progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'closed': return 'bg-gray-100 text-gray-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+    switch (status.toLowerCase()) {
+      case "initiated":
+        return "bg-blue-100 text-blue-800";
+      case "scheduled":
+        return "bg-purple-100 text-purple-800";
+      case "in progress":
+        return "bg-yellow-100 text-yellow-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "closed":
+        return "bg-gray-100 text-gray-800";
+      case "overdue":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPriorityColor = (priority: string) => {
-    switch(priority.toLowerCase()) {
-      case 'low': return 'bg-gray-100 text-gray-800';
-      case 'medium': return 'bg-blue-100 text-blue-800';
-      case 'high': return 'bg-yellow-100 text-yellow-800';
-      case 'emergency': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+    switch (priority.toLowerCase()) {
+      case "low":
+        return "bg-gray-100 text-gray-800";
+      case "medium":
+        return "bg-blue-100 text-blue-800";
+      case "high":
+        return "bg-yellow-100 text-yellow-800";
+      case "emergency":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -251,7 +284,12 @@ export const JobCardDetailModal: React.FC<Props> = ({
     const partTotal = data.parts.reduce((sum, p) => sum + (p.total || p.quantity * p.unitCost), 0);
     const laborTotal = data.labor.reduce((sum, l) => sum + l.cost, 0);
     const additionalTotal = data.costs.reduce((sum, c) => sum + c.amount, 0);
-    return { partTotal, laborTotal, additionalTotal, grandTotal: partTotal + laborTotal + additionalTotal };
+    return {
+      partTotal,
+      laborTotal,
+      additionalTotal,
+      grandTotal: partTotal + laborTotal + additionalTotal,
+    };
   };
 
   const totals = calculateTotals();
@@ -262,10 +300,14 @@ export const JobCardDetailModal: React.FC<Props> = ({
         <div className="flex justify-between items-center p-4 border-b bg-gray-50">
           <div>
             <span className="font-bold text-lg mr-3">{data.woNumber}</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(data.status)}`}>
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(data.status)}`}
+            >
               {data.status}
             </span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${getPriorityColor(data.priority)}`}>
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${getPriorityColor(data.priority)}`}
+            >
               {data.priority}
             </span>
             <span className="ml-4 text-gray-500">{data.vehicle}</span>
@@ -305,20 +347,17 @@ export const JobCardDetailModal: React.FC<Props> = ({
           </div>
         </div>
 
-        <Tabs
-          value={activeTab}
-          className="p-4"
-        >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="p-4">
           <TabsList className="mb-4">
-            <TabsTrigger value="general" onClick={() => setActiveTab("general")}>General</TabsTrigger>
-            <TabsTrigger value="tasks" onClick={() => setActiveTab("tasks")}>Tasks</TabsTrigger>
-            <TabsTrigger value="parts" onClick={() => setActiveTab("parts")}>Parts</TabsTrigger>
-            <TabsTrigger value="labor" onClick={() => setActiveTab("labor")}>Labor</TabsTrigger>
-            <TabsTrigger value="costs" onClick={() => setActiveTab("costs")}>Costs</TabsTrigger>
-            <TabsTrigger value="attachments" onClick={() => setActiveTab("attachments")}>Attachments</TabsTrigger>
-            <TabsTrigger value="remarks" onClick={() => setActiveTab("remarks")}>Remarks</TabsTrigger>
-            <TabsTrigger value="timelog" onClick={() => setActiveTab("timelog")}>Time Log</TabsTrigger>
-            <TabsTrigger value="audit" onClick={() => setActiveTab("audit")}>Audit</TabsTrigger>
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="parts">Parts</TabsTrigger>
+            <TabsTrigger value="labor">Labor</TabsTrigger>
+            <TabsTrigger value="costs">Costs</TabsTrigger>
+            <TabsTrigger value="attachments">Attachments</TabsTrigger>
+            <TabsTrigger value="remarks">Remarks</TabsTrigger>
+            <TabsTrigger value="timelog">Time Log</TabsTrigger>
+            <TabsTrigger value="audit">Audit</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -336,7 +375,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                             type="text"
                             className="form-input rounded border px-2 py-1"
                             value={data.vehicle}
-                            onChange={e => handleChange('vehicle', e.target.value)}
+                            onChange={(e) => handleChange("vehicle", e.target.value)}
                           />
                         ) : (
                           <span>{data.vehicle}</span>
@@ -349,7 +388,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                             type="text"
                             className="form-input rounded border px-2 py-1"
                             value={data.model}
-                            onChange={e => handleChange('model', e.target.value)}
+                            onChange={(e) => handleChange("model", e.target.value)}
                           />
                         ) : (
                           <span>{data.model}</span>
@@ -362,7 +401,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                             type="number"
                             className="form-input rounded border px-2 py-1"
                             value={data.odometer}
-                            onChange={e => handleChange('odometer', parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              handleChange("odometer", parseInt(e.target.value) || 0)
+                            }
                           />
                         ) : (
                           <span>{data.odometer} km</span>
@@ -379,7 +420,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                           <select
                             className="form-select rounded border px-2 py-1"
                             value={data.status}
-                            onChange={e => handleChange('status', e.target.value)}
+                            onChange={(e) => handleChange("status", e.target.value)}
                           >
                             <option value="initiated">Initiated</option>
                             <option value="scheduled">Scheduled</option>
@@ -389,7 +430,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                             <option value="overdue">Overdue</option>
                           </select>
                         ) : (
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(data.status)}`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(data.status)}`}
+                          >
                             {data.status}
                           </span>
                         )}
@@ -400,7 +443,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                           <select
                             className="form-select rounded border px-2 py-1"
                             value={data.priority}
-                            onChange={e => handleChange('priority', e.target.value)}
+                            onChange={(e) => handleChange("priority", e.target.value)}
                           >
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
@@ -408,7 +451,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                             <option value="emergency">Emergency</option>
                           </select>
                         ) : (
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(data.priority)}`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(data.priority)}`}
+                          >
                             {data.priority}
                           </span>
                         )}
@@ -423,8 +468,10 @@ export const JobCardDetailModal: React.FC<Props> = ({
                           <input
                             type="datetime-local"
                             className="form-input rounded border px-2 py-1"
-                            value={data.dueDate ? new Date(data.dueDate).toISOString().slice(0, 16) : ''}
-                            onChange={e => handleChange('dueDate', e.target.value)}
+                            value={
+                              data.dueDate ? new Date(data.dueDate).toISOString().slice(0, 16) : ""
+                            }
+                            onChange={(e) => handleChange("dueDate", e.target.value)}
                           />
                         ) : (
                           <span>{formatDate(data.dueDate)}</span>
@@ -446,7 +493,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                     <textarea
                       className="form-textarea mt-1 w-full rounded border px-2 py-1"
                       value={data.memo}
-                      onChange={e => handleChange('memo', e.target.value)}
+                      onChange={(e) => handleChange("memo", e.target.value)}
                       rows={3}
                     />
                   ) : (
@@ -462,9 +509,12 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         multiple
                         className="form-multiselect mt-1 w-full rounded border px-2 py-1"
                         value={data.assigned}
-                        onChange={e => {
-                          const values = Array.from(e.target.selectedOptions, option => option.value);
-                          handleChange('assigned', values);
+                        onChange={(e) => {
+                          const values = Array.from(
+                            e.target.selectedOptions,
+                            (option) => option.value
+                          );
+                          handleChange("assigned", values);
                         }}
                       >
                         <option value="John Smith">John Smith</option>
@@ -474,8 +524,11 @@ export const JobCardDetailModal: React.FC<Props> = ({
                       </select>
                     ) : (
                       <div className="flex flex-wrap gap-2">
-                        {data.assigned.map(person => (
-                          <span key={person} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                        {data.assigned.map((person) => (
+                          <span
+                            key={person}
+                            className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+                          >
                             {person}
                           </span>
                         ))}
@@ -491,20 +544,36 @@ export const JobCardDetailModal: React.FC<Props> = ({
                         <FileText className="h-5 w-5 text-red-400" />
                       </div>
                       <div className="ml-3">
-                        <h3 className="text-sm font-medium text-red-800">Root Cause Analysis Required</h3>
+                        <h3 className="text-sm font-medium text-red-800">
+                          Root Cause Analysis Required
+                        </h3>
                         <div className="mt-2 text-sm text-red-700">
                           <p>This job card requires a Root Cause Analysis before closure.</p>
                         </div>
                         {data.rcaEntry ? (
                           <div className="mt-2 p-2 bg-white rounded border border-red-200">
-                            <p><strong>Root Cause:</strong> {data.rcaEntry.rootCause}</p>
-                            <p><strong>Conducted By:</strong> {data.rcaEntry.rcaConductedBy}</p>
-                            <p><strong>Completed:</strong> {formatDate(data.rcaEntry.completedAt)}</p>
-                            {data.rcaEntry.note && <p><strong>Notes:</strong> {data.rcaEntry.note}</p>}
+                            <p>
+                              <strong>Root Cause:</strong> {data.rcaEntry.rootCause}
+                            </p>
+                            <p>
+                              <strong>Conducted By:</strong> {data.rcaEntry.rcaConductedBy}
+                            </p>
+                            <p>
+                              <strong>Completed:</strong> {formatDate(data.rcaEntry.completedAt)}
+                            </p>
+                            {data.rcaEntry.note && (
+                              <p>
+                                <strong>Notes:</strong> {data.rcaEntry.note}
+                              </p>
+                            )}
                           </div>
                         ) : (
                           <div className="mt-4">
-                            <Button onClick={() => setRcaModalOpen(true)} size="sm" variant="secondary">
+                            <Button
+                              onClick={() => setRcaModalOpen(true)}
+                              size="sm"
+                              variant="secondary"
+                            >
                               Complete RCA
                             </Button>
                           </div>
@@ -554,13 +623,27 @@ export const JobCardDetailModal: React.FC<Props> = ({
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead>
                     <tr>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Added</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">By</th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Assigned
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Notes
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Added
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        By
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -572,7 +655,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={task.description}
-                              onChange={e => handleTaskChange(task.id, 'description', e.target.value)}
+                              onChange={(e) =>
+                                handleTaskChange(task.id, "description", e.target.value)
+                              }
                             />
                           ) : (
                             <span className="text-sm">{task.description}</span>
@@ -583,7 +668,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                             <select
                               className="form-select rounded border px-2 py-1 text-sm"
                               value={task.status}
-                              onChange={e => handleTaskChange(task.id, 'status', e.target.value)}
+                              onChange={(e) =>
+                                handleTaskChange(task.id, "status", e.target.value as any)
+                              }
                             >
                               <option value="pending">Pending</option>
                               <option value="in_progress">In Progress</option>
@@ -591,14 +678,20 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               <option value="failed">Failed</option>
                             </select>
                           ) : (
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                              task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                              task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                              task.status === 'failed' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {task.status === 'in_progress' ? 'In Progress' :
-                                task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                task.status === "completed"
+                                  ? "bg-green-100 text-green-800"
+                                  : task.status === "in_progress"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : task.status === "failed"
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {task.status === "in_progress"
+                                ? "In Progress"
+                                : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                             </span>
                           )}
                         </td>
@@ -607,7 +700,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                             <select
                               className="form-select rounded border px-2 py-1 text-sm"
                               value={task.type}
-                              onChange={e => handleTaskChange(task.id, 'type', e.target.value)}
+                              onChange={(e) => handleTaskChange(task.id, "type", e.target.value)}
                             >
                               <option value="repair">Repair</option>
                               <option value="inspection">Inspection</option>
@@ -626,7 +719,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={task.assigned}
-                              onChange={e => handleTaskChange(task.id, 'assigned', e.target.value)}
+                              onChange={(e) =>
+                                handleTaskChange(task.id, "assigned", e.target.value)
+                              }
                             />
                           ) : (
                             <span className="text-sm">{task.assigned}</span>
@@ -638,7 +733,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={task.notes}
-                              onChange={e => handleTaskChange(task.id, 'notes', e.target.value)}
+                              onChange={(e) => handleTaskChange(task.id, "notes", e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{task.notes}</span>
@@ -650,7 +745,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                     ))}
                     {data.tasks.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="px-2 py-4 text-center text-sm text-gray-500">No tasks added yet</td>
+                        <td colSpan={7} className="px-2 py-4 text-center text-sm text-gray-500">
+                          No tasks added yet
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -674,14 +771,30 @@ export const JobCardDetailModal: React.FC<Props> = ({
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead>
                     <tr>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Part Name</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Part #</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Cost</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Added By</th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Part Name
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Part #
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Qty
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Unit Cost
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Total
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Notes
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Added By
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -693,7 +806,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={part.name}
-                              onChange={e => handlePartChange(part.id, 'name', e.target.value)}
+                              onChange={(e) => handlePartChange(part.id, "name", e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{part.name}</span>
@@ -705,7 +818,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={part.partNumber}
-                              onChange={e => handlePartChange(part.id, 'partNumber', e.target.value)}
+                              onChange={(e) =>
+                                handlePartChange(part.id, "partNumber", e.target.value)
+                              }
                             />
                           ) : (
                             <span className="text-sm">{part.partNumber}</span>
@@ -718,10 +833,10 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               className="form-input w-20 rounded border px-2 py-1 text-sm"
                               value={part.quantity}
                               min="1"
-                              onChange={e => {
+                              onChange={(e) => {
                                 const qty = parseInt(e.target.value) || 0;
-                                handlePartChange(part.id, 'quantity', qty);
-                                handlePartChange(part.id, 'total', qty * part.unitCost);
+                                handlePartChange(part.id, "quantity", qty);
+                                handlePartChange(part.id, "total", qty * part.unitCost);
                               }}
                             />
                           ) : (
@@ -736,10 +851,10 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               value={part.unitCost}
                               min="0"
                               step="0.01"
-                              onChange={e => {
+                              onChange={(e) => {
                                 const cost = parseFloat(e.target.value) || 0;
-                                handlePartChange(part.id, 'unitCost', cost);
-                                handlePartChange(part.id, 'total', part.quantity * cost);
+                                handlePartChange(part.id, "unitCost", cost);
+                                handlePartChange(part.id, "total", part.quantity * cost);
                               }}
                             />
                           ) : (
@@ -753,7 +868,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={part.notes}
-                              onChange={e => handlePartChange(part.id, 'notes', e.target.value)}
+                              onChange={(e) => handlePartChange(part.id, "notes", e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{part.notes}</span>
@@ -765,14 +880,20 @@ export const JobCardDetailModal: React.FC<Props> = ({
                     ))}
                     {data.parts.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="px-2 py-4 text-center text-sm text-gray-500">No parts added yet</td>
+                        <td colSpan={8} className="px-2 py-4 text-center text-sm text-gray-500">
+                          No parts added yet
+                        </td>
                       </tr>
                     )}
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td colSpan={4} className="px-2 py-2 text-right font-medium">Total:</td>
-                      <td colSpan={4} className="px-2 py-2 font-medium">${totals.partTotal.toFixed(2)}</td>
+                      <td colSpan={4} className="px-2 py-2 text-right font-medium">
+                        Total:
+                      </td>
+                      <td colSpan={4} className="px-2 py-2 font-medium">
+                        ${totals.partTotal.toFixed(2)}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>
@@ -795,14 +916,30 @@ export const JobCardDetailModal: React.FC<Props> = ({
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead>
                     <tr>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worker</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Added By</th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Worker
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Code
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Rate
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Hours
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cost
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Notes
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Added By
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -814,7 +951,9 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={labor.worker}
-                              onChange={e => handleLaborChange(labor.id, 'worker', e.target.value)}
+                              onChange={(e) =>
+                                handleLaborChange(labor.id, "worker", e.target.value)
+                              }
                             />
                           ) : (
                             <span className="text-sm">{labor.worker}</span>
@@ -826,7 +965,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={labor.code}
-                              onChange={e => handleLaborChange(labor.id, 'code', e.target.value)}
+                              onChange={(e) => handleLaborChange(labor.id, "code", e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{labor.code}</span>
@@ -840,10 +979,10 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               value={labor.rate}
                               min="0"
                               step="0.01"
-                              onChange={e => {
+                              onChange={(e) => {
                                 const rate = parseFloat(e.target.value) || 0;
-                                handleLaborChange(labor.id, 'rate', rate);
-                                handleLaborChange(labor.id, 'cost', rate * labor.hours);
+                                handleLaborChange(labor.id, "rate", rate);
+                                handleLaborChange(labor.id, "cost", rate * labor.hours);
                               }}
                             />
                           ) : (
@@ -858,10 +997,10 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               value={labor.hours}
                               min="0"
                               step="0.25"
-                              onChange={e => {
+                              onChange={(e) => {
                                 const hours = parseFloat(e.target.value) || 0;
-                                handleLaborChange(labor.id, 'hours', hours);
-                                handleLaborChange(labor.id, 'cost', labor.rate * hours);
+                                handleLaborChange(labor.id, "hours", hours);
+                                handleLaborChange(labor.id, "cost", labor.rate * hours);
                               }}
                             />
                           ) : (
@@ -875,7 +1014,7 @@ export const JobCardDetailModal: React.FC<Props> = ({
                               type="text"
                               className="form-input w-full rounded border px-2 py-1 text-sm"
                               value={labor.notes}
-                              onChange={e => handleLaborChange(labor.id, 'notes', e.target.value)}
+                              onChange={(e) => handleLaborChange(labor.id, "notes", e.target.value)}
                             />
                           ) : (
                             <span className="text-sm">{labor.notes}</span>
@@ -887,14 +1026,20 @@ export const JobCardDetailModal: React.FC<Props> = ({
                     ))}
                     {data.labor.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="px-2 py-4 text-center text-sm text-gray-500">No labor entries added yet</td>
+                        <td colSpan={8} className="px-2 py-4 text-center text-sm text-gray-500">
+                          No labor entries added yet
+                        </td>
                       </tr>
                     )}
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td colSpan={4} className="px-2 py-2 text-right font-medium">Total:</td>
-                      <td colSpan={4} className="px-2 py-2 font-medium">${totals.laborTotal.toFixed(2)}</td>
+                      <td colSpan={4} className="px-2 py-2 text-right font-medium">
+                        Total:
+                      </td>
+                      <td colSpan={4} className="px-2 py-2 font-medium">
+                        ${totals.laborTotal.toFixed(2)}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>

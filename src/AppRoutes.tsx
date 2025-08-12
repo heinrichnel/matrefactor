@@ -39,7 +39,7 @@ const WialonMapPage = lazy(() => import("./pages/wialon/WialonMapPage"));
  * ----------------------------- */
 // Enhanced dynamic import with error handling
 const DashboardPage = lazy(() =>
-  import("./pages/Dashboard.tsx").catch((error) => {
+  import("./pages/Dashboard").catch((error) => {
     console.error("Error loading Dashboard component:", error);
     // Return a fallback module that renders an error message
     return {
@@ -60,11 +60,11 @@ const DashboardPage = lazy(() =>
   })
 );
 // Fix additional dashboard components with .tsx extension
-const YearToDateKPIs = lazy(() => import("./pages/analytics/YearToDateKPIs.tsx"));
-const FormsIntegrationPage = lazy(() => import("./pages/FormsIntegrationPage.tsx"));
-const ConsolidatedDashboard = lazy(() => import("./pages/dashboard/ConsolidatedDashboard.tsx"));
-const DashboardWrapper = lazy(() => import("./pages/dashboard/DashboardWrapper.tsx"));
-const ComplianceDashboard = lazy(() => import("./pages/qc/ComplianceDashboard.tsx"));
+const YearToDateKPIs = lazy(() => import("./pages/analytics/YearToDateKPIs"));
+const FormsIntegrationPage = lazy(() => import("./pages/FormsIntegrationPage"));
+const ConsolidatedDashboard = lazy(() => import("./pages/dashboard/ConsolidatedDashboard"));
+const DashboardWrapper = lazy(() => import("./pages/dashboard/DashboardWrapper"));
+const ComplianceDashboard = lazy(() => import("./pages/qc/ComplianceDashboard"));
 
 /* -----------------------------
  * Trips
@@ -94,7 +94,7 @@ const IndirectCostBreakdown = lazy(() => import("./pages/trips/IndirectCostBreak
  * ----------------------------- */
 // Enhanced dynamic import with error handling
 const DieselDashboard = lazy(() =>
-  import("./pages/diesel/DieselDashboard.tsx").catch((error) => {
+  import("./pages/diesel/DieselDashboard").catch((error) => {
     console.error("Error loading DieselDashboard component:", error);
     // Return a fallback module that renders an error message
     return {
@@ -217,6 +217,7 @@ const PurchaseOrderTracker = lazy(() => import("./pages/Inventory/PurchaseOrderT
 const PurchaseOrderDetailView = lazy(() => import("./pages/Inventory/PurchaseOrderDetailView"));
 const ReportNewIncidentPage = lazy(() => import("./pages/workshop/ReportNewIncidentPage"));
 const ActionLog = lazy(() => import("./pages/qc/ActionLog"));
+const NewJobCardPage = lazy(() => import("./pages/workshop/NewJobCardPage"));
 
 /* -----------------------------
  * Tyres
@@ -429,6 +430,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="parts-ordering" element={withSuspense(PartsOrderingPage)} />
           <Route path="parts-receive" element={withSuspense(ReceivePartsPage)} />
           <Route path="job-cards" element={withSuspense(JobCardManagement)} />
+          <Route path="job-cards/new" element={withSuspense(NewJobCardPage)} />
           <Route path="job-cards/board" element={withSuspense(JobCardKanbanBoard)} />
           <Route path="inspections" element={withSuspense(InspectionManagement)} />
           <Route path="qa" element={withSuspense(QAReviewPanel)} />

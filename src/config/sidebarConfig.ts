@@ -625,6 +625,12 @@ export const sidebarConfig: SidebarItem[] = [
         component: "pages/workshop/ServiceRequestsPage",
       },
       {
+        id: "new-job-card",
+        label: "New Job Card",
+        path: "/workshop/job-cards/new",
+        component: "pages/workshop/NewJobCardPage",
+      },
+      {
         id: "workshop-planning",
         label: "Workshop Planning",
         path: "/workshop/planning",

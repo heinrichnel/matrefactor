@@ -38,12 +38,12 @@ export function useWialonConnection() {
       const sess = window.wialon.core.Session.getInstance();
 
       // Check if already logged in
-      if (sess.getCurrUser()) {
-        const userData = sess.getCurrUser();
+      if (sess.getCurrUser?.()) {
+        const userData = sess.getCurrUser?.();
         setStatus({
           connected: true,
-          user: userData.getName(),
-          serverTime: new Date(sess.getServerTime() * 1000),
+          user: userData?.getName?.(),
+          serverTime: new Date((sess.getServerTime?.() || Date.now() / 1000) * 1000),
         });
         setLoading(false);
         return;
@@ -70,7 +70,7 @@ export function useWialonConnection() {
             errorMessage: window.wialon.core.Errors.getErrorText(code),
           });
         } else {
-          const userData = sess.getCurrUser();
+          const userData = sess.getCurrUser?.();
           // Calculate token expiry time if available in token response
           const tokenExpiry = sess.getTokenExpiration
             ? new Date(sess.getTokenExpiration() * 1000)
@@ -78,8 +78,8 @@ export function useWialonConnection() {
 
           setStatus({
             connected: true,
-            user: userData.getName(),
-            serverTime: new Date(sess.getServerTime() * 1000),
+            user: userData?.getName?.(),
+            serverTime: new Date((sess.getServerTime?.() || Date.now() / 1000) * 1000),
             tokenExpiry,
           });
         }

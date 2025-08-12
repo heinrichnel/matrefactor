@@ -62,7 +62,15 @@ export const PurchaseOrderModal: React.FC<POProps> = ({ po, onSave, onClose, onD
       ...d,
       items: [
         ...d.items,
-        { id: Date.now().toString(), sku: "", name: "", quantity: 1, unit: "", unitCost: 0, totalCost: 0 },
+        {
+          id: Date.now().toString(),
+          sku: "",
+          name: "",
+          quantity: 1,
+          unit: "",
+          unitCost: 0,
+          totalCost: 0,
+        },
       ],
     }));
   };
@@ -101,14 +109,25 @@ export const PurchaseOrderModal: React.FC<POProps> = ({ po, onSave, onClose, onD
           </div>
           <div>
             <button onClick={onClose}>Close</button>
-            <button onClick={() => onDownloadPDF(draft.id)} className="ml-2">Download PDF</button>
-            {editMode
-              ? <>
-                  <button onClick={handleSave} className="ml-2">Save</button>
-                  <button onClick={handleCancel} className="ml-2">Cancel</button>
-                </>
-              : po.canEdit && <button onClick={() => setEditMode(true)} className="ml-2">Edit</button>
-            }
+            <button onClick={() => onDownloadPDF(draft.id)} className="ml-2">
+              Download PDF
+            </button>
+            {editMode ? (
+              <>
+                <button onClick={handleSave} className="ml-2">
+                  Save
+                </button>
+                <button onClick={handleCancel} className="ml-2">
+                  Cancel
+                </button>
+              </>
+            ) : (
+              po.canEdit && (
+                <button onClick={() => setEditMode(true)} className="ml-2">
+                  Edit
+                </button>
+              )
+            )}
           </div>
         </div>
         <div className="p-4 space-y-4">
@@ -118,36 +137,44 @@ export const PurchaseOrderModal: React.FC<POProps> = ({ po, onSave, onClose, onD
                 <input
                   placeholder="Title"
                   value={draft.title}
-                  onChange={e => updateField("title", e.target.value)}
+                  onChange={(e) => updateField("title", e.target.value)}
                   className="border rounded p-2"
                 />
                 <input
                   placeholder="Due Date"
                   type="date"
                   value={draft.dueDate}
-                  onChange={e => updateField("dueDate", e.target.value)}
+                  onChange={(e) => updateField("dueDate", e.target.value)}
                   className="border rounded p-2"
                 />
                 <input
                   placeholder="Vendor"
                   value={draft.vendor}
-                  onChange={e => updateField("vendor", e.target.value)}
+                  onChange={(e) => updateField("vendor", e.target.value)}
                   className="border rounded p-2"
                 />
                 <input
                   placeholder="Requester"
                   value={draft.requester}
-                  onChange={e => updateField("requester", e.target.value)}
+                  onChange={(e) => updateField("requester", e.target.value)}
                   className="border rounded p-2"
                 />
                 {/* ...add all other fields as inputs */}
               </>
             ) : (
               <>
-                <div><strong>Title:</strong> {draft.title}</div>
-                <div><strong>Due Date:</strong> {draft.dueDate}</div>
-                <div><strong>Vendor:</strong> {draft.vendor}</div>
-                <div><strong>Requester:</strong> {draft.requester}</div>
+                <div>
+                  <strong>Title:</strong> {draft.title}
+                </div>
+                <div>
+                  <strong>Due Date:</strong> {draft.dueDate}
+                </div>
+                <div>
+                  <strong>Vendor:</strong> {draft.vendor}
+                </div>
+                <div>
+                  <strong>Requester:</strong> {draft.requester}
+                </div>
                 {/* ...add all other fields as text */}
               </>
             )}
@@ -171,14 +198,54 @@ export const PurchaseOrderModal: React.FC<POProps> = ({ po, onSave, onClose, onD
                   <tr key={item.id}>
                     {editMode ? (
                       <>
-                        <td><input className="w-20" value={item.sku} onChange={e => handleItemChange(idx, "sku", e.target.value)} /></td>
-                        <td><input className="w-32" value={item.name} onChange={e => handleItemChange(idx, "name", e.target.value)} /></td>
-                        <td><input type="number" className="w-16" value={item.quantity} min={1} onChange={e => handleItemChange(idx, "quantity", Number(e.target.value))} /></td>
-                        <td><input className="w-12" value={item.unit} onChange={e => handleItemChange(idx, "unit", e.target.value)} /></td>
-                        <td><input type="number" className="w-20" value={item.unitCost} min={0} onChange={e => handleItemChange(idx, "unitCost", Number(e.target.value))} /></td>
+                        <td>
+                          <input
+                            className="w-20"
+                            value={item.sku}
+                            onChange={(e) => handleItemChange(idx, "sku", e.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="w-32"
+                            value={item.name}
+                            onChange={(e) => handleItemChange(idx, "name", e.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            className="w-16"
+                            value={item.quantity}
+                            min={1}
+                            onChange={(e) =>
+                              handleItemChange(idx, "quantity", Number(e.target.value))
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="w-12"
+                            value={item.unit}
+                            onChange={(e) => handleItemChange(idx, "unit", e.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            className="w-20"
+                            value={item.unitCost}
+                            min={0}
+                            onChange={(e) =>
+                              handleItemChange(idx, "unitCost", Number(e.target.value))
+                            }
+                          />
+                        </td>
                         <td>{item.totalCost.toFixed(2)}</td>
                         <td>
-                          <button className="text-red-500" onClick={() => handleRemoveItem(idx)}>Remove</button>
+                          <button className="text-red-500" onClick={() => handleRemoveItem(idx)}>
+                            Remove
+                          </button>
                         </td>
                       </>
                     ) : (
@@ -199,13 +266,26 @@ export const PurchaseOrderModal: React.FC<POProps> = ({ po, onSave, onClose, onD
           </div>
           <div>
             <h4 className="font-semibold mb-1">Attachments</h4>
-            {draft.attachments.map(att => (
+            {draft.attachments.map((att) => (
               <div key={att.id} className="mb-1">
-                {att.name} {att.url && <a href={att.url} target="_blank" rel="noreferrer" className="text-blue-500 underline ml-1">Download</a>}
+                {att.name}{" "}
+                {att.url && (
+                  <a
+                    href={att.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-blue-500 underline ml-1"
+                  >
+                    Download
+                  </a>
+                )}
               </div>
             ))}
             {editMode && (
-              <input type="file" onChange={e => e.target.files && handleAttach(e.target.files[0])} />
+              <input
+                type="file"
+                onChange={(e) => e.target.files && handleAttach(e.target.files[0])}
+              />
             )}
           </div>
           <div>
@@ -213,7 +293,7 @@ export const PurchaseOrderModal: React.FC<POProps> = ({ po, onSave, onClose, onD
             {editMode ? (
               <textarea
                 value={draft.description}
-                onChange={e => updateField("description", e.target.value)}
+                onChange={(e) => updateField("description", e.target.value)}
                 className="w-full border rounded p-2"
               />
             ) : (
@@ -225,3 +305,5 @@ export const PurchaseOrderModal: React.FC<POProps> = ({ po, onSave, onClose, onD
     </div>
   );
 };
+
+export default PurchaseOrderModal;

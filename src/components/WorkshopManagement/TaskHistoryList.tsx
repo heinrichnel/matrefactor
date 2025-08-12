@@ -1,7 +1,7 @@
 import { CheckCircle, Clock, Edit, User, UserCheck } from "lucide-react";
 import React from "react";
-import { useTaskHistory } from "../../../hooks/useTaskHistory";
-import { TaskHistoryEntry } from "../../../types";
+import { useTaskHistory } from "../../hooks/useTaskHistory";
+import { TaskHistoryEntry } from "../../types";
 
 interface TaskHistoryListProps {
   taskId: string;

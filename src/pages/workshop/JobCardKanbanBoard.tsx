@@ -4,8 +4,8 @@ import Modal from "@/components/ui/Modal";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { AlertTriangle, CheckCircle, Clock, Inbox, Plus, Settings } from "lucide-react";
 import React, { useState } from "react";
-import JobCard from "../../components/Models/Workshop/JobCard";
-import JobCardCard from "../../components/Models/Workshop/JobCardCard";
+import JobCard from "../../components/WorkshopManagement/JobCard";
+import JobCardCard from "../../components/WorkshopManagement/JobCardCard";
 
 // Mock data for the job cards
 const mockJobCards = [

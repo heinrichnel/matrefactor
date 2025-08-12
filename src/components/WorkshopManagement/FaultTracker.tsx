@@ -1,16 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { collection, getDocs, query, orderBy, Timestamp, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { Truck, AlertTriangle, CheckCircle, MoreHorizontal, Search, Filter, Plus } from 'lucide-react';
-import FleetSelector from '../common/FleetSelector';
+import React, { useState, useEffect } from "react";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  Timestamp,
+  addDoc,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+import { db } from "../../firebase";
+import {
+  Truck,
+  AlertTriangle,
+  CheckCircle,
+  MoreHorizontal,
+  Search,
+  Filter,
+  Plus,
+} from "lucide-react";
+import FleetSelector from "../common/FleetSelector";
 
 interface Fault {
   id: string;
   vehicleId: string;
   vehicleReg: string;
   description: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'reported' | 'diagnosed' | 'in_progress' | 'waiting_parts' | 'completed';
+  priority: "low" | "medium" | "high" | "critical";
+  status: "reported" | "diagnosed" | "in_progress" | "waiting_parts" | "completed";
   reportedBy: string;
   reportedAt: Timestamp;
   assignedTo?: string;
@@ -22,18 +39,18 @@ const FaultTracker: React.FC = () => {
   const [faults, setFaults] = useState<Fault[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isAddingFault, setIsAddingFault] = useState(false);
   const [newFault, setNewFault] = useState({
-    vehicleId: '',
-    vehicleReg: '',
-    description: '',
-    priority: 'medium' as Fault['priority'],
-    status: 'reported' as Fault['status'],
-    reportedBy: '',
-    notes: []
+    vehicleId: "",
+    vehicleReg: "",
+    description: "",
+    priority: "medium" as Fault["priority"],
+    status: "reported" as Fault["status"],
+    reportedBy: "",
+    notes: [],
   });
 
   // Fetch faults from Firestore
@@ -41,20 +58,20 @@ const FaultTracker: React.FC = () => {
     const fetchFaults = async () => {
       try {
         setLoading(true);
-        const faultsRef = collection(db, 'faults');
-        const q = query(faultsRef, orderBy('reportedAt', 'desc'));
+        const faultsRef = collection(db, "faults");
+        const q = query(faultsRef, orderBy("reportedAt", "desc"));
         const querySnapshot = await getDocs(q);
-        
-        const fetchedFaults = querySnapshot.docs.map(doc => ({
+
+        const fetchedFaults = querySnapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         })) as Fault[];
-        
+
         setFaults(fetchedFaults);
         setError(null);
       } catch (err) {
         console.error("Error fetching faults:", err);
-        setError('Failed to load fault data. Please try again.');
+        setError("Failed to load fault data. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -64,21 +81,21 @@ const FaultTracker: React.FC = () => {
   }, []);
 
   // Filter faults based on status, priority, and search query
-  const filteredFaults = faults.filter(fault => {
-    const matchesStatus = filterStatus === 'all' || fault.status === filterStatus;
-    const matchesPriority = filterPriority === 'all' || fault.priority === filterPriority;
-    const matchesSearch = 
-      searchQuery === '' || 
+  const filteredFaults = faults.filter((fault) => {
+    const matchesStatus = filterStatus === "all" || fault.status === filterStatus;
+    const matchesPriority = filterPriority === "all" || fault.priority === filterPriority;
+    const matchesSearch =
+      searchQuery === "" ||
       fault.vehicleReg.toLowerCase().includes(searchQuery.toLowerCase()) ||
       fault.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     return matchesStatus && matchesPriority && matchesSearch;
   });
 
   // Add new fault to Firestore
   const handleAddFault = async () => {
     if (!newFault.vehicleReg || !newFault.description || !newFault.reportedBy) {
-      setError('Please fill in all required fields');
+      setError("Please fill in all required fields");
       return;
     }
 
@@ -88,101 +105,151 @@ const FaultTracker: React.FC = () => {
         reportedAt: Timestamp.now(),
       };
 
-      const faultsRef = collection(db, 'faults');
+      const faultsRef = collection(db, "faults");
       await addDoc(faultsRef, faultData);
-      
+
       setIsAddingFault(false);
       setNewFault({
-        vehicleId: '',
-        vehicleReg: '',
-        description: '',
-        priority: 'medium',
-        status: 'reported',
-        reportedBy: '',
-        notes: []
+        vehicleId: "",
+        vehicleReg: "",
+        description: "",
+        priority: "medium",
+        status: "reported",
+        reportedBy: "",
+        notes: [],
       });
-      
+
       // Refetch faults to update the list
-      const q = query(collection(db, 'faults'), orderBy('reportedAt', 'desc'));
+      const q = query(collection(db, "faults"), orderBy("reportedAt", "desc"));
       const querySnapshot = await getDocs(q);
-      const updatedFaults = querySnapshot.docs.map(doc => ({
+      const updatedFaults = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       })) as Fault[];
-      
+
       setFaults(updatedFaults);
     } catch (err) {
       console.error("Error adding fault:", err);
-      setError('Failed to add new fault. Please try again.');
+      setError("Failed to add new fault. Please try again.");
     }
   };
 
   // Update fault status
-  const updateFaultStatus = async (faultId: string, newStatus: Fault['status']) => {
+  const updateFaultStatus = async (faultId: string, newStatus: Fault["status"]) => {
     try {
-      const faultRef = doc(db, 'faults', faultId);
-      
+      const faultRef = doc(db, "faults", faultId);
+
       const updates: {
-        status: Fault['status'];
+        status: Fault["status"];
         completedAt?: Timestamp;
       } = { status: newStatus };
-      
+
       // If marking as completed, add completedAt timestamp
-      if (newStatus === 'completed') {
+      if (newStatus === "completed") {
         updates.completedAt = Timestamp.now();
       }
-      
+
       await updateDoc(faultRef, updates);
-      
+
       // Update local state
-      setFaults(faults.map(fault => 
-        fault.id === faultId 
-          ? { ...fault, status: newStatus, ...(newStatus === 'completed' ? { completedAt: Timestamp.now() } : {}) }
-          : fault
-      ));
+      setFaults(
+        faults.map((fault) =>
+          fault.id === faultId
+            ? {
+                ...fault,
+                status: newStatus,
+                ...(newStatus === "completed" ? { completedAt: Timestamp.now() } : {}),
+              }
+            : fault
+        )
+      );
     } catch (err) {
       console.error("Error updating fault status:", err);
-      setError('Failed to update fault status. Please try again.');
+      setError("Failed to update fault status. Please try again.");
     }
   };
 
-  const getPriorityColor = (priority: Fault['priority']) => {
+  const getPriorityColor = (priority: Fault["priority"]) => {
     switch (priority) {
-      case 'low': return 'bg-blue-100 text-blue-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'critical': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "low":
+        return "bg-blue-100 text-blue-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800";
+      case "high":
+        return "bg-orange-100 text-orange-800";
+      case "critical":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getStatusColor = (status: Fault['status']) => {
+  const getStatusColor = (status: Fault["status"]) => {
     switch (status) {
-      case 'reported': return 'bg-red-100 text-red-800';
-      case 'diagnosed': return 'bg-purple-100 text-purple-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'waiting_parts': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "reported":
+        return "bg-red-100 text-red-800";
+      case "diagnosed":
+        return "bg-purple-100 text-purple-800";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800";
+      case "waiting_parts":
+        return "bg-yellow-100 text-yellow-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getStatusLabel = (status: Fault['status']) => {
+  const getStatusLabel = (status: Fault["status"]) => {
     switch (status) {
-      case 'reported': return 'Reported';
-      case 'diagnosed': return 'Diagnosed';
-      case 'in_progress': return 'In Progress';
-      case 'waiting_parts': return 'Waiting Parts';
-      case 'completed': return 'Completed';
-      default: return status;
+      case "reported":
+        return "Reported";
+      case "diagnosed":
+        return "Diagnosed";
+      case "in_progress":
+        return "In Progress";
+      case "waiting_parts":
+        return "Waiting Parts";
+      case "completed":
+        return "Completed";
+      default:
+        return status;
     }
   };
 
   // Format timestamp to readable date
   const formatDate = (timestamp: Timestamp) => {
-    if (!timestamp) return 'N/A';
+    if (!timestamp) return "N/A";
     return timestamp.toDate().toLocaleString();
   };
+
+  function onClick(event: React.MouseEvent<HTMLButtonElement>): void {
+    const buttonText = event.currentTarget.textContent?.trim();
+
+    if (buttonText === "Report New Fault") {
+      setIsAddingFault(true);
+    } else if (buttonText === "Cancel") {
+      setIsAddingFault(false);
+      // Reset the form state
+      setNewFault({
+        vehicleId: "",
+        vehicleReg: "",
+        description: "",
+        priority: "medium" as Fault["priority"],
+        status: "reported" as Fault["status"],
+        reportedBy: "",
+        notes: [],
+      });
+      setError(null);
+    } else if (buttonText === "Submit Fault") {
+      handleAddFault();
+    } else {
+      // This is likely the "More" button with the MoreHorizontal icon
+      // You could implement additional actions here, like viewing fault details
+      console.log("More actions for fault clicked");
+    }
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -191,13 +258,13 @@ const FaultTracker: React.FC = () => {
           <AlertTriangle className="mr-2 text-amber-500" size={24} />
           Fault Tracker
         </h1>
-        
+
         <button
           onClick={onClick}
           className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md flex items-center"
         >
           <Plus size={20} className="mr-1" />
-          {isAddingFault ? 'Cancel' : 'Report New Fault'}
+          {isAddingFault ? "Cancel" : "Report New Fault"}
         </button>
       </div>
 
@@ -212,37 +279,35 @@ const FaultTracker: React.FC = () => {
           <h2 className="text-lg font-semibold mb-4">Report New Fault</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vehicle*
-              </label>
-              <FleetSelector 
+              <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle*</label>
+              <FleetSelector
                 value={newFault.vehicleReg}
-                onChange={(value) => setNewFault({...newFault, vehicleReg: value, vehicleId: value})}
+                onChange={(value) =>
+                  setNewFault({ ...newFault, vehicleReg: value, vehicleId: value })
+                }
                 placeholder="Select vehicle"
                 className="w-full"
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reported By*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reported By*</label>
               <input
                 type="text"
                 value={newFault.reportedBy}
-                onChange={(e) => setNewFault({...newFault, reportedBy: e.target.value})}
+                onChange={(e) => setNewFault({ ...newFault, reportedBy: e.target.value })}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="e.g. John Smith"
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Priority
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
               <select
                 value={newFault.priority}
-                onChange={(e) => setNewFault({...newFault, priority: e.target.value as Fault['priority']})}
+                onChange={(e) =>
+                  setNewFault({ ...newFault, priority: e.target.value as Fault["priority"] })
+                }
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="low">Low</option>
@@ -251,14 +316,14 @@ const FaultTracker: React.FC = () => {
                 <option value="critical">Critical</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 value={newFault.status}
-                onChange={(e) => setNewFault({...newFault, status: e.target.value as Fault['status']})}
+                onChange={(e) =>
+                  setNewFault({ ...newFault, status: e.target.value as Fault["status"] })
+                }
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="reported">Reported</option>
@@ -267,21 +332,19 @@ const FaultTracker: React.FC = () => {
                 <option value="waiting_parts">Waiting Parts</option>
               </select>
             </div>
-            
+
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description*
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description*</label>
               <textarea
                 value={newFault.description}
-                onChange={(e) => setNewFault({...newFault, description: e.target.value})}
+                onChange={(e) => setNewFault({ ...newFault, description: e.target.value })}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 rows={3}
                 placeholder="Describe the fault in detail..."
               />
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-3">
             <button
               onClick={onClick}
@@ -314,7 +377,7 @@ const FaultTracker: React.FC = () => {
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
-          
+
           <div className="flex gap-3">
             <div className="flex items-center gap-2">
               <Filter size={18} className="text-gray-500" />
@@ -331,7 +394,7 @@ const FaultTracker: React.FC = () => {
                 <option value="completed">Completed</option>
               </select>
             </div>
-            
+
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
@@ -361,22 +424,40 @@ const FaultTracker: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Vehicle
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Description
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Priority
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Reported
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Actions
                   </th>
                 </tr>
@@ -395,12 +476,16 @@ const FaultTracker: React.FC = () => {
                       <div className="text-xs text-gray-500">Reported by: {fault.reportedBy}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(fault.priority)}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(fault.priority)}`}
+                      >
                         {fault.priority.charAt(0).toUpperCase() + fault.priority.slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(fault.status)}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(fault.status)}`}
+                      >
                         {getStatusLabel(fault.status)}
                       </span>
                     </td>
@@ -410,7 +495,9 @@ const FaultTracker: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center space-x-2">
                         <select
-                          onChange={(e) => updateFaultStatus(fault.id, e.target.value as Fault['status'])}
+                          onChange={(e) =>
+                            updateFaultStatus(fault.id, e.target.value as Fault["status"])
+                          }
                           value={fault.status}
                           className="border border-gray-300 rounded-md text-sm px-2 py-1"
                         >
@@ -420,7 +507,7 @@ const FaultTracker: React.FC = () => {
                           <option value="waiting_parts">Waiting Parts</option>
                           <option value="completed">Completed</option>
                         </select>
-                        
+
                         <button className="text-gray-500 hover:text-gray-700" onClick={onClick}>
                           <MoreHorizontal size={20} />
                         </button>
@@ -441,7 +528,8 @@ const FaultTracker: React.FC = () => {
           </div>
           <div className="ml-3">
             <p className="text-sm text-blue-700">
-              Tip: Add detailed notes when reporting faults to help mechanics diagnose issues more quickly.
+              Tip: Add detailed notes when reporting faults to help mechanics diagnose issues more
+              quickly.
             </p>
           </div>
         </div>

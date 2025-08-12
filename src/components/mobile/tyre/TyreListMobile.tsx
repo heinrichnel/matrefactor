@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Plus, ScanLine, RefreshCw } from 'lucide-react';
-import { Button } from '../../ui/Button';
-import { Input } from '../../ui/FormElements';
-import TyreCardMobile from './TyreCardMobile';
-import TyreScanner from './TyreScanner';
+import React, { useState, useEffect } from "react";
+import { Search, Filter, Plus, ScanLine, RefreshCw } from "lucide-react";
+import { Button } from "../../ui/Button";
+import { Input } from "../../ui/FormElements";
+import TyreCardMobile from "./TyreCardMobile";
+import TyreScanner from "./TyreScanner";
 
 interface Tyre {
   id: string;
@@ -41,11 +41,11 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
   onScanTyre,
   onEditTyre,
   onViewDetails,
-  enableScanner = true
+  enableScanner = true,
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [conditionFilter, setConditionFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [conditionFilter, setConditionFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [filteredTyres, setFilteredTyres] = useState<Tyre[]>([]);
@@ -57,26 +57,27 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
     // Search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(tyre =>
-        tyre.tyreNumber.toLowerCase().includes(searchLower) ||
-        tyre.manufacturer.toLowerCase().includes(searchLower) ||
-        tyre.tyreSize.toLowerCase().includes(searchLower) ||
-        (tyre.pattern && tyre.pattern.toLowerCase().includes(searchLower)) ||
-        (tyre.axlePosition && tyre.axlePosition.toLowerCase().includes(searchLower))
+      filtered = filtered.filter(
+        (tyre) =>
+          tyre.tyreNumber.toLowerCase().includes(searchLower) ||
+          tyre.manufacturer.toLowerCase().includes(searchLower) ||
+          tyre.tyreSize.toLowerCase().includes(searchLower) ||
+          (tyre.pattern && tyre.pattern.toLowerCase().includes(searchLower)) ||
+          (tyre.axlePosition && tyre.axlePosition.toLowerCase().includes(searchLower))
       );
     }
 
     // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(tyre => 
-        tyre.status.toLowerCase() === statusFilter.toLowerCase()
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(
+        (tyre) => tyre.status.toLowerCase() === statusFilter.toLowerCase()
       );
     }
 
     // Condition filter
-    if (conditionFilter !== 'all') {
-      filtered = filtered.filter(tyre => 
-        tyre.condition.toLowerCase() === conditionFilter.toLowerCase()
+    if (conditionFilter !== "all") {
+      filtered = filtered.filter(
+        (tyre) => tyre.condition.toLowerCase() === conditionFilter.toLowerCase()
       );
     }
 
@@ -86,35 +87,34 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
   const handleScanComplete = (scanData: { barcode?: string; photo?: string }) => {
     if (scanData.barcode) {
       // Find tyre by barcode/QR code
-      const foundTyre = tyres.find(tyre => 
-        tyre.tyreNumber === scanData.barcode ||
-        tyre.id === scanData.barcode
+      const foundTyre = tyres.find(
+        (tyre) => tyre.tyreNumber === scanData.barcode || tyre.id === scanData.barcode
       );
-      
+
       if (foundTyre && onScanTyre) {
         onScanTyre(foundTyre);
       } else {
         // If not found, search for it
-        setSearchTerm(scanData.barcode || '');
+        setSearchTerm(scanData.barcode || "");
       }
     }
     setShowScanner(false);
   };
 
   const statusOptions = [
-    { value: 'all', label: 'All Status' },
-    { value: 'in-service', label: 'In Service' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'out-of-service', label: 'Out of Service' },
-    { value: 'spare', label: 'Spare' }
+    { value: "all", label: "All Status" },
+    { value: "in-service", label: "In Service" },
+    { value: "maintenance", label: "Maintenance" },
+    { value: "out-of-service", label: "Out of Service" },
+    { value: "spare", label: "Spare" },
   ];
 
   const conditionOptions = [
-    { value: 'all', label: 'All Conditions' },
-    { value: 'new', label: 'New' },
-    { value: 'used', label: 'Used' },
-    { value: 'retreaded', label: 'Retreaded' },
-    { value: 'scrap', label: 'Scrap' }
+    { value: "all", label: "All Conditions" },
+    { value: "new", label: "New" },
+    { value: "used", label: "Used" },
+    { value: "retreaded", label: "Retreaded" },
+    { value: "scrap", label: "Scrap" },
   ];
 
   return (
@@ -127,6 +127,7 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
+                label="Search"
                 type="text"
                 placeholder="Search tyres..."
                 value={searchTerm}
@@ -134,24 +135,19 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
                 className="pl-10"
               />
             </div>
-            
+
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? 'bg-blue-50 border-blue-300' : ''}
+              className={showFilters ? "bg-blue-50 border-blue-300" : ""}
             >
               <Filter className="h-4 w-4" />
             </Button>
-            
+
             {onRefresh && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onRefresh}
-                disabled={loading}
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </Button>
             )}
           </div>
@@ -161,32 +157,28 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
             <div className="space-y-3 pt-3 border-t">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500"
                   >
-                    {statusOptions.map(option => (
+                    {statusOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Condition
-                  </label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Condition</label>
                   <select
                     value={conditionFilter}
                     onChange={(e) => setConditionFilter(e.target.value)}
                     className="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-blue-500"
                   >
-                    {conditionOptions.map(option => (
+                    {conditionOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -200,21 +192,14 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
           {/* Action Buttons */}
           <div className="flex space-x-2 mt-3">
             {enableScanner && (
-              <Button
-                onClick={() => setShowScanner(true)}
-                variant="outline"
-                className="flex-1"
-              >
+              <Button onClick={() => setShowScanner(true)} variant="outline" className="flex-1">
                 <ScanLine className="h-4 w-4 mr-2" />
                 Scan QR
               </Button>
             )}
-            
+
             {onAddNew && (
-              <Button
-                onClick={onAddNew}
-                className="flex-1"
-              >
+              <Button onClick={onAddNew} className="flex-1">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Tyre
               </Button>
@@ -226,7 +211,7 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
       {/* Results Summary */}
       <div className="px-4 py-2 bg-gray-100 border-b">
         <p className="text-sm text-gray-600">
-          {loading ? 'Loading...' : `${filteredTyres.length} of ${tyres.length} tyres`}
+          {loading ? "Loading..." : `${filteredTyres.length} of ${tyres.length} tyres`}
         </p>
       </div>
 
@@ -240,10 +225,9 @@ const TyreListMobile: React.FC<TyreListMobileProps> = ({
         ) : filteredTyres.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">
-              {searchTerm || statusFilter !== 'all' || conditionFilter !== 'all'
-                ? 'No tyres match your search criteria'
-                : 'No tyres found'
-              }
+              {searchTerm || statusFilter !== "all" || conditionFilter !== "all"
+                ? "No tyres match your search criteria"
+                : "No tyres found"}
             </p>
             {onAddNew && (
               <Button onClick={onAddNew}>

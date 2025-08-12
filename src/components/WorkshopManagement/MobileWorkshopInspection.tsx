@@ -1,10 +1,14 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/textarea";
 import { mobileFirebaseConfig } from "@/config/mobileConfig";
-import { inspectionTemplates, type InspectionItem, type InspectionTemplate } from "@/data/inspectionTemplates";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import {
+  inspectionTemplates,
+  type InspectionItem,
+  type InspectionTemplate,
+} from "@/data/inspectionTemplates";
 import { useToast } from "@/hooks/use-toast";
 import { useCapacitor } from "@/hooks/useCapacitor";
 import {
@@ -17,11 +21,11 @@ import {
   Save,
   Truck,
   User,
-  X
+  X,
 } from "lucide-react";
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { addDoc, collection, db, serverTimestamp } from '../../firebase';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { addDoc, collection, db, serverTimestamp } from "../../firebase";
 
 interface InspectionFormData {
   vehicleId: string;
@@ -29,7 +33,7 @@ interface InspectionFormData {
   inspectionType: string;
   inspectorName: string;
   driverName: string;
-  status: 'not_started' | 'in_progress' | 'completed';
+  status: "not_started" | "in_progress" | "completed";
   startTime?: Date;
   endTime?: Date;
   scheduledDate: string;
@@ -40,7 +44,7 @@ interface InspectionFormData {
   };
   items: Array<{
     id: string;
-    status: 'pass' | 'fail' | 'na' | 'pending';
+    status: "pass" | "fail" | "na" | "pending";
     notes?: string;
     photos?: string[];
   }>;
@@ -64,20 +68,20 @@ export const MobileWorkshopInspection: React.FC = () => {
   const { isNative, takePhoto, hasPermissions, requestPermissions } = useCapacitor();
 
   const [formData, setFormData] = useState<InspectionFormData>({
-    vehicleId: searchParams.get('vehicleId') || '',
-    templateId: searchParams.get('templateId') || '',
-    inspectionType: searchParams.get('inspectionType') || 'daily',
-    inspectorName: '',
-    driverName: '',
-    status: 'not_started',
-    scheduledDate: searchParams.get('scheduledDate') || new Date().toISOString().split('T')[0],
+    vehicleId: searchParams.get("vehicleId") || "",
+    templateId: searchParams.get("templateId") || "",
+    inspectionType: searchParams.get("inspectionType") || "daily",
+    inspectorName: "",
+    driverName: "",
+    status: "not_started",
+    scheduledDate: searchParams.get("scheduledDate") || new Date().toISOString().split("T")[0],
     items: [],
-    generalNotes: '',
+    generalNotes: "",
     defectsFound: 0,
-    criticalIssues: 0
+    criticalIssues: 0,
   });
 
-  const [currentCategory, setCurrentCategory] = useState<string>('');
+  const [currentCategory, setCurrentCategory] = useState<string>("");
   const [template, setTemplate] = useState<InspectionTemplate | null>(null);
   const [photos, setPhotos] = useState<InspectionPhoto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -85,17 +89,19 @@ export const MobileWorkshopInspection: React.FC = () => {
   useEffect(() => {
     // Load template and initialize form
     const loadTemplate = () => {
-      const foundTemplate = inspectionTemplates.find((template: InspectionTemplate) => template.id === formData.templateId);
+      const foundTemplate = inspectionTemplates.find(
+        (template: InspectionTemplate) => template.id === formData.templateId
+      );
       if (foundTemplate) {
         setTemplate(foundTemplate);
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           items: foundTemplate.items.map((item: InspectionItem) => ({
             id: item.id,
-            status: 'pending' as const,
-            notes: '',
-            photos: []
-          }))
+            status: "pending" as const,
+            notes: "",
+            photos: [],
+          })),
         }));
         // Set first category as current
         if (foundTemplate.categories.length > 0) {
@@ -110,15 +116,15 @@ export const MobileWorkshopInspection: React.FC = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             location: {
               latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            }
+              longitude: position.coords.longitude,
+            },
           }));
         },
-        (error) => console.log('Location not available:', error)
+        (error) => console.log("Location not available:", error)
       );
     }
   }, [formData.templateId]);
@@ -130,14 +136,14 @@ export const MobileWorkshopInspection: React.FC = () => {
 
   const getCurrentCategoryItems = () => {
     if (!template || !currentCategory) return [];
-    return template.items.filter(item => item.category === currentCategory);
+    return template.items.filter((item) => item.category === currentCategory);
   };
 
   const handleStartInspection = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      status: 'in_progress',
-      startTime: new Date()
+      status: "in_progress",
+      startTime: new Date(),
     }));
     toast({
       title: "Inspection Started",
@@ -145,34 +151,32 @@ export const MobileWorkshopInspection: React.FC = () => {
     });
   };
 
-  const handleItemStatusChange = (itemId: string, status: 'pass' | 'fail' | 'na') => {
-    setFormData(prev => {
-      const updatedItems = prev.items.map(item =>
+  const handleItemStatusChange = (itemId: string, status: "pass" | "fail" | "na") => {
+    setFormData((prev) => {
+      const updatedItems = prev.items.map((item) =>
         item.id === itemId ? { ...item, status } : item
       );
 
       // Recalculate defects and critical issues
-      const defectsFound = updatedItems.filter(item => item.status === 'fail').length;
-      const criticalIssues = updatedItems.filter(item => {
-        const templateItem = template?.items.find(ti => ti.id === item.id);
-        return item.status === 'fail' && templateItem?.isCritical;
+      const defectsFound = updatedItems.filter((item) => item.status === "fail").length;
+      const criticalIssues = updatedItems.filter((item) => {
+        const templateItem = template?.items.find((ti) => ti.id === item.id);
+        return item.status === "fail" && templateItem?.isCritical;
       }).length;
 
       return {
         ...prev,
         items: updatedItems,
         defectsFound,
-        criticalIssues
+        criticalIssues,
       };
     });
   };
 
   const handleItemNotesChange = (itemId: string, notes: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      items: prev.items.map(item =>
-        item.id === itemId ? { ...item, notes } : item
-      )
+      items: prev.items.map((item) => (item.id === itemId ? { ...item, notes } : item)),
     }));
   };
 
@@ -181,7 +185,7 @@ export const MobileWorkshopInspection: React.FC = () => {
       toast({
         title: "Camera Not Available",
         description: "Camera functionality is only available in the mobile app",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -192,7 +196,7 @@ export const MobileWorkshopInspection: React.FC = () => {
         toast({
           title: "Camera Permission Required",
           description: "Please grant camera permission to take photos",
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       }
@@ -206,22 +210,22 @@ export const MobileWorkshopInspection: React.FC = () => {
           itemId,
           base64: photoBase64,
           timestamp: new Date(),
-          location: formData.location ? {
-            lat: formData.location.latitude,
-            lng: formData.location.longitude
-          } : undefined
+          location: formData.location
+            ? {
+                lat: formData.location.latitude,
+                lng: formData.location.longitude,
+              }
+            : undefined,
         };
 
-        setPhotos(prev => [...prev, newPhoto]);
+        setPhotos((prev) => [...prev, newPhoto]);
 
         // Update item with photo reference
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          items: prev.items.map(item =>
-            item.id === itemId
-              ? { ...item, photos: [...(item.photos || []), newPhoto.id] }
-              : item
-          )
+          items: prev.items.map((item) =>
+            item.id === itemId ? { ...item, photos: [...(item.photos || []), newPhoto.id] } : item
+          ),
         }));
 
         toast({
@@ -230,11 +234,11 @@ export const MobileWorkshopInspection: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Photo capture failed:', error);
+      console.error("Photo capture failed:", error);
       toast({
         title: "Photo Capture Failed",
         description: "Unable to capture photo. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -244,7 +248,7 @@ export const MobileWorkshopInspection: React.FC = () => {
       toast({
         title: "Inspector Required",
         description: "Please enter inspector name before completing",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -253,98 +257,98 @@ export const MobileWorkshopInspection: React.FC = () => {
     try {
       const completedInspection = {
         ...formData,
-        status: 'completed' as const,
+        status: "completed" as const,
         endTime: new Date(),
         photos: photos,
         timestamp: serverTimestamp(),
-        source: 'mobile_qr',
+        source: "mobile_qr",
         mobileApp: {
-          packageName: 'matmobile.com',
-          version: '1.0.0',
-          platform: 'android'
+          packageName: "matmobile.com",
+          version: "1.0.0",
+          platform: "android",
         },
         firebaseProject: {
           projectId: mobileFirebaseConfig.projectId,
-          appId: mobileFirebaseConfig.appId
+          appId: mobileFirebaseConfig.appId,
         },
-        offlineCapable: true
+        offlineCapable: true,
       };
 
       // Save to Firebase with offline persistence
-      const docRef = await addDoc(collection(db, 'inspections'), completedInspection);
+      const docRef = await addDoc(collection(db, "inspections"), completedInspection);
 
       // If there are failed items, create faults automatically
       if (formData.defectsFound > 0) {
-        const failedItems = formData.items.filter(item => item.status === 'fail');
+        const failedItems = formData.items.filter((item) => item.status === "fail");
         for (const item of failedItems) {
-          const templateItem = template?.items.find(ti => ti.id === item.id);
+          const templateItem = template?.items.find((ti) => ti.id === item.id);
           if (templateItem) {
-            await addDoc(collection(db, 'faults'), {
+            await addDoc(collection(db, "faults"), {
               vehicleId: formData.vehicleId,
               faultType: templateItem.category,
-              description: `${templateItem.title}: ${item.notes || 'Failed inspection'}`,
-              severity: templateItem.isCritical ? 'critical' : 'minor',
-              status: 'open',
+              description: `${templateItem.title}: ${item.notes || "Failed inspection"}`,
+              severity: templateItem.isCritical ? "critical" : "minor",
+              status: "open",
               reportedBy: formData.inspectorName,
               inspectionId: docRef.id,
               timestamp: serverTimestamp(),
               location: formData.location,
-              source: 'mobile_inspection',
+              source: "mobile_inspection",
               mobileData: {
                 appId: mobileFirebaseConfig.appId,
-                packageName: 'matmobile.com'
-              }
+                packageName: "matmobile.com",
+              },
             });
           }
         }
       }
 
       // Store data locally for offline access if needed
-      if ('localStorage' in window) {
+      if ("localStorage" in window) {
         const localData = {
           inspectionId: docRef.id,
           vehicleId: formData.vehicleId,
-          status: 'completed',
+          status: "completed",
           timestamp: new Date().toISOString(),
-          synced: true
+          synced: true,
         };
         localStorage.setItem(`inspection_${docRef.id}`, JSON.stringify(localData));
       }
 
       toast({
         title: "Inspection Completed",
-        description: `Inspection saved to Firebase (${mobileFirebaseConfig.projectId}). ${formData.defectsFound > 0 ? 'Faults created for failed items.' : ''}`,
+        description: `Inspection saved to Firebase (${mobileFirebaseConfig.projectId}). ${formData.defectsFound > 0 ? "Faults created for failed items." : ""}`,
       });
 
       // Navigate back or to next inspection
-      navigate('/workshop/inspections');
+      navigate("/workshop/inspections");
     } catch (error) {
-      console.error('Error saving inspection:', error);
+      console.error("Error saving inspection:", error);
 
       // Store offline if Firebase fails
-      if ('localStorage' in window) {
+      if ("localStorage" in window) {
         const offlineData = {
           ...formData,
-          status: 'completed' as const,
+          status: "completed" as const,
           endTime: new Date(),
           photos: photos,
           timestamp: new Date().toISOString(),
-          source: 'mobile_qr_offline',
+          source: "mobile_qr_offline",
           synced: false,
-          offlineId: `offline_${Date.now()}`
+          offlineId: `offline_${Date.now()}`,
         };
         localStorage.setItem(`offline_inspection_${Date.now()}`, JSON.stringify(offlineData));
 
         toast({
           title: "Saved Offline",
           description: "Inspection saved locally. Will sync when connection is restored.",
-          variant: "default"
+          variant: "default",
         });
       } else {
         toast({
           title: "Save Failed",
           description: "Unable to save inspection. Please check connection and try again.",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     } finally {
@@ -354,10 +358,10 @@ export const MobileWorkshopInspection: React.FC = () => {
 
   const getStatusStats = () => {
     const total = formData.items.length;
-    const passed = formData.items.filter(item => item.status === 'pass').length;
-    const failed = formData.items.filter(item => item.status === 'fail').length;
-    const na = formData.items.filter(item => item.status === 'na').length;
-    const pending = formData.items.filter(item => item.status === 'pending').length;
+    const passed = formData.items.filter((item) => item.status === "pass").length;
+    const failed = formData.items.filter((item) => item.status === "fail").length;
+    const na = formData.items.filter((item) => item.status === "na").length;
+    const pending = formData.items.filter((item) => item.status === "pending").length;
 
     return { total, passed, failed, na, pending };
   };
@@ -372,9 +376,7 @@ export const MobileWorkshopInspection: React.FC = () => {
             <p className="text-muted-foreground mb-4">
               The inspection template could not be loaded. Please check the QR code and try again.
             </p>
-            <Button onClick={() => navigate('/workshop/inspections')}>
-              Back to Inspections
-            </Button>
+            <Button onClick={() => navigate("/workshop/inspections")}>Back to Inspections</Button>
           </CardContent>
         </Card>
       </div>
@@ -399,13 +401,16 @@ export const MobileWorkshopInspection: React.FC = () => {
             </div>
           </div>
           <Badge
-            variant={formData.status === 'completed' ? 'default' : 'secondary'}
+            variant={formData.status === "completed" ? "default" : "secondary"}
             className={
-              formData.status === 'completed' ? 'bg-green-500' :
-                formData.status === 'in_progress' ? 'bg-blue-500' : 'bg-gray-500'
+              formData.status === "completed"
+                ? "bg-green-500"
+                : formData.status === "in_progress"
+                  ? "bg-blue-500"
+                  : "bg-gray-500"
             }
           >
-            {formData.status.replace('_', ' ').toUpperCase()}
+            {formData.status.replace("_", " ").toUpperCase()}
           </Badge>
         </div>
 
@@ -432,7 +437,7 @@ export const MobileWorkshopInspection: React.FC = () => {
 
       <div className="p-4 space-y-4">
         {/* Inspector Info */}
-        {formData.status === 'not_started' && (
+        {formData.status === "not_started" && (
           <Card>
             <CardHeader>
               <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -445,7 +450,9 @@ export const MobileWorkshopInspection: React.FC = () => {
                 <label className="text-sm font-medium mb-1 block">Inspector Name</label>
                 <Input
                   value={formData.inspectorName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, inspectorName: e.target.value }))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setFormData((prev) => ({ ...prev, inspectorName: e.target.value }))
+                  }
                   placeholder="Enter inspector name"
                 />
               </div>
@@ -453,7 +460,9 @@ export const MobileWorkshopInspection: React.FC = () => {
                 <label className="text-sm font-medium mb-1 block">Driver Name (Optional)</label>
                 <Input
                   value={formData.driverName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, driverName: e.target.value }))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setFormData((prev) => ({ ...prev, driverName: e.target.value }))
+                  }
                   placeholder="Enter driver name if present"
                 />
               </div>
@@ -476,18 +485,18 @@ export const MobileWorkshopInspection: React.FC = () => {
         )}
 
         {/* Category Navigation */}
-        {formData.status === 'in_progress' && (
+        {formData.status === "in_progress" && (
           <>
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {categories.map(category => (
+              {categories.map((category) => (
                 <Button
                   key={category}
-                  variant={currentCategory === category ? "default" : "outline"}
+                  variant={currentCategory === category ? "default" : ("outline" as const)}
                   size="sm"
                   onClick={() => setCurrentCategory(category)}
                   className="whitespace-nowrap"
                 >
-                  {category.replace('_', ' ')}
+                  {category.replace("_", " ")}
                 </Button>
               ))}
             </div>
@@ -495,8 +504,8 @@ export const MobileWorkshopInspection: React.FC = () => {
             {/* Inspection Items */}
             <div className="space-y-3">
               {currentItems.map((item: InspectionItem) => {
-                const itemData = formData.items.find(i => i.id === item.id);
-                const itemPhotos = photos.filter(p => p.itemId === item.id);
+                const itemData = formData.items.find((i) => i.id === item.id);
+                const itemPhotos = photos.filter((p) => p.itemId === item.id);
 
                 return (
                   <Card key={item.id} className="border">
@@ -505,7 +514,9 @@ export const MobileWorkshopInspection: React.FC = () => {
                         <div className="flex-1">
                           <h3 className="font-medium text-sm mb-1">{item.title}</h3>
                           {item.isCritical && (
-                            <Badge variant="destructive" className="text-xs">Critical</Badge>
+                            <Badge variant="destructive" className="text-xs">
+                              Critical
+                            </Badge>
                           )}
                         </div>
                       </div>
@@ -513,39 +524,45 @@ export const MobileWorkshopInspection: React.FC = () => {
                       {/* Status Buttons */}
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <Button
-                          variant={itemData?.status === 'pass' ? 'default' : 'outline'}
+                          variant={itemData?.status === "pass" ? "default" : "outline"}
                           size="sm"
-                          onClick={() => handleItemStatusChange(item.id, 'pass')}
-                          className={itemData?.status === 'pass' ? 'bg-green-500 hover:bg-green-600' : ''}
+                          onClick={() => handleItemStatusChange(item.id, "pass")}
+                          className={
+                            itemData?.status === "pass" ? "bg-green-500 hover:bg-green-600" : ""
+                          }
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
                           Pass
                         </Button>
                         <Button
-                          variant={itemData?.status === 'fail' ? 'default' : 'outline'}
+                          variant={itemData?.status === "fail" ? "default" : "outline"}
                           size="sm"
-                          onClick={() => handleItemStatusChange(item.id, 'fail')}
-                          className={itemData?.status === 'fail' ? 'bg-red-500 hover:bg-red-600' : ''}
+                          onClick={() => handleItemStatusChange(item.id, "fail")}
+                          className={
+                            itemData?.status === "fail" ? "bg-red-500 hover:bg-red-600" : ""
+                          }
                         >
                           <X className="w-4 h-4 mr-1" />
                           Fail
                         </Button>
                         <Button
-                          variant={itemData?.status === 'na' ? 'default' : 'outline'}
+                          variant={itemData?.status === "na" ? "default" : "outline"}
                           size="sm"
-                          onClick={() => handleItemStatusChange(item.id, 'na')}
+                          onClick={() => handleItemStatusChange(item.id, "na")}
                         >
                           N/A
                         </Button>
                       </div>
 
                       {/* Notes and Photos */}
-                      {(itemData?.status === 'fail' || itemData?.notes) && (
+                      {(itemData?.status === "fail" || itemData?.notes) && (
                         <div className="space-y-2">
                           <Textarea
                             placeholder="Add notes for this item..."
-                            value={itemData?.notes || ''}
-                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleItemNotesChange(item.id, e.target.value)}
+                            value={itemData?.notes || ""}
+                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                              handleItemNotesChange(item.id, e.target.value)
+                            }
                             className="text-sm"
                             rows={2}
                           />
@@ -565,8 +582,11 @@ export const MobileWorkshopInspection: React.FC = () => {
                           {/* Photo Thumbnails */}
                           {itemPhotos.length > 0 && (
                             <div className="flex gap-2 mt-2">
-                              {itemPhotos.map(photo => (
-                                <div key={photo.id} className="w-16 h-16 bg-gray-100 rounded border overflow-hidden">
+                              {itemPhotos.map((photo) => (
+                                <div
+                                  key={photo.id}
+                                  className="w-16 h-16 bg-gray-100 rounded border overflow-hidden"
+                                >
                                   <img
                                     src={`data:image/jpeg;base64,${photo.base64}`}
                                     alt="Inspection photo"
@@ -593,7 +613,9 @@ export const MobileWorkshopInspection: React.FC = () => {
                 <Textarea
                   placeholder="Add any general observations or notes about the inspection..."
                   value={formData.generalNotes}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, generalNotes: e.target.value }))}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setFormData((prev) => ({ ...prev, generalNotes: e.target.value }))
+                  }
                   rows={3}
                 />
               </CardContent>
@@ -617,14 +639,12 @@ export const MobileWorkshopInspection: React.FC = () => {
         )}
 
         {/* Completed State */}
-        {formData.status === 'completed' && (
+        {formData.status === "completed" && (
           <Card>
             <CardContent className="p-6 text-center">
               <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
               <h2 className="text-xl font-semibold mb-2">Inspection Completed</h2>
-              <p className="text-muted-foreground mb-4">
-                Inspection has been saved successfully.
-              </p>
+              <p className="text-muted-foreground mb-4">Inspection has been saved successfully.</p>
               <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                 <div>
                   <div className="font-medium">Defects Found</div>
@@ -635,9 +655,7 @@ export const MobileWorkshopInspection: React.FC = () => {
                   <div className="text-2xl font-bold text-red-600">{formData.criticalIssues}</div>
                 </div>
               </div>
-              <Button onClick={() => navigate('/workshop/inspections')}>
-                Back to Inspections
-              </Button>
+              <Button onClick={() => navigate("/workshop/inspections")}>Back to Inspections</Button>
             </CardContent>
           </Card>
         )}

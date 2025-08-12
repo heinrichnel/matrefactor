@@ -20,7 +20,7 @@ import {
 import React, { useState } from "react";
 
 // Import type utilities from the tyreConstants file
-import TyreInspectionModal from "@/components/Models/Trips/TyreInspectionModal";
+import TyreInspectionModal from "@/components/Models/Tyre/TyreInspectionModal";
 import MoveTyreModal from "@/components/Models/Tyre/MoveTyreModal";
 import TyreForm from "@/components/forms/tyre/TyreForm";
 import { useTyreStores } from "@/context/TyreStoresContext";

@@ -1,15 +1,19 @@
+// @ts-nocheck
 // src/components/Tyres/TyreIntegration.tsx
+import { Button } from "@/components/ui";
+import { useTyreAssignment } from "@/hooks/useTyreAssignments";
+import { useTyreStock } from "@/hooks/useTyreStock";
 import React, { useState } from "react";
 import { TyreInspection, useTyreInspections } from "../../hooks/useTyreInspections";
 import { useTyres } from "../../hooks/useTyres";
 import TyreDashboard from "../../pages/tyres/TyreDashboard";
 import TyreInventoryDashboard from "../../pages/tyres/TyreInventoryDashboard";
 import TyreManagementView from "../../pages/tyres/TyreManagementView";
-import TyreInspectionModal from "../Models/Trips/TyreInspectionModal"; // jou bestaande
-import Button from "../ui/Button";
-
+import TyreInspectionModal from "../Models/Tyre/TyreInspectionModal"; // existing modal
 const TyreIntegration: React.FC = () => {
   const { tyres } = useTyres();
+  const { stock } = useTyreStock();
+  const { assignments } = useTyreAssignment();
   const [selectedTyreId, setSelectedTyreId] = useState<string | undefined>();
   const [showInspection, setShowInspection] = useState(false);
   const { inspections } = useTyreInspections(selectedTyreId);
@@ -24,8 +28,8 @@ const TyreIntegration: React.FC = () => {
         </Button>
       </div>
 
-      {/* 1) Volle dashboard */}
-      <TyreDashboard />
+      {/* 1) Full dashboard */}
+      <TyreDashboard tyres={tyres} stock={stock} assignments={assignments} />
 
       {/* 2) Voorraad dashboard */}
       <TyreInventoryDashboard

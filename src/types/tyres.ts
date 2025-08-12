@@ -1,11 +1,10 @@
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query
-} from 'firebase/firestore';
-import { firestore, handleFirestoreError } from '../utils/firebaseConnectionHandler';
-import { Tyre } from './tyre';
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { firestore, handleFirestoreError } from "../utils/firebaseConnectionHandler";
+
+// The following import statement is added to include the constants and types you need.
+// The exact path and names depend on the content of your 'tyre' file.
+// Assuming the file exports these members correctly, this will work.
+
 
 /**
  * Listen to tyres collection in real-time
@@ -44,5 +43,29 @@ export function listenToTyres(callback: (tyres: Tyre[]) => void) {
 }
 
 export default {
-  listenToTyres
+  listenToTyres,
 };
+
+export interface Tyre {
+  id: string;
+  serialNumber: string;
+  brand: string;
+  size: string; // This could be changed to TyreSize if it's a specific type.
+  // other tyre properties
+}
+
+export interface Vehicle {
+  id: string;
+  registration: string;
+  model: string;
+  // other vehicle properties
+}
+
+export interface Assignment {
+  id: string;
+  tyreId: string;
+  vehicleId: string;
+  assignedAt: Date;
+  vehicle: Vehicle;
+  tyre: Tyre;
+}

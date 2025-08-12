@@ -6,7 +6,7 @@ export interface Trip {
     origin: string;
     destination: string;
     waypoints: string[];
-    coordinates?: {lat: number; lng: number}[];
+    coordinates?: { lat: number; lng: number }[];
     estimatedDistance?: number; // km
     estimatedDuration?: number; // minutes
   };
@@ -14,7 +14,7 @@ export interface Trip {
     origin: string;
     destination: string;
     waypoints: string[];
-    coordinates?: {lat: number; lng: number}[];
+    coordinates?: { lat: number; lng: number }[];
     estimatedDistance?: number; // km
     estimatedDuration?: number; // minutes
     fuelSavings?: number; // liters
@@ -22,7 +22,7 @@ export interface Trip {
     optimizationDate?: string;
   };
   loadPlanId?: string;
-  deliveryConfirmationStatus?: 'pending' | 'confirmed' | 'disputed';
+  deliveryConfirmationStatus?: "pending" | "confirmed" | "disputed";
   deliveryConfirmationNotes?: string;
   proofOfDeliveryAttachments?: Attachment[];
   actualDeliveryDateTime?: string;
@@ -34,21 +34,21 @@ export interface Trip {
     costPerKm: number;
     idleTime?: number; // hours
   };
-  tripProgressStatus?: 'booked' | 'confirmed' | 'loaded' | 'in_transit' | 'delivered' | 'completed';
+  tripProgressStatus?: "booked" | "confirmed" | "loaded" | "in_transit" | "delivered" | "completed";
   quoteConfirmationPdfUrl?: string;
   loadConfirmationPdfUrl?: string;
   fleetNumber: string;
   driverName: string;
   clientName: string;
-  clientType: 'internal' | 'external';
+  clientType: "internal" | "external";
   startDate: string;
   endDate: string;
   route: string;
   description?: string;
   baseRevenue: number;
-  revenueCurrency: 'USD' | 'ZAR';
+  revenueCurrency: "USD" | "ZAR";
   distanceKm?: number;
-  status: 'active' | 'completed' | 'invoiced' | 'paid' | 'shipped' | 'delivered';
+  status: "active" | "completed" | "invoiced" | "paid" | "shipped" | "delivered";
   costs: CostEntry[];
   completedAt?: string;
   completedBy?: string;
@@ -67,12 +67,12 @@ export interface Trip {
   actualArrivalDateTime?: string;
   actualOffloadDateTime?: string;
   actualDepartureDateTime?: string;
-  finalArrivalDateTime?: string;    // Final confirmed time for invoicing
-  finalOffloadDateTime?: string;    // Final confirmed time for invoicing
-  finalDepartureDateTime?: string;  // Final confirmed time for invoicing
-  timelineValidated?: boolean;      // Whether times have been validated for invoicing
-  timelineValidatedBy?: string;     // Who validated the timeline
-  timelineValidatedAt?: string;     // When timeline was validated
+  finalArrivalDateTime?: string; // Final confirmed time for invoicing
+  finalOffloadDateTime?: string; // Final confirmed time for invoicing
+  finalDepartureDateTime?: string; // Final confirmed time for invoicing
+  timelineValidated?: boolean; // Whether times have been validated for invoicing
+  timelineValidatedBy?: string; // Who validated the timeline
+  timelineValidatedAt?: string; // When timeline was validated
   delayReasons?: DelayReason[];
 
   // NEW: Additional costs before invoicing
@@ -82,14 +82,14 @@ export interface Trip {
   invoiceNumber?: string;
   invoiceDate?: string;
   invoiceDueDate?: string;
-  invoiceSubmittedAt?: string;      // When invoice was submitted
-  invoiceSubmittedBy?: string;      // Who submitted the invoice
-  invoiceValidationNotes?: string;  // Notes during invoice submission
-  paymentStatus: 'unpaid' | 'partial' | 'paid';
+  invoiceSubmittedAt?: string; // When invoice was submitted
+  invoiceSubmittedBy?: string; // Who submitted the invoice
+  invoiceValidationNotes?: string; // Notes during invoice submission
+  paymentStatus: "unpaid" | "partial" | "paid";
   paymentReceivedDate?: string;
-  paymentAmount?: number;           // Actual amount received
-  paymentMethod?: string;           // How payment was received
-  bankReference?: string;           // Bank reference or transaction ID
+  paymentAmount?: number; // Actual amount received
+  paymentMethod?: string; // How payment was received
+  bankReference?: string; // Bank reference or transaction ID
   lastFollowUpDate?: string;
   followUpHistory: FollowUpRecord[];
   proofOfDelivery?: Attachment[];
@@ -114,7 +114,7 @@ export interface Trip {
   // NEW: Web booking integration
   loadRef?: string; // Reference from web booking system
   webBookingId?: string; // ID from external booking system
-  bookingSource?: 'manual' | 'web' | 'api' | 'import'; // How the trip was created
+  bookingSource?: "manual" | "web" | "api" | "import"; // How the trip was created
 
   // Additional web import fields (for compatibility)
   importSource?: string; // e.g., "web_book"
@@ -129,14 +129,14 @@ export interface CostEntry {
   category: string;
   subCategory: string;
   amount: number;
-  currency: 'USD' | 'ZAR';
+  currency: "USD" | "ZAR";
   referenceNumber: string;
   date: string;
   notes?: string;
   attachments: Attachment[];
   isFlagged: boolean;
   flagReason?: string;
-  investigationStatus?: 'pending' | 'in-progress' | 'resolved';
+  investigationStatus?: "pending" | "in-progress" | "resolved";
   investigationNotes?: string;
   noDocumentReason?: string;
   flaggedAt?: string;
@@ -145,7 +145,7 @@ export interface CostEntry {
   resolvedBy?: string;
   editHistory?: CostEditRecord[];
   isSystemGenerated?: boolean;
-  systemCostType?: 'per-km' | 'per-day';
+  systemCostType?: "per-km" | "per-day";
   calculationDetails?: string;
 }
 
@@ -166,9 +166,16 @@ export interface AdditionalCost {
   id: string;
   tripId: string;
   description: string;
-  costType: 'demurrage' | 'clearing_fees' | 'toll_charges' | 'detention' | 'escort_fees' | 'storage' | 'other';
+  costType:
+    | "demurrage"
+    | "clearing_fees"
+    | "toll_charges"
+    | "detention"
+    | "escort_fees"
+    | "storage"
+    | "other";
   amount: number;
-  currency: 'USD' | 'ZAR';
+  currency: "USD" | "ZAR";
   supportingDocuments: Attachment[];
   notes?: string;
   addedAt: string;
@@ -180,10 +187,17 @@ export interface AdditionalCost {
 export interface DelayReason {
   id: string;
   tripId: string;
-  delayType: 'border_delays' | 'breakdown' | 'customer_not_ready' | 'paperwork_issues' | 'weather_conditions' | 'traffic' | 'other';
+  delayType:
+    | "border_delays"
+    | "breakdown"
+    | "customer_not_ready"
+    | "paperwork_issues"
+    | "weather_conditions"
+    | "traffic"
+    | "other";
   description: string;
   delayDuration: number; // in hours
-  severity: 'minor' | 'moderate' | 'major' | 'critical'; // Impact level
+  severity: "minor" | "moderate" | "major" | "critical"; // Impact level
   reportedAt: string;
   reportedBy: string;
   resolvedAt?: string;
@@ -195,13 +209,13 @@ export interface FollowUpRecord {
   id: string;
   tripId: string;
   followUpDate: string;
-  contactMethod: 'call' | 'email' | 'whatsapp' | 'in_person' | 'sms';
+  contactMethod: "call" | "email" | "whatsapp" | "in_person" | "sms";
   responsibleStaff: string;
   responseSummary: string;
   nextFollowUpDate?: string;
-  status: 'pending' | 'completed' | 'escalated';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  outcome: 'no_response' | 'promised_payment' | 'dispute' | 'payment_received' | 'partial_payment';
+  status: "pending" | "completed" | "escalated";
+  priority: "low" | "medium" | "high" | "urgent";
+  outcome: "no_response" | "promised_payment" | "dispute" | "payment_received" | "partial_payment";
 }
 
 // NEW: Invoice Aging with Enhanced Tracking
@@ -212,13 +226,13 @@ export interface InvoiceAging {
   invoiceDate: string;
   dueDate: string;
   amount: number;
-  currency: 'USD' | 'ZAR';
+  currency: "USD" | "ZAR";
   agingDays: number;
-  status: 'current' | 'warning' | 'critical' | 'overdue';
-  paymentStatus: 'unpaid' | 'partial' | 'paid';
+  status: "current" | "warning" | "critical" | "overdue";
+  paymentStatus: "unpaid" | "partial" | "paid";
   lastFollowUp?: string;
   followUpCount: number;
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: "low" | "medium" | "high";
   estimatedPaymentDate?: string;
 }
 
@@ -227,16 +241,16 @@ export interface CustomerPerformance {
   customerName: string;
   totalTrips: number;
   totalRevenue: number;
-  currency: 'USD' | 'ZAR';
+  currency: "USD" | "ZAR";
   averagePaymentDays: number;
   paymentScore: number; // 0-100
   lastTripDate: string;
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: "low" | "medium" | "high";
   isAtRisk: boolean;
   isProfitable: boolean;
   isTopClient: boolean;
   paymentHistory: PaymentHistoryRecord[];
-  serviceFrequencyTrend: 'increasing' | 'stable' | 'decreasing';
+  serviceFrequencyTrend: "increasing" | "stable" | "decreasing";
   retentionScore: number; // 0-100
 }
 
@@ -248,7 +262,7 @@ interface PaymentHistoryRecord {
   paymentDate?: string;
   daysLate: number;
   amount: number;
-  currency: 'USD' | 'ZAR';
+  currency: "USD" | "ZAR";
 }
 
 // NEW: Truck Performance with Utilization
@@ -261,7 +275,7 @@ export interface TruckPerformance {
   idleDays: number;
   maintenanceDays: number;
   lastTripDate: string;
-  performanceRating: 'excellent' | 'good' | 'average' | 'poor';
+  performanceRating: "excellent" | "good" | "average" | "poor";
   revenuePerKm: number;
   costPerKm: number;
 }
@@ -275,15 +289,22 @@ export interface MissedLoad {
   requestedDeliveryDate: string;
   route: string;
   estimatedRevenue: number;
-  currency: 'USD' | 'ZAR';
-  reason: 'no_vehicle' | 'late_response' | 'mechanical_issue' | 'driver_unavailable' | 'customer_cancelled' | 'rate_disagreement' | 'other';
+  currency: "USD" | "ZAR";
+  reason:
+    | "no_vehicle"
+    | "late_response"
+    | "mechanical_issue"
+    | "driver_unavailable"
+    | "customer_cancelled"
+    | "rate_disagreement"
+    | "other";
   reasonDescription?: string;
-  resolutionStatus: 'pending' | 'resolved' | 'lost_opportunity' | 'rescheduled';
+  resolutionStatus: "pending" | "resolved" | "lost_opportunity" | "rescheduled";
   followUpRequired: boolean;
   competitorWon?: boolean;
   recordedBy: string;
   recordedAt: string;
-  impact: 'low' | 'medium' | 'high'; // Business impact
+  impact: "low" | "medium" | "high"; // Business impact
 
   // NEW: Resolution tracking (not payment)
   resolutionNotes?: string;
@@ -328,11 +349,21 @@ export interface DieselConsumptionRecord {
   isReeferUnit?: boolean;
   hoursOperated?: number;
   linkedHorseId?: string;
-  currency?: 'USD' | 'ZAR';
+  currency?: "USD" | "ZAR";
 }
 
 // NEW: Driver Behavior Event Types
-export type DriverBehaviorEventType = 'speeding' | 'harsh_braking' | 'harsh_acceleration' | 'idling' | 'route_deviation' | 'unauthorized_stop' | 'fatigue_alert' | 'phone_usage' | 'seatbelt_violation' | 'other';
+export type DriverBehaviorEventType =
+  | "speeding"
+  | "harsh_braking"
+  | "harsh_acceleration"
+  | "idling"
+  | "route_deviation"
+  | "unauthorized_stop"
+  | "fatigue_alert"
+  | "phone_usage"
+  | "seatbelt_violation"
+  | "other";
 
 export interface DriverBehaviorEvent {
   id: string;
@@ -340,7 +371,7 @@ export interface DriverBehaviorEvent {
   driverName: string;
   fleetNumber: string;
   eventType: DriverBehaviorEventType;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   eventDate: string;
   eventTime: string;
   location?: string;
@@ -363,7 +394,7 @@ export interface DriverBehaviorEvent {
   points: number; // Making points required with no "?"
   carReportId?: string;
   // Status for event workflow (for UI and logic)
-  status: 'pending' | 'acknowledged' | 'resolved' | 'disputed'; // Making status required with no "?"
+  status: "pending" | "acknowledged" | "resolved" | "disputed"; // Making status required with no "?"
 }
 
 // NEW: Action Item Types
@@ -374,7 +405,7 @@ export interface ActionItem {
   responsiblePerson: string;
   startDate: string;
   dueDate: string;
-  status: 'initiated' | 'in_progress' | 'completed';
+  status: "initiated" | "in_progress" | "completed";
   completedAt?: string;
   completedBy?: string;
   overdueReason?: string;
@@ -396,7 +427,7 @@ export interface ActionItemComment {
 // NEW: CAR (Corrective Action Report) Types
 export interface CARReport {
   id: string;
-  carNumber?: string;        // Added for report reference number
+  carNumber?: string; // Added for report reference number
   reportNumber: string;
   responsibleReporter: string;
   responsiblePerson: string;
@@ -406,32 +437,32 @@ export interface CARReport {
   clientReport: string;
 
   // Status and details
-  status: 'open' | 'inProgress' | 'completed' | 'cancelled' | 'draft' | 'submitted' | 'in_progress';
-  priority: 'high' | 'medium' | 'low';
-  severity: 'high' | 'medium' | 'low';
+  status: "open" | "inProgress" | "completed" | "cancelled" | "draft" | "submitted" | "in_progress";
+  priority: "high" | "medium" | "low";
+  severity: "high" | "medium" | "low";
 
   // Dates
-  issueDate: string;         // Date the report was issued
-  dueDate: string;           // When action needs to be completed
-  resolutionDate?: string;   // When it was resolved
+  issueDate: string; // Date the report was issued
+  dueDate: string; // When action needs to be completed
+  resolutionDate?: string; // When it was resolved
 
   // People
-  issuedBy: string;          // Person who issued the report
-  verifiedBy?: string;       // Person who verified resolution
+  issuedBy: string; // Person who issued the report
+  verifiedBy?: string; // Person who verified resolution
 
   // Incident details
-  incidentType: string;      // Type of incident
-  description: string;       // Description of incident
+  incidentType: string; // Type of incident
+  description: string; // Description of incident
 
   // Root cause analysis
-  rootCause?: string;         // Root cause of the incident
-  contributingFactors?: string;  // Factors that contributed
+  rootCause?: string; // Root cause of the incident
+  contributingFactors?: string; // Factors that contributed
 
   // Actions taken
-  immediateActions?: string;   // Immediate actions taken
-  correctiveActions: string;  // Longer-term corrective actions (removed optional)
+  immediateActions?: string; // Immediate actions taken
+  correctiveActions: string; // Longer-term corrective actions (removed optional)
   preventativeMeasures?: string; // Preventative measures
-  resolutionComments?: string;  // Comments on resolution
+  resolutionComments?: string; // Comments on resolution
 
   // Legacy fields (keeping for backward compatibility)
   problemIdentification: string;
@@ -459,7 +490,16 @@ export interface CARReport {
 interface LoadTimelineEvent {
   id: string;
   tripId: string;
-  eventType: 'loading_start' | 'loading_complete' | 'departure' | 'border_crossing' | 'arrival' | 'offloading_start' | 'offloading_complete' | 'return_journey' | 'return_arrival';
+  eventType:
+    | "loading_start"
+    | "loading_complete"
+    | "departure"
+    | "border_crossing"
+    | "arrival"
+    | "offloading_start"
+    | "offloading_complete"
+    | "return_journey"
+    | "return_arrival";
   timestamp: string;
   location: string;
   notes?: string;
@@ -470,10 +510,10 @@ interface LoadTimelineEvent {
 // NEW: Real-time Sync Types
 export interface SyncEvent {
   id: string;
-  type: 'trip_update' | 'cost_update' | 'invoice_update' | 'payment_update' | 'system_update';
+  type: "trip_update" | "cost_update" | "invoice_update" | "payment_update" | "system_update";
   entityId: string;
-  entityType: 'trip' | 'cost' | 'invoice' | 'payment';
-  action: 'create' | 'update' | 'delete';
+  entityType: "trip" | "cost" | "invoice" | "payment";
+  action: "create" | "update" | "delete";
   data: any;
   timestamp: string;
   userId: string;
@@ -504,7 +544,7 @@ export interface Driver {
 
 // System Cost Configuration Types
 export interface SystemCostRates {
-  currency: 'USD' | 'ZAR';
+  currency: "USD" | "ZAR";
   perKmCosts: {
     repairMaintenance: number;
     tyreCost: number;
@@ -544,7 +584,7 @@ export interface TripEditRecord {
   fieldChanged: string;
   oldValue: string;
   newValue: string;
-  changeType: 'update' | 'status_change' | 'completion' | 'auto_completion';
+  changeType: "update" | "status_change" | "completion" | "auto_completion";
 }
 
 interface CostEditRecord {
@@ -556,7 +596,7 @@ interface CostEditRecord {
   fieldChanged: string;
   oldValue: string;
   newValue: string;
-  changeType: 'update' | 'flag_status' | 'investigation';
+  changeType: "update" | "flag_status" | "investigation";
 }
 
 export interface TripDeletionRecord {
@@ -575,7 +615,16 @@ export interface TripDeletionRecord {
 // User Permission Types
 
 export interface UserPermission {
-  action: 'create_trip' | 'edit_trip' | 'delete_trip' | 'complete_trip' | 'edit_completed_trip' | 'delete_completed_trip' | 'manage_investigations' | 'view_reports' | 'manage_system_costs';
+  action:
+    | "create_trip"
+    | "edit_trip"
+    | "delete_trip"
+    | "complete_trip"
+    | "edit_completed_trip"
+    | "delete_completed_trip"
+    | "manage_investigations"
+    | "view_reports"
+    | "manage_system_costs";
   granted: boolean;
 }
 export type NoUserPermissionAllowed = never;
@@ -590,9 +639,9 @@ export interface TripTemplate {
   defaultRoute: string;
   defaultDistanceKm?: number;
   defaultBaseRevenue?: number;
-  defaultRevenueCurrency: 'USD' | 'ZAR';
+  defaultRevenueCurrency: "USD" | "ZAR";
   defaultClientName: string;
-  defaultClientType: 'internal' | 'external';
+  defaultClientType: "internal" | "external";
   defaultCosts?: Partial<CostEntry>[];
   plannedRoute?: {
     origin: string;
@@ -624,7 +673,7 @@ export interface LoadPlan {
     stackable: boolean;
     hazardous: boolean;
     category: string;
-    priorityLevel: 'low' | 'medium' | 'high';
+    priorityLevel: "low" | "medium" | "high";
   }[];
   loadingSequence?: string[]; // IDs of cargo items in loading order
   optimizedArrangement?: string; // JSON string of 3D arrangement or reference to external data
@@ -645,8 +694,8 @@ export interface RoutePoint {
   id: string;
   name: string;
   address: string;
-  coordinates: {lat: number; lng: number};
-  type: 'origin' | 'destination' | 'waypoint' | 'rest_stop' | 'border_crossing' | 'fuel_stop';
+  coordinates: { lat: number; lng: number };
+  type: "origin" | "destination" | "waypoint" | "rest_stop" | "border_crossing" | "fuel_stop";
   estimatedArrivalTime?: string;
   estimatedDepartureTime?: string;
   actualArrivalTime?: string;
@@ -656,7 +705,7 @@ export interface RoutePoint {
     name: string;
     estimatedCrossingTime: number; // minutes
     requiredDocuments: string[];
-    fees: {description: string; amount: number; currency: 'USD' | 'ZAR'}[];
+    fees: { description: string; amount: number; currency: "USD" | "ZAR" }[];
   };
 }
 
@@ -667,7 +716,7 @@ export interface TripFinancialAnalysis {
     baseRevenue: number;
     additionalRevenue: number;
     totalRevenue: number;
-    currency: 'USD' | 'ZAR';
+    currency: "USD" | "ZAR";
   };
   costBreakdown: {
     fuelCosts: number;
@@ -700,65 +749,155 @@ export interface TripFinancialAnalysis {
 
 // Constants for form options
 export const CLIENTS = [
-  'Teralco', 'SPF', 'Deep Catch', 'DS Healthcare', 'HFR', 'Aspen', 'DP World', 'FX Logistics',
-  'Feedmix', 'ETG', 'National Foods', 'Mega Market', 'Crystal Candy', 'Trade Clear Logistics',
-  'Steainweg', 'Agrouth', 'Emmands', 'Falcon Gate', 'FreightCo', 'Tarondale', 'Makandi',
-  'FWZCargo', 'Kroots', 'Crake Valley', 'Cains', 'Big Dutcheman', 'Jacobs', 'Jacksons',
-  'Pacibrite', 'Vector', 'Du-roi', 'Sunside Seedlings', 'Massmart', 'Dacher (Pty) Ltd.',
-  'Shoprite', 'Lesaffre', 'Westfalia', 'Everfresh', 'Rezende Retail', 'Rezende Retail Vendor',
-  'Rezende Vendor', 'Bulawayo Retail', 'Bulawayo Retail Vendor', 'Bulawayo Vendor'
+  "Teralco",
+  "SPF",
+  "Deep Catch",
+  "DS Healthcare",
+  "HFR",
+  "Aspen",
+  "DP World",
+  "FX Logistics",
+  "Feedmix",
+  "ETG",
+  "National Foods",
+  "Mega Market",
+  "Crystal Candy",
+  "Trade Clear Logistics",
+  "Steainweg",
+  "Agrouth",
+  "Emmands",
+  "Falcon Gate",
+  "FreightCo",
+  "Tarondale",
+  "Makandi",
+  "FWZCargo",
+  "Kroots",
+  "Crake Valley",
+  "Cains",
+  "Big Dutcheman",
+  "Jacobs",
+  "Jacksons",
+  "Pacibrite",
+  "Vector",
+  "Du-roi",
+  "Sunside Seedlings",
+  "Massmart",
+  "Dacher (Pty) Ltd.",
+  "Shoprite",
+  "Lesaffre",
+  "Westfalia",
+  "Everfresh",
+  "Rezende Retail",
+  "Rezende Retail Vendor",
+  "Rezende Vendor",
+  "Bulawayo Retail",
+  "Bulawayo Retail Vendor",
+  "Bulawayo Vendor",
 ];
 
 export const DRIVERS = [
-  'Enock Mukonyerwa', 'Jonathan Bepete', 'Lovemore Qochiwe', 'Peter Farai', 'Phillimon Kwarire',
-  'Taurayi Vherenaisi', 'Adrian Moyo', 'Canaan Chipfurutse', 'Doctor Kondwani', 'Biggie Mugwa',
-  'Luckson Tanyanyiwa', 'Wellington Musumbu', 'Decide Murahwa'
+  "Enock Mukonyerwa",
+  "Jonathan Bepete",
+  "Lovemore Qochiwe",
+  "Peter Farai",
+  "Phillimon Kwarire",
+  "Taurayi Vherenaisi",
+  "Adrian Moyo",
+  "Canaan Chipfurutse",
+  "Doctor Kondwani",
+  "Biggie Mugwa",
+  "Luckson Tanyanyiwa",
+  "Wellington Musumbu",
+  "Decide Murahwa",
 ];
 
 export const FLEET_NUMBERS = [
-  '4H', '6H', 'UD', '29H', '30H', '21H', '22H', '23H', '24H', '26H', '28H', '31H', '32H', '33H'
+  "4H",
+  "6H",
+  "UD",
+  "29H",
+  "30H",
+  "21H",
+  "22H",
+  "23H",
+  "24H",
+  "26H",
+  "28H",
+  "31H",
+  "32H",
+  "33H",
 ];
 
 // NEW: Responsible Persons for Action Items and CAR Reports
 export const RESPONSIBLE_PERSONS = [
-  'Fleet Manager', 'Operations Manager', 'Safety Officer', 'Maintenance Supervisor',
-  'Driver Supervisor', 'Quality Assurance Manager', 'Compliance Officer', 'HR Manager',
-  'Finance Manager', 'General Manager', 'Enock Mukonyerwa', 'Jonathan Bepete',
-  'Lovemore Qochiwe', 'Peter Farai', 'Phillimon Kwarire', 'Taurayi Vherenaisi',
-  'Adrian Moyo', 'Canaan Chipfurutse', 'Doctor Kondwani', 'Biggie Mugwa',
-  'Luckson Tanyanyiwa', 'Wellington Musumbu', 'Decide Murahwa'
+  "Fleet Manager",
+  "Operations Manager",
+  "Safety Officer",
+  "Maintenance Supervisor",
+  "Driver Supervisor",
+  "Quality Assurance Manager",
+  "Compliance Officer",
+  "HR Manager",
+  "Finance Manager",
+  "General Manager",
+  "Enock Mukonyerwa",
+  "Jonathan Bepete",
+  "Lovemore Qochiwe",
+  "Peter Farai",
+  "Phillimon Kwarire",
+  "Taurayi Vherenaisi",
+  "Adrian Moyo",
+  "Canaan Chipfurutse",
+  "Doctor Kondwani",
+  "Biggie Mugwa",
+  "Luckson Tanyanyiwa",
+  "Wellington Musumbu",
+  "Decide Murahwa",
 ];
 
 // NEW: Trucks with fuel probes for diesel monitoring
 export const TRUCKS_WITH_PROBES = [
-  '4H', '6H', 'UD', '29H', '30H', '21H', '22H', '23H', '24H', '26H', '28H', '31H', '32H', '33H'
+  "4H",
+  "6H",
+  "UD",
+  "29H",
+  "30H",
+  "21H",
+  "22H",
+  "23H",
+  "24H",
+  "26H",
+  "28H",
+  "31H",
+  "32H",
+  "33H",
 ];
 
 export const CLIENT_TYPES = [
-  { value: 'internal', label: 'Internal Client' },
-  { value: 'external', label: 'External Client' }
+  { value: "internal", label: "Internal Client" },
+  { value: "external", label: "External Client" },
 ];
 
 // NEW: Additional Cost Types
 export const ADDITIONAL_COST_TYPES = [
-  { value: 'demurrage', label: 'Demurrage' },
-  { value: 'clearing_fees', label: 'Clearing Fees' },
-  { value: 'toll_charges', label: 'Toll Charges' },
-  { value: 'detention', label: 'Detention' },
-  { value: 'escort_fees', label: 'Escort Fees' },
-  { value: 'storage', label: 'Storage' },
-  { value: 'other', label: 'Other' }
+  { value: "demurrage", label: "Demurrage" },
+  { value: "clearing_fees", label: "Clearing Fees" },
+  { value: "toll_charges", label: "Toll Charges" },
+  { value: "detention", label: "Detention" },
+  { value: "escort_fees", label: "Escort Fees" },
+  { value: "storage", label: "Storage" },
+  { value: "other", label: "Other" },
 ];
 
 // NEW: Enhanced Delay Reason Types
 export const DELAY_REASON_TYPES = [
-  { value: 'border_delays', label: 'Border Delays' },
-  { value: 'breakdown', label: 'Breakdown' },
-  { value: 'customer_not_ready', label: 'Customer Not Ready' },
-  { value: 'paperwork_issues', label: 'Paperwork Issues' },
-  { value: 'weather_conditions', label: 'Weather Conditions' },
-  { value: 'traffic', label: 'Traffic' },
-  { value: 'other', label: 'Other' }
+  { value: "border_delays", label: "Border Delays" },
+  { value: "breakdown", label: "Breakdown" },
+  { value: "customer_not_ready", label: "Customer Not Ready" },
+  { value: "paperwork_issues", label: "Paperwork Issues" },
+  { value: "weather_conditions", label: "Weather Conditions" },
+  { value: "traffic", label: "Traffic" },
+  { value: "other", label: "Other" },
 ];
 
 // NEW: Contact Methods
@@ -766,27 +905,27 @@ export const DELAY_REASON_TYPES = [
 
 // NEW: Enhanced Missed Load Reasons
 export const MISSED_LOAD_REASONS = [
-  { value: 'no_vehicle', label: 'No Vehicle Available' },
-  { value: 'late_response', label: 'Late Response' },
-  { value: 'mechanical_issue', label: 'Mechanical Issue' },
-  { value: 'driver_unavailable', label: 'Driver Unavailable' },
-  { value: 'customer_cancelled', label: 'Customer Cancelled' },
-  { value: 'rate_disagreement', label: 'Rate Disagreement' },
-  { value: 'other', label: 'Other' }
+  { value: "no_vehicle", label: "No Vehicle Available" },
+  { value: "late_response", label: "Late Response" },
+  { value: "mechanical_issue", label: "Mechanical Issue" },
+  { value: "driver_unavailable", label: "Driver Unavailable" },
+  { value: "customer_cancelled", label: "Customer Cancelled" },
+  { value: "rate_disagreement", label: "Rate Disagreement" },
+  { value: "other", label: "Other" },
 ];
 
 // NEW: Driver Behavior Event Types
 export const DRIVER_BEHAVIOR_EVENT_TYPES = [
-  { value: 'speeding', label: 'Speeding', severity: 'medium', points: 5 },
-  { value: 'harsh_braking', label: 'Harsh Braking', severity: 'medium', points: 3 },
-  { value: 'harsh_acceleration', label: 'Harsh Acceleration', severity: 'medium', points: 3 },
-  { value: 'idling', label: 'Excessive Idling', severity: 'low', points: 1 },
-  { value: 'route_deviation', label: 'Route Deviation', severity: 'medium', points: 4 },
-  { value: 'unauthorized_stop', label: 'Unauthorized Stop', severity: 'medium', points: 4 },
-  { value: 'fatigue_alert', label: 'Fatigue Alert', severity: 'high', points: 8 },
-  { value: 'phone_usage', label: 'Phone Usage While Driving', severity: 'high', points: 10 },
-  { value: 'seatbelt_violation', label: 'Seatbelt Violation', severity: 'high', points: 7 },
-  { value: 'other', label: 'Other', severity: 'medium', points: 2 }
+  { value: "speeding", label: "Speeding", severity: "medium", points: 5 },
+  { value: "harsh_braking", label: "Harsh Braking", severity: "medium", points: 3 },
+  { value: "harsh_acceleration", label: "Harsh Acceleration", severity: "medium", points: 3 },
+  { value: "idling", label: "Excessive Idling", severity: "low", points: 1 },
+  { value: "route_deviation", label: "Route Deviation", severity: "medium", points: 4 },
+  { value: "unauthorized_stop", label: "Unauthorized Stop", severity: "medium", points: 4 },
+  { value: "fatigue_alert", label: "Fatigue Alert", severity: "high", points: 8 },
+  { value: "phone_usage", label: "Phone Usage While Driving", severity: "high", points: 10 },
+  { value: "seatbelt_violation", label: "Seatbelt Violation", severity: "high", points: 7 },
+  { value: "other", label: "Other", severity: "medium", points: 2 },
 ];
 
 // Workshop and Job Card Types
@@ -795,8 +934,8 @@ export interface JobCard {
   workOrderNumber: string;
   vehicleId: string;
   customerName: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'open' | 'in_progress' | 'parts_pending' | 'completed' | 'closed';
+  priority: "low" | "medium" | "high" | "critical";
+  status: "open" | "in_progress" | "parts_pending" | "completed" | "closed";
   createdAt: string;
   createdDate: string;
   scheduledDate?: string;
@@ -825,7 +964,7 @@ export interface JobCardTask {
   category: string;
   estimatedHours: number;
   actualHours?: number;
-  status: 'pending' | 'in_progress' | 'completed' | 'verified' | 'not_applicable';
+  status: "pending" | "in_progress" | "completed" | "verified" | "not_applicable";
   assignedTo?: string;
   notes?: string;
   completedBy?: string;
@@ -844,7 +983,7 @@ export interface JobCardTask {
 export interface TaskHistoryEntry {
   id: string;
   taskId: string;
-  event: 'statusChanged' | 'assigned' | 'verified' | 'edited';
+  event: "statusChanged" | "assigned" | "verified" | "edited";
   previousStatus?: string;
   newStatus?: string;
   by: string;
@@ -867,7 +1006,7 @@ export interface Invoice {
   taxRate: number;
   taxAmount: number;
   totalAmount: number;
-  status: 'unpaid' | 'partial' | 'paid';
+  status: "unpaid" | "partial" | "paid";
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -879,7 +1018,7 @@ export interface InvoiceItem {
   quantity: number;
   unitPrice: number;
   total: number;
-  itemType: 'part' | 'labor' | 'service' | 'other';
+  itemType: "part" | "labor" | "service" | "other";
 }
 
 // Fleet vehicle type
@@ -903,63 +1042,144 @@ export interface FleetVehicle {
 
 // NEW: CAR Report Types
 export const CAR_INCIDENT_TYPES = [
-  { value: 'accident', label: 'Accident' },
-  { value: 'traffic_violation', label: 'Traffic Violation' },
-  { value: 'customer_complaint', label: 'Customer Complaint' },
-  { value: 'equipment_damage', label: 'Equipment Damage' },
-  { value: 'policy_violation', label: 'Policy Violation' },
-  { value: 'safety_incident', label: 'Safety Incident' },
-  { value: 'other', label: 'Other' }
+  { value: "accident", label: "Accident" },
+  { value: "traffic_violation", label: "Traffic Violation" },
+  { value: "customer_complaint", label: "Customer Complaint" },
+  { value: "equipment_damage", label: "Equipment Damage" },
+  { value: "policy_violation", label: "Policy Violation" },
+  { value: "safety_incident", label: "Safety Incident" },
+  { value: "other", label: "Other" },
 ];
 
 // STRUCTURED COST CATEGORIES & SUB-COST TYPES
 export const COST_CATEGORIES = {
-  'Border Costs': [
-    'Beitbridge Border Fee', 'Gate Pass', 'Coupon', 'Carbon Tax Horse', 'CVG Horse', 'CVG Trailer',
-    'Insurance (1 Month Horse)', 'Insurance (3 Months Trailer)', 'Insurance (2 Months Trailer)',
-    'Insurance (1 Month Trailer)', 'Carbon Tax (3 Months Horse)', 'Carbon Tax (2 Months Horse)',
-    'Carbon Tax (1 Month Horse)', 'Carbon Tax (3 Months Trailer)', 'Carbon Tax (2 Months Trailer)',
-    'Carbon Tax (1 Month Trailer)', 'Road Access', 'Bridge Fee', 'Road Toll Fee', 'Counseling Leavy',
-    'Transit Permit Horse', 'Transit Permit Trailer', 'National Road Safety Fund Horse',
-    'National Road Safety Fund Trailer', 'Electronic Seal', 'EME Permit', 'Zim Clearing',
-    'Zim Supervision', 'SA Clearing', 'Runner Fee Beitbridge', 'Runner Fee Zambia Kazungula',
-    'Runner Fee Chirundu'
+  "Border Costs": [
+    "Beitbridge Border Fee",
+    "Gate Pass",
+    "Coupon",
+    "Carbon Tax Horse",
+    "CVG Horse",
+    "CVG Trailer",
+    "Insurance (1 Month Horse)",
+    "Insurance (3 Months Trailer)",
+    "Insurance (2 Months Trailer)",
+    "Insurance (1 Month Trailer)",
+    "Carbon Tax (3 Months Horse)",
+    "Carbon Tax (2 Months Horse)",
+    "Carbon Tax (1 Month Horse)",
+    "Carbon Tax (3 Months Trailer)",
+    "Carbon Tax (2 Months Trailer)",
+    "Carbon Tax (1 Month Trailer)",
+    "Road Access",
+    "Bridge Fee",
+    "Road Toll Fee",
+    "Counseling Leavy",
+    "Transit Permit Horse",
+    "Transit Permit Trailer",
+    "National Road Safety Fund Horse",
+    "National Road Safety Fund Trailer",
+    "Electronic Seal",
+    "EME Permit",
+    "Zim Clearing",
+    "Zim Supervision",
+    "SA Clearing",
+    "Runner Fee Beitbridge",
+    "Runner Fee Zambia Kazungula",
+    "Runner Fee Chirundu",
   ],
-  'Parking': [
-    'Bubi', 'Lunde', 'Mvuma', 'Gweru', 'Kadoma', 'Chegutu', 'Norton', 'Harare', 'Ruwa',
-    'Marondera', 'Rusape', 'Mutare', 'Nyanga', 'Bindura', 'Shamva', 'Centenary', 'Guruve',
-    'Karoi', 'Chinhoyi', 'Kariba', 'Hwange', 'Victoria Falls', 'Bulawayo', 'Gwanda',
-    'Beitbridge', 'Masvingo', 'Zvishavane', 'Shurugwi', 'Kwekwe'
+  Parking: [
+    "Bubi",
+    "Lunde",
+    "Mvuma",
+    "Gweru",
+    "Kadoma",
+    "Chegutu",
+    "Norton",
+    "Harare",
+    "Ruwa",
+    "Marondera",
+    "Rusape",
+    "Mutare",
+    "Nyanga",
+    "Bindura",
+    "Shamva",
+    "Centenary",
+    "Guruve",
+    "Karoi",
+    "Chinhoyi",
+    "Kariba",
+    "Hwange",
+    "Victoria Falls",
+    "Bulawayo",
+    "Gwanda",
+    "Beitbridge",
+    "Masvingo",
+    "Zvishavane",
+    "Shurugwi",
+    "Kwekwe",
   ],
-  'Diesel': [
-    'ACM Petroleum Chirundu - Reefer', 'ACM Petroleum Chirundu - Horse', 'RAM Petroleum Harare - Reefer',
-    'RAM Petroleum Harare - Horse', 'Engen Beitbridge - Reefer', 'Engen Beitbridge - Horse',
-    'Shell Mutare - Reefer', 'Shell Mutare - Horse', 'BP Bulawayo - Reefer', 'BP Bulawayo - Horse',
-    'Total Gweru - Reefer', 'Total Gweru - Horse', 'Puma Masvingo - Reefer', 'Puma Masvingo - Horse',
-    'Zuva Petroleum Kadoma - Reefer', 'Zuva Petroleum Kadoma - Horse', 'Mobil Chinhoyi - Reefer',
-    'Mobil Chinhoyi - Horse', 'Caltex Kwekwe - Reefer', 'Caltex Kwekwe - Horse'
+  Diesel: [
+    "ACM Petroleum Chirundu - Reefer",
+    "ACM Petroleum Chirundu - Horse",
+    "RAM Petroleum Harare - Reefer",
+    "RAM Petroleum Harare - Horse",
+    "Engen Beitbridge - Reefer",
+    "Engen Beitbridge - Horse",
+    "Shell Mutare - Reefer",
+    "Shell Mutare - Horse",
+    "BP Bulawayo - Reefer",
+    "BP Bulawayo - Horse",
+    "Total Gweru - Reefer",
+    "Total Gweru - Horse",
+    "Puma Masvingo - Reefer",
+    "Puma Masvingo - Horse",
+    "Zuva Petroleum Kadoma - Reefer",
+    "Zuva Petroleum Kadoma - Horse",
+    "Mobil Chinhoyi - Reefer",
+    "Mobil Chinhoyi - Horse",
+    "Caltex Kwekwe - Reefer",
+    "Caltex Kwekwe - Horse",
   ],
-  'Non-Value-Added Costs': [
-    'Fines', 'Penalties', 'Passport Stamping', 'Push Documents', 'Jump Queue', 'Dismiss Inspection',
-    'Parcels', 'Labour'
+  "Non-Value-Added Costs": [
+    "Fines",
+    "Penalties",
+    "Passport Stamping",
+    "Push Documents",
+    "Jump Queue",
+    "Dismiss Inspection",
+    "Parcels",
+    "Labour",
   ],
-  'Trip Allowances': ['Food', 'Airtime', 'Taxi'],
-  'Tolls': [
-    'Tolls BB to JHB', 'Tolls Cape Town to JHB', 'Tolls JHB to CPT', 'Tolls Mutare to BB',
-    'Tolls JHB to Martinsdrift', 'Tolls BB to Harare', 'Tolls Zambia'
+  "Trip Allowances": ["Food", "Airtime", "Taxi"],
+  Tolls: [
+    "Tolls BB to JHB",
+    "Tolls Cape Town to JHB",
+    "Tolls JHB to CPT",
+    "Tolls Mutare to BB",
+    "Tolls JHB to Martinsdrift",
+    "Tolls BB to Harare",
+    "Tolls Zambia",
   ],
-  'System Costs': [
-    'Repair & Maintenance per KM', 'Tyre Cost per KM', 'GIT Insurance', 'Short-Term Insurance',
-    'Tracking Cost', 'Fleet Management System', 'Licensing', 'VID / Roadworthy', 'Wages', 'Depreciation'
-  ]
+  "System Costs": [
+    "Repair & Maintenance per KM",
+    "Tyre Cost per KM",
+    "GIT Insurance",
+    "Short-Term Insurance",
+    "Tracking Cost",
+    "Fleet Management System",
+    "Licensing",
+    "VID / Roadworthy",
+    "Wages",
+    "Depreciation",
+  ],
 };
 
-export const DEFAULT_SYSTEM_COST_RATES: Record<'USD' | 'ZAR', SystemCostRates> = {
+export const DEFAULT_SYSTEM_COST_RATES: Record<"USD" | "ZAR", SystemCostRates> = {
   USD: {
-    currency: 'USD',
+    currency: "USD",
     perKmCosts: {
       repairMaintenance: 0.11,
-      tyreCost: 0.03
+      tyreCost: 0.03,
     },
     perDayCosts: {
       gitInsurance: 10.21,
@@ -969,17 +1189,17 @@ export const DEFAULT_SYSTEM_COST_RATES: Record<'USD' | 'ZAR', SystemCostRates> =
       licensing: 1.32,
       vidRoadworthy: 0.41,
       wages: 16.88,
-      depreciation: 321.17
+      depreciation: 321.17,
     },
     lastUpdated: new Date().toISOString(),
-    updatedBy: 'System Default',
-    effectiveDate: new Date().toISOString()
+    updatedBy: "System Default",
+    effectiveDate: new Date().toISOString(),
   },
   ZAR: {
-    currency: 'ZAR',
+    currency: "ZAR",
     perKmCosts: {
       repairMaintenance: 2.05,
-      tyreCost: 0.64
+      tyreCost: 0.64,
     },
     perDayCosts: {
       gitInsurance: 134.82,
@@ -989,90 +1209,94 @@ export const DEFAULT_SYSTEM_COST_RATES: Record<'USD' | 'ZAR', SystemCostRates> =
       licensing: 23.52,
       vidRoadworthy: 11.89,
       wages: 300.15,
-      depreciation: 634.45
+      depreciation: 634.45,
     },
     lastUpdated: new Date().toISOString(),
-    updatedBy: 'System Default',
-    effectiveDate: new Date().toISOString()
-  }
+    updatedBy: "System Default",
+    effectiveDate: new Date().toISOString(),
+  },
 };
 
 export const DEFAULT_SYSTEM_COST_REMINDER: SystemCostReminder = {
-  id: 'reminder-001',
+  id: "reminder-001",
   nextReminderDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   reminderFrequencyDays: 30,
   isActive: true,
   createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
+  updatedAt: new Date().toISOString(),
 };
 
 // Edit Reason Templates
 export const TRIP_EDIT_REASONS = [
-  'Correction of data entry error', 'Client requested change', 'Route modification due to operational requirements',
-  'Revenue adjustment per contract amendment', 'Distance correction based on actual route',
-  'Driver change due to operational needs', 'Date adjustment for accurate reporting',
-  'Client type classification update', 'Other (specify in comments)'
+  "Correction of data entry error",
+  "Client requested change",
+  "Route modification due to operational requirements",
+  "Revenue adjustment per contract amendment",
+  "Distance correction based on actual route",
+  "Driver change due to operational needs",
+  "Date adjustment for accurate reporting",
+  "Client type classification update",
+  "Other (specify in comments)",
 ];
 
-
 export const TRIP_DELETION_REASONS = [
-  'Duplicate entry', 'Trip cancelled before execution', 'Data entry error - trip never occurred',
-  'Merged with another trip record', 'Client contract cancellation', 'Regulatory compliance requirement',
-  'Other (specify in comments)'
+  "Duplicate entry",
+  "Trip cancelled before execution",
+  "Data entry error - trip never occurred",
+  "Merged with another trip record",
+  "Client contract cancellation",
+  "Regulatory compliance requirement",
+  "Other (specify in comments)",
 ];
 
 // NEW: Trip Template Categories
 export const TRIP_TEMPLATE_CATEGORIES = [
-  { value: 'standard_delivery', label: 'Standard Delivery' },
-  { value: 'cross_border', label: 'Cross Border' },
-  { value: 'specialized', label: 'Specialized Cargo' },
-  { value: 'regular_route', label: 'Regular Route' },
-  { value: 'contract', label: 'Contract Route' }
+  { value: "standard_delivery", label: "Standard Delivery" },
+  { value: "cross_border", label: "Cross Border" },
+  { value: "specialized", label: "Specialized Cargo" },
+  { value: "regular_route", label: "Regular Route" },
+  { value: "contract", label: "Contract Route" },
 ];
 
 // NEW: Load Categories
 export const LOAD_CATEGORIES = [
-  { value: 'general_cargo', label: 'General Cargo' },
-  { value: 'perishable', label: 'Perishable Goods' },
-  { value: 'hazardous', label: 'Hazardous Materials' },
-  { value: 'fragile', label: 'Fragile Items' },
-  { value: 'oversized', label: 'Oversized Cargo' },
-  { value: 'refrigerated', label: 'Refrigerated' },
-  { value: 'bulk', label: 'Bulk Materials' },
-  { value: 'containers', label: 'Containers' }
+  { value: "general_cargo", label: "General Cargo" },
+  { value: "perishable", label: "Perishable Goods" },
+  { value: "hazardous", label: "Hazardous Materials" },
+  { value: "fragile", label: "Fragile Items" },
+  { value: "oversized", label: "Oversized Cargo" },
+  { value: "refrigerated", label: "Refrigerated" },
+  { value: "bulk", label: "Bulk Materials" },
+  { value: "containers", label: "Containers" },
 ];
 
-
-export type TripFormData = Omit<
-  Trip,
-  'id' | 'status' | 'costs' | 'distanceKm' | 'baseRevenue'
-> & {
+export type TripFormData = Omit<Trip, "id" | "status" | "costs" | "distanceKm" | "baseRevenue"> & {
   distanceKm: string;
   baseRevenue: string;
 };
 
-export * from './audit.d';
+export * from "./audit.d";
 
 // NEW: Invoice Aging Thresholds
 export const AGING_THRESHOLDS = {
   ZAR: {
-    current: { min: 0, max: 20, color: 'green' },
-    warning: { min: 21, max: 29, color: 'yellow' },
-    critical: { min: 30, max: 30, color: 'orange' },
-    overdue: { min: 31, max: Infinity, color: 'red' }
+    current: { min: 0, max: 20, color: "green" },
+    warning: { min: 21, max: 29, color: "yellow" },
+    critical: { min: 30, max: 30, color: "orange" },
+    overdue: { min: 31, max: Infinity, color: "red" },
   },
   USD: {
-    current: { min: 0, max: 10, color: 'green' },
-    warning: { min: 11, max: 13, color: 'yellow' },
-    critical: { min: 14, max: 14, color: 'orange' },
-    overdue: { min: 15, max: Infinity, color: 'red' }
-  }
+    current: { min: 0, max: 10, color: "green" },
+    warning: { min: 11, max: 13, color: "yellow" },
+    critical: { min: 14, max: 14, color: "orange" },
+    overdue: { min: 15, max: Infinity, color: "red" },
+  },
 };
 
 // NEW: Follow-up Alert Thresholds
 export const FOLLOW_UP_THRESHOLDS = {
   ZAR: 20, // days
-  USD: 12  // days
+  USD: 12, // days
 };
 
 // NEW: Timeline Validation Statuses
@@ -1081,9 +1305,7 @@ export const FOLLOW_UP_THRESHOLDS = {
 // NEW: Invoice Submission Statuses
 // (Removed unused INVOICE_SUBMISSION_STATUSES to resolve compile error)
 
-export const FLEETS_WITH_PROBES = [
-  '21H', '22H', '23H', '24H', '26H', '28H', '30H', '31H'
-];
+export const FLEETS_WITH_PROBES = ["21H", "22H", "23H", "24H", "26H", "28H", "30H", "31H"];
 
 // Tyre related types for tyre management module
 export interface TyreInspection {
@@ -1103,7 +1325,7 @@ export interface TyreInventory {
   brand: string;
   model: string;
   dot: string;
-  tyreType: 'Steer' | 'Drive' | 'Trailer' | 'Spare';
+  tyreType: "Steer" | "Drive" | "Trailer" | "Spare";
   tyreSize: string;
   pressureRating: number;
   initialTreadDepth: number;
@@ -1112,7 +1334,7 @@ export interface TyreInventory {
   purchaseCostZAR: number;
   purchaseCostUSD: number;
   depotLocation: string;
-  status: 'In Stock' | 'Fitted' | 'Scrapped' | 'Under Warranty';
+  status: "In Stock" | "Fitted" | "Scrapped" | "Under Warranty";
   installedOn?: string; // Fleet number if fitted
   position?: string; // Position on vehicle if fitted
   installDate?: string;
@@ -1168,7 +1390,7 @@ export const FUEL_STATIONS = [
   "Korridor Kafue Truck Stop",
   "Korridor Livingstone Truck Stop",
   "Korridor Lusaka Truck Stop",
-  "HASS Petroleum Kasumbalesa"
+  "HASS Petroleum Kasumbalesa",
 ];
 
 // Additional types for ActiveTripsPageEnhanced
@@ -1188,9 +1410,9 @@ export interface CostBreakdown {
   other?: number;
 }
 
-export type ImportSource = 'manual' | 'wialon' | 'gps' | 'rfid' | 'barcode';
+export type ImportSource = "manual" | "wialon" | "gps" | "rfid" | "barcode";
 
-export type SupportedCurrency = 'ZAR' | 'USD' | 'EUR' | 'GBP';
+export type SupportedCurrency = "ZAR" | "USD" | "EUR" | "GBP";
 
 export interface UITrip extends Trip {
   displayStatus: string;
@@ -1218,5 +1440,15 @@ export interface DriverFormData {
   emergencyContact?: string;
   dateOfBirth?: string;
   hireDate?: string;
-  status: 'active' | 'inactive' | 'suspended';
+  status: "active" | "inactive" | "suspended";
+}
+
+// In your types file (e.g., src/types/index.ts)
+export interface DieselConsumptionRecord {
+  // ... existing properties ...
+  probeVerificationNotes?: string;
+  witnessName?: string;
+  photoEvidenceUrl?: string;
+  photoEvidenceName?: string;
+  // ... other properties ...
 }

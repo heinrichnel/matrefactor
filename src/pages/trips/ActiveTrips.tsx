@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Trip } from "../../api/tripsApi";
-import AddTripModal from "../../components/Models/Trips/AddTripModal";
+import SystemCostsModal from "../../components/Models/Trips/SystemCostsModal";
+import TripCostEntryModal from "../../components/Models/Trips/TripCostEntryModal";
+import TripFormModal from "../../components/Models/Trips/TripFormModal";
+import { useAppContext } from "../../context/AppContext";
 import { useRealtimeTrips } from "../../hooks/useRealtimeTrips";
 import { SupportedCurrency } from "../../types";
 import { formatCurrency } from "../../utils/helpers";
@@ -87,6 +90,12 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
+  const [showTripForm, setShowTripForm] = useState(false);
+  const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+  const [costTripId, setCostTripId] = useState<string | null>(null);
+  const [isSystemCostsOpen, setIsSystemCostsOpen] = useState(false);
+  const [systemCostsTrip, setSystemCostsTrip] = useState<Trip | null>(null);
+  const { addCostEntry } = useAppContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState<{
     cost: number;
@@ -565,7 +574,7 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
           </button>
 
           <button
-            onClick={() => setIsAddTripModalOpen(true)}
+            onClick={() => setShowTripForm(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
             + New Trip
@@ -882,6 +891,26 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                       >
                         {trip.costBreakdown ? "View Breakdown" : "Allocate Costs"}
                       </button>
+                      <div className="mt-2 flex gap-3">
+                        <button
+                          className="text-xs text-indigo-600 hover:underline"
+                          onClick={() => {
+                            setCostTripId(trip.id);
+                            setIsCostModalOpen(true);
+                          }}
+                        >
+                          Add Cost
+                        </button>
+                        <button
+                          className="text-xs text-purple-600 hover:underline"
+                          onClick={() => {
+                            setSystemCostsTrip(trip);
+                            setIsSystemCostsOpen(true);
+                          }}
+                        >
+                          System Costs
+                        </button>
+                      </div>
                       {trip.lastUpdated && (
                         <div className="text-xs text-gray-500 mt-1">
                           Updated: {new Date(trip.lastUpdated).toLocaleString()}
@@ -909,12 +938,44 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
         </div>
       </div>
 
-      {/* Add Trip Modal */}
-      <AddTripModal
-        isOpen={isAddTripModalOpen}
-        onClose={() => setIsAddTripModalOpen(false)}
-        onSubmit={handleAddTrip}
+      {/* Legacy AddTripModal retained for backward compatibility but not invoked */}
+
+      {/* Trip Form Modal for create/edit flow */}
+      <TripFormModal isOpen={showTripForm} onClose={() => setShowTripForm(false)} />
+
+      {/* Cost entry modal */}
+      <TripCostEntryModal
+        isOpen={isCostModalOpen}
+        onClose={() => {
+          setIsCostModalOpen(false);
+          setCostTripId(null);
+        }}
+        onSubmit={async (data, files) => {
+          if (!costTripId) return;
+          await addCostEntry({ ...(data as any), tripId: costTripId } as any, files);
+          setIsCostModalOpen(false);
+          setCostTripId(null);
+        }}
       />
+
+      {/* System costs modal */}
+      {systemCostsTrip && (
+        <SystemCostsModal
+          isOpen={isSystemCostsOpen}
+          onClose={() => {
+            setIsSystemCostsOpen(false);
+            setSystemCostsTrip(null);
+          }}
+          tripData={systemCostsTrip as any}
+          onGenerateCosts={async (costs) => {
+            for (const c of costs) {
+              await addCostEntry({ ...(c as any), tripId: systemCostsTrip.id } as any);
+            }
+            setIsSystemCostsOpen(false);
+            setSystemCostsTrip(null);
+          }}
+        />
+      )}
     </div>
   );
 };

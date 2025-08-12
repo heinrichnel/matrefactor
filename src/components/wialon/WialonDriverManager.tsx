@@ -1,8 +1,8 @@
+import { useWialonDrivers } from "@/hooks/useWialonDrivers";
+import { useWialonResources } from "@/hooks/useWialonResources";
+import { useWialonSdk } from "@/hooks/useWialonSdk";
+import { useWialonSession } from "@/hooks/useWialonSession";
 import React, { useState } from "react";
-import { useWialonSdk } from "../hooks/useWialonSdk";
-import { useWialonSession } from "../hooks/useWialonSession";
-import { useWialonResources } from "../hooks/useWialonResources";
-import { useWialonDrivers } from "../hooks/useWialonDrivers";
 
 export const WialonDriverManager: React.FC = () => {
   const sdkReady = useWialonSdk();
@@ -47,30 +47,35 @@ export const WialonDriverManager: React.FC = () => {
     <div>
       <h2>Driver Manager</h2>
       {error && <div style={{ color: "red" }}>{error}</div>}
-      <label>Resource:{" "}
-        <select
-          value={selectedRes ?? ""}
-          onChange={(e) => setSelectedRes(Number(e.target.value))}
-        >
+      <label>
+        Resource:{" "}
+        <select value={selectedRes ?? ""} onChange={(e) => setSelectedRes(Number(e.target.value))}>
           <option value="">-- select resource --</option>
-          {resources.map((r) => (
-            <option key={r.id} value={r.id}>{r.name}</option>
+          {resources.map((r: any) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
+            </option>
           ))}
         </select>
       </label>
       <h3>Drivers</h3>
       <ul>
-        {drivers.map((d) => (
+        {drivers.map((d: any) => (
           <li key={d.id}>
             {d.n} {d.ds} {d.p}
           </li>
         ))}
       </ul>
-      <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleCreate();
+        }}
+      >
         <input name="n" placeholder="Name" value={form.n} onChange={handleChange} />
         <input name="ds" placeholder="Description" value={form.ds} onChange={handleChange} />
         <input name="p" placeholder="Phone" value={form.p} onChange={handleChange} />
-        <button type="submit" onClick={onClick}>Create Driver</button>
+        <button type="submit">Create Driver</button>
       </form>
     </div>
   );

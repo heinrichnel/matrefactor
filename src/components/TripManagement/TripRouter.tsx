@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { SupportedCurrency } from "../../lib/currency";
 import ActiveTrips from "../../pages/trips/ActiveTripsPageEnhanced";
@@ -6,6 +6,7 @@ import CompletedTrips from "../../pages/trips/CompletedTrips";
 import TripManagement from "../../pages/trips/TripManagementPage";
 import WialonMapComponent from "../../pages/wialon/WialonMapComponent";
 import TripForm from "../forms/trips/TripForm";
+import CompletedTripEditModal from "@/components/Models/Trips/CompletedTripEditModal";
 
 const TripRouter: React.FC = () => {
   const defaultCurrency: SupportedCurrency = "USD";
@@ -18,7 +19,15 @@ const TripRouter: React.FC = () => {
     <Routes>
       <Route path="/" element={<TripManagement />} />
       <Route path="/active" element={<ActiveTrips />} />
-      <Route path="/completed" element={<CompletedTrips displayCurrency={defaultCurrency} />} />
+      <Route
+        path="/completed"
+        element={
+          <CompletedTrips
+            trips={[]}
+            onView={(tripId) => console.log(`View trip with ID: ${tripId}`)}
+          />
+        }
+      />
       <Route
         path="/new"
         element={

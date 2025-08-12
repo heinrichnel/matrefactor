@@ -2,9 +2,13 @@ import { Activity, Clock, Download, Globe, MapPin, RefreshCw, Upload } from "luc
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Trip } from "../../api/tripsApi";
 import AddTripModal from "../../components/Models/Trips/AddTripModal";
+import { useAppContext } from "../../context/AppContext";
 import { useRealtimeTrips } from "../../hooks/useRealtimeTrips";
 import { useWebBookTrips } from "../../hooks/useWebBookTrips";
 import { formatCurrency, SupportedCurrency } from "../../lib/currency";
+import SystemCostsModal from "../Models/Trips/SystemCostsModal";
+import TripCostEntryModal from "../Models/Trips/TripCostEntryModal";
+import TripStatusUpdateModal from "../Models/Trips/TripStatusUpdateModal";
 
 interface ActiveTripsProps {
   displayCurrency: SupportedCurrency;
@@ -104,6 +108,13 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingCost, setEditingCost] = useState<string | null>(null);
+  const { addCostEntry, updateTripStatus } = useAppContext();
+  const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+  const [costTripId, setCostTripId] = useState<string | null>(null);
+  const [isSystemCostsOpen, setIsSystemCostsOpen] = useState(false);
+  const [systemCostsTrip, setSystemCostsTrip] = useState<Trip | null>(null);
+  const [statusTrip, setStatusTrip] = useState<Trip | null>(null);
+  const [statusType, setStatusType] = useState<"shipped" | "delivered" | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState<{
     cost: number;
@@ -1062,6 +1073,26 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                           {trip.costBreakdown ? "View Breakdown" : "Allocate Costs"}
                         </button>
                       )}
+                      <div className="mt-2 flex gap-3">
+                        <button
+                          className="text-xs text-indigo-600 hover:underline"
+                          onClick={() => {
+                            setCostTripId(trip.id);
+                            setIsCostModalOpen(true);
+                          }}
+                        >
+                          Add Cost
+                        </button>
+                        <button
+                          className="text-xs text-purple-600 hover:underline"
+                          onClick={() => {
+                            setSystemCostsTrip(trip);
+                            setIsSystemCostsOpen(true);
+                          }}
+                        >
+                          System Costs
+                        </button>
+                      </div>
                       {trip.lastUpdated && (
                         <div className="text-xs text-gray-500 mt-1">
                           Updated: {new Date(trip.lastUpdated).toLocaleString()}
@@ -1088,6 +1119,24 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
                           Edit Costs
                         </button>
                       )}
+                      <button
+                        className="text-blue-600 hover:text-blue-900"
+                        onClick={() => {
+                          setStatusTrip(trip);
+                          setStatusType("shipped");
+                        }}
+                      >
+                        Mark Shipped
+                      </button>
+                      <button
+                        className="text-green-600 hover:text-green-900"
+                        onClick={() => {
+                          setStatusTrip(trip);
+                          setStatusType("delivered");
+                        }}
+                      >
+                        Mark Delivered
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -1096,6 +1145,66 @@ const ActiveTrips: React.FC<ActiveTripsProps> = ({ displayCurrency = "USD" }) =>
           </table>
         </div>
       </div>
+
+      {/* Cost entry modal */}
+      <TripCostEntryModal
+        isOpen={isCostModalOpen}
+        onClose={() => {
+          setIsCostModalOpen(false);
+          setCostTripId(null);
+        }}
+        onSubmit={async (data, files) => {
+          if (!costTripId) return;
+          await addCostEntry({ ...(data as any), tripId: costTripId } as any, files);
+          setIsCostModalOpen(false);
+          setCostTripId(null);
+        }}
+      />
+
+      {/* System costs modal */}
+      {systemCostsTrip && (
+        <SystemCostsModal
+          isOpen={isSystemCostsOpen}
+          onClose={() => {
+            setIsSystemCostsOpen(false);
+            setSystemCostsTrip(null);
+          }}
+          tripData={systemCostsTrip as any}
+          onGenerateCosts={async (costs) => {
+            for (const c of costs) {
+              await addCostEntry({ ...(c as any), tripId: systemCostsTrip.id } as any);
+            }
+            setIsSystemCostsOpen(false);
+            setSystemCostsTrip(null);
+          }}
+        />
+      )}
+
+      {/* Status update modal */}
+      {statusTrip && statusType && (
+        <TripStatusUpdateModal
+          isOpen={true}
+          onClose={() => {
+            setStatusTrip(null);
+            setStatusType(null);
+          }}
+          trip={{
+            id: statusTrip.id,
+            fleetNumber: (statusTrip as any).vehicle || "",
+            driverName: (statusTrip as any).driver || "",
+            route: `${(statusTrip as any).origin || ""} → ${(statusTrip as any).destination || ""}`,
+            startDate: (statusTrip as any).startDate || "",
+            endDate: (statusTrip as any).endDate || "",
+            shippedAt: (statusTrip as any).shippedAt,
+          }}
+          status={statusType}
+          onUpdateStatus={async (id: string, s: "shipped" | "delivered", notes: string) => {
+            await updateTripStatus(id, s, notes);
+            setStatusTrip(null);
+            setStatusType(null);
+          }}
+        />
+      )}
 
       {/* Add Trip Modal */}
       <AddTripModal

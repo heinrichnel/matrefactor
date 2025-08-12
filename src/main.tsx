@@ -1,4 +1,5 @@
 // src/main.tsx
+import { SnackbarProvider } from "notistack";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -59,7 +60,13 @@ if (!rootEl) throw new Error("Root element #root not found");
 createRoot(rootEl).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <SnackbarProvider
+        maxSnack={3}
+        autoHideDuration={3000}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <App />
+      </SnackbarProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

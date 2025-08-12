@@ -1,10 +1,9 @@
+import useWialonGeofences from "@/hooks/useWialonGeofences";
+import { useWialonResources } from "@/hooks/useWialonResources";
+import { useWialonSdk } from "@/hooks/useWialonSdk";
+import { useWialonSession } from "@/hooks/useWialonSession";
 import React, { useState } from "react";
-import { MapContainer, TileLayer, Circle, Polygon, Polyline, useMapEvents } from "react-leaflet";
-import { useWialonSdk } from "../hooks/useWialonSdk";
-import { useWialonSession } from "../hooks/useWialonSession";
-import { useWialonResources } from "../hooks/useWialonResources";
-import { useWialonGeofences } from "../hooks/useWialonGeofences";
-import { GeofenceModal } from "./GeofenceModal";
+import { Circle, MapContainer, Polygon, Polyline, TileLayer, useMapEvents } from "react-leaflet";
 
 import type { LatLngTuple } from "leaflet";
 const center: LatLngTuple = [-26.2041, 28.0473]; // Johannesburg
@@ -13,11 +12,17 @@ export const WialonGeofenceManager: React.FC = () => {
   const sdkReady = useWialonSdk();
   const { loggedIn, error, session } = useWialonSession(sdkReady);
   const resources = useWialonResources(session, loggedIn);
-  const [selectedRes, setSelectedRes] = useState<number | null>(null);
-  const geofences = useWialonGeofences(session, selectedRes);
+  const {
+    geofences,
+    resources: resList,
+    selectedResourceId,
+    selectResource,
+  } = useWialonGeofences(session as any, loggedIn);
 
   // New geofence state
-  const [newCircle, setNewCircle] = useState<{lat: number, lng: number, radius: number} | null>(null);
+  const [newCircle, setNewCircle] = useState<{ lat: number; lng: number; radius: number } | null>(
+    null
+  );
   const [name, setName] = useState("");
 
   // Map click for circle creation
@@ -25,50 +30,56 @@ export const WialonGeofenceManager: React.FC = () => {
     useMapEvents({
       click(e) {
         setNewCircle({ lat: e.latlng.lat, lng: e.latlng.lng, radius: 500 });
-      }
+      },
     });
     return null;
   }
 
   const handleCreateGeofence = () => {
-    if (!selectedRes || !session || !newCircle || !name) return;
-    const res = session.getItem(selectedRes);
-    res.createZone({
-      n: name,
-      t: 3, // circle
-      f: 0,
-      w: newCircle.radius,
-      c: 2566914048, // color
-      p: [{ x: newCircle.lng, y: newCircle.lat, r: newCircle.radius }]
-    }, (code: number, data: any) => {
-      if (code) alert(window.wialon.core.Errors.getErrorText(code));
-      else alert(`Geofence "${data.n}" created`);
-    });
+    if (!selectedResourceId || !session || !newCircle || !name) return;
+    const res = session.getItem(selectedResourceId as number);
+    res.createZone(
+      {
+        n: name,
+        t: 3, // circle
+        f: 0,
+        w: newCircle.radius,
+        c: 2566914048, // color
+        p: [{ x: newCircle.lng, y: newCircle.lat, r: newCircle.radius }],
+      },
+      (code: number, data: any) => {
+        if (code) alert(window.wialon.core.Errors.getErrorText(code));
+        else alert(`Geofence "${data.n}" created`);
+      }
+    );
   };
 
   return (
     <div>
       <h2>Geofence Manager</h2>
       {error && <div style={{ color: "red" }}>{error}</div>}
-      <label>Resource:{" "}
+      <label>
+        Resource:{" "}
         <select
-          value={selectedRes ?? ""}
-          onChange={(e) => setSelectedRes(Number(e.target.value))}
+          value={selectedResourceId ?? ""}
+          onChange={(e) => selectResource(Number(e.target.value))}
         >
           <option value="">-- select resource --</option>
-          {resources.map((r) => (
-            <option key={r.id} value={r.id}>{r.name}</option>
+          {resList.map((r: any) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
+            </option>
           ))}
         </select>
       </label>
 
-      <MapContainer center={center} zoom={6} style={{height: 400, width: "100%", marginTop: 16}}>
+      <MapContainer center={center} zoom={6} style={{ height: 400, width: "100%", marginTop: 16 }}>
         <TileLayer
           attribution='&copy; <a href="https://osm.org">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapClickHandler />
-        {geofences.map((zone) =>
+        {geofences.map((zone: any) =>
           zone.t === 3 && zone.p && zone.p.length > 0 ? (
             <Circle
               key={zone.id}
@@ -102,16 +113,18 @@ export const WialonGeofenceManager: React.FC = () => {
         <input
           placeholder="Geofence name"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           disabled={!newCircle}
         />
-        <button onClick={onClick} disabled={!newCircle || !name || !selectedRes}>
+        <button
+          onClick={handleCreateGeofence}
+          disabled={!newCircle || !name || !selectedResourceId}
+        >
           Save Geofence
         </button>
       </div>
     </div>
   );
 };
-
 
 export default WialonGeofenceManager;

@@ -1,42 +1,65 @@
-/**
- * This is a centralized wrapper for importing Ant Design components
- * It ensures React is properly loaded before Ant Design is initialized
- */
-import React from 'react';
+import React, { lazy, Suspense } from "react";
 
-// Initialize React properly first
-window.React = React;
-
-// Then lazily import Ant Design
-export const AntD = React.lazy(() => import('antd'));
-
-// Export individual components with proper React context
-export const AntDesign = {
-  // Use these components in your app instead of direct imports from 'antd'
-  get Card() { return AntD.Card; },
-  get Table() { return AntD.Table; },
-  get Button() { return AntD.Button; },
-  get Input() { return AntD.Input; },
-  get Select() { return AntD.Select; },
-  get DatePicker() { return AntD.DatePicker; },
-  get TimePicker() { return AntD.TimePicker; },
-  get Checkbox() { return AntD.Checkbox; },
-  get Radio() { return AntD.Radio; },
-  get Switch() { return AntD.Switch; },
-  get Form() { return AntD.Form; },
-  get Layout() { return AntD.Layout; },
-  get Menu() { return AntD.Menu; },
-  get Dropdown() { return AntD.Dropdown; },
-  get Modal() { return AntD.Modal; },
-  get message() { return AntD.message; },
-  get notification() { return AntD.notification; },
-  get Tooltip() { return AntD.Tooltip; },
-  get Popover() { return AntD.Popover; },
-  get Tabs() { return AntD.Tabs; },
-  get Tag() { return AntD.Tag; },
-  get Space() { return AntD.Space; },
-  get Typography() { return AntD.Typography; },
-  // Add other Ant Design components as needed
+// Type definition for Ant Design's default export
+type AntDesignModule = {
+  Card: React.ComponentType<any>;
+  Table: React.ComponentType<any>;
+  Button: React.ComponentType<any>;
+  Input: React.ComponentType<any>;
+  // Add other components you need...
 };
 
-export default AntDesign;
+// Create a context for Ant Design components
+const AntDesignContext = React.createContext<AntDesignModule | null>(null);
+
+// Wrapper component
+export const AntDesignProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [antd, setAntd] = React.useState<AntDesignModule | null>(null);
+
+  React.useEffect(() => {
+    import("antd").then((module) => {
+      setAntd({
+        Card: module.default.Card,
+        Table: module.default.Table,
+        Button: module.default.Button,
+        Input: module.default.Input,
+        // Initialize other components...
+      });
+    });
+  }, []);
+
+  if (!antd) {
+    return <div>Loading Ant Design...</div>;
+  }
+
+  return <AntDesignContext.Provider value={antd}>{children}</AntDesignContext.Provider>;
+};
+
+// Hook to access Ant Design components
+export const useAntDesign = () => {
+  const context = React.useContext(AntDesignContext);
+  if (!context) {
+    throw new Error("useAntDesign must be used within an AntDesignProvider");
+  }
+  return context;
+};
+
+// Individual component wrappers
+export const Card: React.FC<any> = (props) => {
+  const { Card: AntCard } = useAntDesign();
+  return <AntCard {...props} />;
+};
+
+export const Button: React.FC<any> = (props) => {
+  const { Button: AntButton } = useAntDesign();
+  return <AntButton {...props} />;
+};
+
+// Add more component wrappers as needed...
+
+// Default export
+export default {
+  Card,
+  Button,
+  // Export other components...
+};

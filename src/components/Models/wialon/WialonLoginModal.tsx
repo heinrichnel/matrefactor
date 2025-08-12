@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWialonSession } from "../hooks/useWialonSession";
+import { useWialonSession } from "@/hooks/useWialonSession";
 
 export default function WialonLoginModal() {
   const [token, setToken] = useState("");
@@ -9,6 +9,13 @@ export default function WialonLoginModal() {
   const handleLogin = () => {
     if (session && typeof session.loginToken === "function") {
       session.loginToken(token, "", () => {});
+    }
+  };
+
+  const onClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    event.preventDefault();
+    if (token.trim()) {
+      handleLogin();
     }
   };
 

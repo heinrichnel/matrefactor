@@ -16,7 +16,10 @@ import {
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AddTripModal from "../../components/Models/Trips/AddTripModal";
+import LoadImportModal from "../../components/Models/Trips/LoadImportModal"; // Keep this import
+import SystemCostsModal from "../../components/Models/Trips/SystemCostsModal";
+import TripCostEntryModal from "../../components/Models/Trips/TripCostEntryModal";
+import TripStatusUpdateModal from "../../components/Models/Trips/TripStatusUpdateModal";
 import { useAppContext } from "../../context/AppContext";
 import { CostBreakdown, ImportSource, SupportedCurrency, UITrip } from "../../types/index"; // import
 
@@ -57,7 +60,7 @@ const formatCurrency = (amount: number, currency: SupportedCurrency) => {
 const useRealtimeTrips = ({ status, onlyWebBook }: { status?: string; onlyWebBook?: boolean }) => {
   const { trips: allContextTrips } = useAppContext();
   const [loading, setLoading] = useState(true);
-  const [error] = useState<string | null>(null); // setError removed (unused)
+  const [error] = useState<string | null>(null);
   const filteredTrips = useMemo(() => {
     setLoading(true);
     let filtered = allContextTrips;
@@ -175,7 +178,14 @@ const Checkbox = ({ label, ...props }: any) => (
 // Main Component
 const ActiveTripsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { trips: allContextTrips, updateTrip, deleteTrip, addTrip } = useAppContext();
+  const {
+    trips: allContextTrips,
+    updateTrip,
+    deleteTrip,
+    addTrip,
+    addCostEntry,
+    updateTripStatus,
+  } = useAppContext();
   const [filterWebBookOnly, setFilterWebBookOnly] = useState(false);
   const [statusFilter, setStatusFilter] = useState("");
   const {
@@ -224,6 +234,12 @@ const ActiveTripsPage: React.FC = () => {
     other: 0,
   });
   const [showLoadImportModal, setShowLoadImportModal] = useState(false);
+  const [statusUpdateTrip, setStatusUpdateTrip] = useState<UITrip | null>(null);
+  const [statusUpdateType, setStatusUpdateType] = useState<"shipped" | "delivered">("shipped");
+  const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+  const [costTrip, setCostTrip] = useState<UITrip | null>(null);
+  const [isSystemCostsOpen, setIsSystemCostsOpen] = useState(false);
+  const [systemCostsTrip, setSystemCostsTrip] = useState<UITrip | null>(null);
 
   const normalizeRtTrip = (trip: any): UITrip => ({
     id: trip.id,
@@ -414,36 +430,12 @@ const ActiveTripsPage: React.FC = () => {
   };
   const handleDeleteTrip = (tripId: string) => setConfirm({ open: true, tripId, action: "delete" });
   const handleShipTrip = async (trip: UITrip) => {
-    setActionLoading(trip.id + ":ship");
-    try {
-      const tripInContext = allContextTrips.find((t) => t.id === trip.id);
-      if (tripInContext) {
-        updateTrip({
-          ...tripInContext,
-          status: "shipped",
-          shippedAt: new Date().toISOString(),
-          statusNotes: "Marked as shipped on " + new Date().toLocaleString(),
-        });
-      }
-    } finally {
-      setActionLoading(null);
-    }
+    setStatusUpdateTrip(trip);
+    setStatusUpdateType("shipped");
   };
   const handleDeliverTrip = async (trip: UITrip) => {
-    setActionLoading(trip.id + ":deliver");
-    try {
-      const tripInContext = allContextTrips.find((t) => t.id === trip.id);
-      if (tripInContext) {
-        updateTrip({
-          ...tripInContext,
-          status: "delivered",
-          deliveredAt: new Date().toISOString(),
-          statusNotes: "Marked as delivered on " + new Date().toLocaleString(),
-        });
-      }
-    } finally {
-      setActionLoading(null);
-    }
+    setStatusUpdateTrip(trip);
+    setStatusUpdateType("delivered");
   };
   const handleCompleteTrip = async (trip: UITrip) => {
     setActionLoading(trip.id + ":complete");
@@ -1026,11 +1018,66 @@ const ActiveTripsPage: React.FC = () => {
           </>
         )}
       </Modal>
-      <AddTripModal
-        isOpen={showLoadImportModal}
-        onClose={() => setShowLoadImportModal(false)}
-        onSubmit={handleAddTripSubmit}
+      <TripStatusUpdateModal
+        isOpen={!!statusUpdateTrip}
+        onClose={() => setStatusUpdateTrip(null)}
+        trip={{
+          id: statusUpdateTrip?.id || "",
+          fleetNumber: (statusUpdateTrip as any)?.fleetNumber || "",
+          driverName: (statusUpdateTrip as any)?.driverName || "",
+          route:
+            (statusUpdateTrip as any)?.route ||
+            `${statusUpdateTrip?.origin || ""} → ${statusUpdateTrip?.destination || ""}`,
+          startDate: (statusUpdateTrip as any)?.startDate || statusUpdateTrip?.startTime || "",
+          endDate: (statusUpdateTrip as any)?.endDate || statusUpdateTrip?.endTime || "",
+          shippedAt: (statusUpdateTrip as any)?.shippedAt,
+        }}
+        status={statusUpdateType}
+        onUpdateStatus={async (id: string, status: "shipped" | "delivered", notes: string) => {
+          await updateTripStatus(id, status, notes);
+          setStatusUpdateTrip(null);
+        }}
       />
+
+      <TripCostEntryModal
+        isOpen={isCostModalOpen}
+        onClose={() => {
+          setIsCostModalOpen(false);
+          setCostTrip(null);
+        }}
+        onSubmit={async (data: any, files?: FileList) => {
+          if (!costTrip) return;
+          await addCostEntry(
+            {
+              ...(data as any),
+              tripId: costTrip.id,
+            } as any,
+            files
+          );
+          setIsCostModalOpen(false);
+          setCostTrip(null);
+        }}
+      />
+
+      {systemCostsTrip && (
+        <SystemCostsModal
+          isOpen={isSystemCostsOpen}
+          onClose={() => {
+            setIsSystemCostsOpen(false);
+            setSystemCostsTrip(null);
+          }}
+          tripData={systemCostsTrip as any}
+          onGenerateCosts={async (costs: any[]) => {
+            for (const c of costs) {
+              await addCostEntry({ ...(c as any), tripId: systemCostsTrip.id } as any);
+            }
+            setIsSystemCostsOpen(false);
+            setSystemCostsTrip(null);
+          }}
+        />
+      )}
+
+      <LoadImportModal isOpen={showLoadImportModal} onClose={() => setShowLoadImportModal(false)} />
     </div>
   );
 };

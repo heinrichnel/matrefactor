@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { Camera, Check, Download, Trash2, Upload, X } from "lucide-react";
+import { useSnackbar } from "notistack";
 import React, { useState } from "react";
 import { generateInspectionPDF } from "../../../utils/pdfGenerators";
 import Button from "../../ui/Button";
@@ -60,6 +61,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
   onCancel,
   onGeneratePDF,
 }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const [data, setData] = useState<InspectionReport>(
     initialData || {
       id: `insp-${Date.now()}`,
@@ -128,6 +130,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
 
   const handleSave = () => {
     onSave(data);
+    enqueueSnackbar("Inspection report saved", { variant: "success" });
   };
 
   const handleGeneratePDF = () => {
@@ -135,6 +138,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
     generateInspectionPDF(data);
     // Also call the provided callback if needed
     onGeneratePDF?.(data.id);
+    enqueueSnackbar("PDF generated", { variant: "info" });
   };
 
   const renderStatusClass = (status: string) => {
@@ -157,10 +161,10 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
             <p className="text-gray-500">{data.reportNumber}</p>
           </div>
           <div className="space-x-2">
-            <Button onClick={onClick} variant="secondary" icon={<Download size={16} />}>
+            <Button onClick={handleGeneratePDF} variant="secondary" icon={<Download size={16} />}>
               Download PDF
             </Button>
-            <Button onClick={onClick} variant="outline">
+            <Button onClick={() => setIsPreview(false)} variant="outline">
               Back to Edit
             </Button>
           </div>
@@ -314,13 +318,13 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Inspection Report</h2>
           <div className="space-x-2">
-            <Button onClick={onClick} variant="outline">
+            <Button onClick={() => setIsPreview(true)} variant="outline">
               Preview
             </Button>
-            <Button onClick={onClick} variant="primary" icon={<Check size={16} />}>
+            <Button onClick={handleSave} variant="primary" icon={<Check size={16} />}>
               Save Report
             </Button>
-            <Button onClick={onClick} variant="secondary" icon={<X size={16} />}>
+            <Button onClick={onCancel} variant="secondary" icon={<X size={16} />}>
               Cancel
             </Button>
           </div>
@@ -530,7 +534,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                               />
                               <button
                                 className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={onClick}
+                                onClick={() => handleRemoveImage(item.id, idx)}
                               >
                                 <Trash2 size={16} className="text-white" />
                               </button>
@@ -541,7 +545,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                     </td>
                     <td className="py-3 px-4">
                       <button
-                        onClick={onClick}
+                        onClick={() => setActiveItem(item.id)}
                         className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm font-medium flex items-center"
                       >
                         <Camera size={16} className="mr-1" />
@@ -584,7 +588,7 @@ const InspectionReportForm: React.FC<InspectionReportFormProps> = ({
                 </label>
               </div>
               <div className="flex justify-end">
-                <Button onClick={onClick} variant="secondary">
+                <Button onClick={() => setActiveItem(null)} variant="secondary">
                   Close
                 </Button>
               </div>

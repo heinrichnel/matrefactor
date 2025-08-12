@@ -185,6 +185,25 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
     }, 1000);
   };
 
+  const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const target = e.currentTarget;
+
+    // Check if this is for removing a previously uploaded image
+    if (target.closest("[key^='prev-']")) {
+      const index = parseInt(target.closest("div")?.getAttribute("key")?.split("-")[1] || "0");
+      removePreviousImage(index);
+    }
+    // For removing a newly uploaded image
+    else if (target.closest("[key]")) {
+      const index = parseInt(target.closest("div")?.getAttribute("key") || "0");
+      removeImage(index);
+    }
+    // For cancel button
+    else if (onCancel) {
+      onCancel();
+    }
+  };
   return (
     <Card>
       <CardContent className="p-6">

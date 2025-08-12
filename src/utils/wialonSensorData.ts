@@ -3,7 +3,7 @@
  * Specifically designed to work with AVL unit data for vehicles with fuel probes
  */
 
-import { getWialonUnits } from './wialonAuth';
+import { getWialonSession } from "@/api/wialon";
 
 // Define interfaces for sensor data
 export interface WialonSensor {
@@ -103,11 +103,14 @@ export interface VehicleSensorData {
  * @returns The maximum capacity in liters.
  */
 const getMaxCapacityFromSensor = (d: string): number => {
-  if (!d || !d.includes(':')) {
+  if (!d || !d.includes(":")) {
     return 450; // Default fallback
   }
 
-  const parts = d.split(':').map(p => p.replace('|', '')).map(parseFloat);
+  const parts = d
+    .split(":")
+    .map((p) => p.replace("|", ""))
+    .map(parseFloat);
   let maxCapacity = 0;
 
   // y-values (liters) are at odd indices (1, 3, 5, ...)
@@ -124,54 +127,59 @@ const getMaxCapacityFromSensor = (d: string): number => {
  * @param fleetNumber The fleet number to search for (e.g., '21H')
  * @returns Promise resolving to the vehicle sensor data
  */
-export const getVehicleSensorData = async (fleetNumber: string): Promise<VehicleSensorData | null> => {
+export const getVehicleSensorData = async (
+  fleetNumber: string
+): Promise<VehicleSensorData | null> => {
   try {
     // Get all units from Wialon
-    const wialonUnits = await getWialonUnits();
-    
+    const session = await getWialonSession();
+    const wialonUnits = session ? await session.getUnits() : [];
+
     // Find the unit with the matching fleet number
     const unit = wialonUnits.find((u: any) => {
       const name = u.getName();
       return name.startsWith(fleetNumber);
     });
-    
+
     if (!unit) {
       console.warn(`No unit found with fleet number ${fleetNumber}`);
       return null;
     }
-    
+
     // Get the unit's position
     const position = unit.getPosition();
-    
+
     // Get the unit's last message
     const lastMessage = unit.getLastMessage();
-    
+
     // Get the unit's sensors
-    const unitData = unit.getCustomProperty('avl_unit');
-    
+    const unitData = unit.getCustomProperty("avl_unit");
+
     // If we don't have the detailed unit data, return basic info
     if (!unitData) {
       return {
         fleetNumber,
         fullName: unit.getName(),
         lastUpdated: position ? new Date(position.t * 1000) : new Date(),
-        position: position ? {
-          latitude: position.y,
-          longitude: position.x,
-          speed: position.s,
-          timestamp: position.t
-        } : undefined,
-        ignition: lastMessage?.p?.['ignition'] === 1,
+        position: position
+          ? {
+              latitude: position.y,
+              longitude: position.x,
+              speed: position.s,
+              timestamp: position.t,
+            }
+          : undefined,
+        ignition: lastMessage?.p?.["ignition"] === 1,
         fuelTanks: [],
       };
     }
-    
+
     // Parse the unit data
-    const avlUnit: WialonAVLUnit = typeof unitData === 'string' ? JSON.parse(unitData) : unitData;
-    
+    const avlUnit: WialonAVLUnit = typeof unitData === "string" ? JSON.parse(unitData) : unitData;
+
     // Extract sensor data
     const sensors = avlUnit.sensors || [];
-    
+
     // Find fuel tank sensors
     const fuelTanks: FuelTankData[] = [];
     let externalVoltage: number | undefined;
@@ -179,65 +187,67 @@ export const getVehicleSensorData = async (fleetNumber: string): Promise<Vehicle
     let harshBraking: number | undefined;
     let harshAcceleration: number | undefined;
     let harshCornering: number | undefined;
-    
+
     // Process each sensor
-    sensors.forEach(sensor => {
+    sensors.forEach((sensor) => {
       // Process based on sensor type and name
-      if (sensor.t === 'fuel level') {
+      if (sensor.t === "fuel level") {
         // Extract fuel level data
         const tankName = sensor.n;
-        const sensorValue = lastMessage?.p?.[sensor.p.split('/')[0]];
-        
+        const sensorValue = lastMessage?.p?.[sensor.p.split("/")[0]];
+
         if (sensorValue !== undefined) {
           // Find the max capacity from the calibration table
           const maxCapacity = getMaxCapacityFromSensor(sensor.d);
-          
+
           fuelTanks.push({
             tankName,
             currentLevel: sensorValue,
             maxCapacity,
             percentageFull: (sensorValue / maxCapacity) * 100,
-            lastUpdated: new Date(lastMessage.t * 1000)
+            lastUpdated: new Date(lastMessage.t * 1000),
           });
         }
-      } else if (sensor.t === 'voltage' && sensor.n === 'External Voltage') {
-        externalVoltage = lastMessage?.p?.[sensor.p.split('/')[0]];
-      } else if (sensor.t === 'custom' && sensor.n === 'Signal Strenght') {
+      } else if (sensor.t === "voltage" && sensor.n === "External Voltage") {
+        externalVoltage = lastMessage?.p?.[sensor.p.split("/")[0]];
+      } else if (sensor.t === "custom" && sensor.n === "Signal Strenght") {
         signalStrength = lastMessage?.p?.[sensor.p];
-      } else if (sensor.t === 'accelerometer') {
-        if (sensor.n === 'Harsh Braking Parameters') {
+      } else if (sensor.t === "accelerometer") {
+        if (sensor.n === "Harsh Braking Parameters") {
           harshBraking = lastMessage?.p?.[sensor.p];
-        } else if (sensor.n === 'Harsh Acceleration Parameters') {
+        } else if (sensor.n === "Harsh Acceleration Parameters") {
           harshAcceleration = lastMessage?.p?.[sensor.p];
-        } else if (sensor.n === 'Harsh Cornering Parameters') {
+        } else if (sensor.n === "Harsh Cornering Parameters") {
           harshCornering = lastMessage?.p?.[sensor.p];
         }
       }
     });
-    
+
     // Construct and return the vehicle sensor data
     return {
       fleetNumber,
       fullName: avlUnit.general.n,
       lastUpdated: new Date(lastMessage?.t * 1000),
-      position: position ? {
-        latitude: position.y,
-        longitude: position.x,
-        speed: position.s,
-        timestamp: position.t
-      } : undefined,
-      ignition: lastMessage?.p?.['ignition'] === 1,
+      position: position
+        ? {
+            latitude: position.y,
+            longitude: position.x,
+            speed: position.s,
+            timestamp: position.t,
+          }
+        : undefined,
+      ignition: lastMessage?.p?.["ignition"] === 1,
       externalVoltage,
       fuelTanks,
       signalStrength,
       drivingBehavior: {
         harshBraking,
         harshAcceleration,
-        harshCornering
-      }
+        harshCornering,
+      },
     };
   } catch (error) {
-    console.error('Error fetching vehicle sensor data:', error);
+    console.error("Error fetching vehicle sensor data:", error);
     throw error;
   }
 };
@@ -266,7 +276,10 @@ export const getTotalFuelCapacity = (sensorData: VehicleSensorData): number => {
  * @param maxAgeMinutes Maximum age in minutes for data to be considered valid
  * @returns True if the data is recent enough, false otherwise
  */
-export const isSensorDataRecent = (sensorData: VehicleSensorData, maxAgeMinutes: number = 30): boolean => {
+export const isSensorDataRecent = (
+  sensorData: VehicleSensorData,
+  maxAgeMinutes: number = 30
+): boolean => {
   const now = new Date();
   const dataAge = (now.getTime() - sensorData.lastUpdated.getTime()) / (1000 * 60); // in minutes
   return dataAge <= maxAgeMinutes;

@@ -1,7 +1,7 @@
-import DieselDebriefModal from "@/components/Models/Diesel/DieselDebriefModal";
+import DieselEditModal from "@/components/Models/Diesel/DieselEditModal";
 import DieselImportModal from "@/components/Models/Diesel/DieselImportModal";
 import DieselNormsModal from "@/components/Models/Diesel/DieselNormsModal";
-import ProbeVerificationModal from "@/components/Models/Diesel/EnhancedProbeVerificationModal";
+import EnhancedDieselDebriefModal from "@/components/Models/Diesel/EnhancedDieselDebriefModal";
 import ManualDieselEntryModal from "@/components/Models/Diesel/ManualDieselEntryModal";
 import TripLinkageModal from "@/components/Models/Trips/TripLinkageModal";
 import Button from "@/components/ui/Button";
@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useState } from "react";
+import AutomaticProbeVerificationModal from "../../components/Models/Diesel/AutomaticProbeVerificationModal";
 import { useAppContext } from "../../context/AppContext";
 import { TRUCKS_WITH_PROBES } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/helpers";
@@ -151,6 +152,7 @@ const DieselManagementPage: React.FC = () => {
   const [isNormsModalOpen, setIsNormsModalOpen] = useState(false);
   const [isTripLinkageModalOpen, setIsTripLinkageModalOpen] = useState(false);
   const [isProbeVerificationModalOpen, setIsProbeVerificationModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDieselId, setSelectedDieselId] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState({
@@ -363,6 +365,11 @@ const DieselManagementPage: React.FC = () => {
   const handleVerifyProbe = (recordId: string) => {
     setSelectedDieselId(recordId);
     setIsProbeVerificationModalOpen(true);
+  };
+
+  const handleOpenEditModal = (recordId: string) => {
+    setSelectedDieselId(recordId);
+    setIsEditModalOpen(true);
   };
 
   const updateNorms = (updatedNorms: DieselNorms[]) => {
@@ -1038,7 +1045,7 @@ const DieselManagementPage: React.FC = () => {
                             size="sm"
                             variant="outline"
                             icon={<Edit className="w-4 h-4" />}
-                            onClick={() => handleEdit(record.id)}
+                            onClick={() => handleOpenEditModal(record.id)}
                             disabled={connectionStatus !== "connected"}
                           >
                             Edit
@@ -1091,15 +1098,10 @@ const DieselManagementPage: React.FC = () => {
         onClose={() => setIsManualEntryModalOpen(false)}
       />
 
-      <DieselDebriefModal
+      <EnhancedDieselDebriefModal
         isOpen={isDebriefModalOpen}
         onClose={() => setIsDebriefModalOpen(false)}
-        records={enhancedRecords
-          .filter((r) => r.requiresDebrief)
-          .map((r) => ({
-            ...r,
-            performanceStatus: (r.performanceStatus as "poor" | "normal" | "excellent") || "normal",
-          }))}
+        records={enhancedRecords.filter((r) => r.requiresDebrief) as any}
         norms={dieselNorms}
       />
 
@@ -1121,16 +1123,22 @@ const DieselManagementPage: React.FC = () => {
             dieselRecordId={selectedDieselId}
           />
 
-          <ProbeVerificationModal
+          <AutomaticProbeVerificationModal
             isOpen={isProbeVerificationModalOpen}
             onClose={() => {
               setIsProbeVerificationModalOpen(false);
               setSelectedDieselId("");
             }}
-            record={
-              dieselRecords.find((r) => r.id === selectedDieselId) ||
-              ({ id: "", fleetNumber: "" } as any)
-            }
+            dieselRecordId={selectedDieselId}
+          />
+
+          <DieselEditModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedDieselId("");
+            }}
+            dieselRecordId={selectedDieselId}
           />
         </>
       )}

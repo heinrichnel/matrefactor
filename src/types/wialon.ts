@@ -17,20 +17,20 @@ export interface WialonUnit {
 /** Wialon Driver */
 export interface WialonDriver {
   id: number | string;
-  n: string;       // Name
-  ds?: string;     // Description
-  p?: string;      // Phone
+  n: string; // Name
+  ds?: string; // Description
+  p?: string; // Phone
   // Extend as needed
 }
 
 /** Wialon Geofence ("zone") */
 export interface WialonGeofence {
   id: number | string;
-  n: string;       // Name
-  t: number;       // Type: 3 = Circle, 2 = Polygon, 1 = Polyline
-  w?: number;      // Radius for circles
-  c?: number;      // Color (decimal)
-  p?: any[];       // Geometry points
+  n: string; // Name
+  t: number; // Type: 3 = Circle, 2 = Polygon, 1 = Polyline
+  w?: number; // Radius for circles
+  c?: number; // Color (decimal)
+  p?: any[]; // Geometry points
   // Extend as needed
 }
 
@@ -51,9 +51,4 @@ export interface WialonSession {
   getItem(id: number | string): any;
 }
 
-/** Attach Wialon SDK to window */
-declare global {
-  interface Window {
-    wialon: any;
-  }
-}
+// Note: Global window.wialon is declared in wialon-sdk.d.ts; avoid duplicate declaration here.

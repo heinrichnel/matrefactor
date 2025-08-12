@@ -1,14 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs, where } from 'firebase/firestore';
-import { firestore } from '../../firebase';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import { ClipboardList, ArrowLeft, FileSearch, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { collection, query, orderBy, getDocs, where } from "firebase/firestore";
+import { firestore } from "../../firebase";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import {
+  ClipboardList,
+  ArrowLeft,
+  FileSearch,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+} from "lucide-react";
 
 interface InspectionItem {
   name: string;
-  status: 'passed' | 'failed' | null;
+  status: "passed" | "failed" | null;
   comments: string;
 }
 
@@ -29,87 +36,106 @@ interface Inspection {
 
 const InspectionHistory: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const fleetNumber = searchParams.get('fleet');
+  const fleetNumber = searchParams.get("fleet");
   const navigate = useNavigate();
-  
+
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
-  
+
   useEffect(() => {
     const fetchInspections = async () => {
       try {
         setLoading(true);
-        
+
         let inspectionsQuery;
         if (fleetNumber) {
           inspectionsQuery = query(
-            collection(firestore, 'inspections'),
-            where('fleetNumber', '==', fleetNumber),
-            orderBy('timestamp', 'desc')
+            collection(firestore, "inspections"),
+            where("fleetNumber", "==", fleetNumber),
+            orderBy("timestamp", "desc")
           );
         } else {
           inspectionsQuery = query(
-            collection(firestore, 'inspections'),
-            orderBy('timestamp', 'desc')
+            collection(firestore, "inspections"),
+            orderBy("timestamp", "desc")
           );
         }
-        
+
         const snapshot = await getDocs(inspectionsQuery);
         const inspectionData: Inspection[] = [];
-        
-        snapshot.forEach(doc => {
+
+        snapshot.forEach((doc) => {
           inspectionData.push({
             id: doc.id,
-            ...doc.data()
+            ...doc.data(),
           } as Inspection);
         });
-        
+
         setInspections(inspectionData);
       } catch (error) {
-        console.error('Error fetching inspections:', error);
+        console.error("Error fetching inspections:", error);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchInspections();
   }, [fleetNumber]);
-  
+
   const formatDate = (timestamp: { seconds: number }) => {
-    if (!timestamp) return 'Unknown';
+    if (!timestamp) return "Unknown";
     const date = new Date(timestamp.seconds * 1000);
     return date.toLocaleString();
   };
-  
+
   const getStatusCounts = (items: InspectionItem[]) => {
     let passed = 0;
     let failed = 0;
-    
-    items.forEach(item => {
-      if (item.status === 'passed') passed++;
-      if (item.status === 'failed') failed++;
+
+    items.forEach((item) => {
+      if (item.status === "passed") passed++;
+      if (item.status === "failed") failed++;
     });
-    
+
     return { passed, failed };
   };
-  
+
   const getStatusColor = (items: InspectionItem[]) => {
     const { failed } = getStatusCounts(items);
-    
-    if (failed > 0) return 'text-red-500';
-    return 'text-green-500';
+
+    if (failed > 0) return "text-red-500";
+    return "text-green-500";
   };
-  
+
   const getStatusIcon = (items: InspectionItem[]) => {
     const { failed } = getStatusCounts(items);
-    
+
     if (failed > 0) {
       return <AlertTriangle className="h-5 w-5 text-red-500" />;
     }
     return <CheckCircle2 className="h-5 w-5 text-green-500" />;
   };
-  
+
+  const onClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+    const buttonText = event.currentTarget.textContent?.trim();
+
+    if (buttonText === "Back to Workshop") {
+      navigate("/workshop");
+    } else if (buttonText === "Back to List") {
+      setSelectedInspection(null);
+    } else if (buttonText === "View Details") {
+      // Find the inspection associated with this button
+      const row = event.currentTarget.closest("tr");
+      if (row) {
+        const index = Array.from(row.parentElement?.children || []).indexOf(row);
+        if (index !== -1 && inspections[index]) {
+          setSelectedInspection(inspections[index]);
+        }
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -118,14 +144,10 @@ const InspectionHistory: React.FC = () => {
             <div className="flex items-center gap-2">
               <ClipboardList className="w-5 h-5" />
               <h2 className="text-xl font-bold">
-                {fleetNumber ? `Inspections for ${fleetNumber}` : 'All Inspections'}
+                {fleetNumber ? `Inspections for ${fleetNumber}` : "All Inspections"}
               </h2>
             </div>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-1" 
-              onClick={onClick}
-            >
+            <Button variant="outline" className="flex items-center gap-1" onClick={onClick}>
               <ArrowLeft className="w-4 h-4" />
               Back to Workshop
             </Button>
@@ -141,9 +163,9 @@ const InspectionHistory: React.FC = () => {
               <FileSearch className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900">No inspection records found</h3>
               <p className="text-gray-600 mt-1">
-                {fleetNumber 
-                  ? `No inspections have been recorded for vehicle ${fleetNumber} yet.` 
-                  : 'No driver inspections have been recorded yet.'}
+                {fleetNumber
+                  ? `No inspections have been recorded for vehicle ${fleetNumber} yet.`
+                  : "No driver inspections have been recorded yet."}
               </p>
             </div>
           ) : (
@@ -152,15 +174,11 @@ const InspectionHistory: React.FC = () => {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Inspection Details</h3>
-                    <Button 
-                      variant="outline" 
-                      onClick={onClick}
-                      className="text-sm"
-                    >
+                    <Button variant="outline" onClick={onClick} className="text-sm">
                       Back to List
                     </Button>
                   </div>
-                  
+
                   <div className="bg-blue-50 rounded-lg p-4 mb-6">
                     <h3 className="text-lg font-semibold mb-2">Inspection Information</h3>
                     <div className="grid md:grid-cols-2 gap-4">
@@ -190,7 +208,7 @@ const InspectionHistory: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Inspection Items</h3>
                     <div className="space-y-4">
@@ -198,30 +216,35 @@ const InspectionHistory: React.FC = () => {
                         <div key={index} className="border rounded-md p-4">
                           <div className="flex justify-between items-center">
                             <span className="font-medium">{item.name}</span>
-                            <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${
-                              item.status === 'passed' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {item.status === 'passed' 
-                                ? <CheckCircle2 className="w-4 h-4" /> 
-                                : <XCircle className="w-4 h-4" />
-                              } 
-                              {item.status === 'passed' ? 'Pass' : 'Fail'}
+                            <span
+                              className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${
+                                item.status === "passed"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {item.status === "passed" ? (
+                                <CheckCircle2 className="w-4 h-4" />
+                              ) : (
+                                <XCircle className="w-4 h-4" />
+                              )}
+                              {item.status === "passed" ? "Pass" : "Fail"}
                             </span>
                           </div>
-                          
-                          {item.status === 'failed' && item.comments && (
+
+                          {item.status === "failed" && item.comments && (
                             <div className="mt-2">
                               <p className="text-sm font-medium text-gray-700">Comments:</p>
-                              <p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">{item.comments}</p>
+                              <p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">
+                                {item.comments}
+                              </p>
                             </div>
                           )}
                         </div>
                       ))}
                     </div>
                   </div>
-                  
+
                   {selectedInspection.additionalComments && (
                     <div>
                       <h3 className="text-lg font-semibold mb-2">Additional Comments</h3>
@@ -274,11 +297,15 @@ const InspectionHistory: React.FC = () => {
                               <div className="text-sm text-gray-900">{inspection.fleetNumber}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{inspection.make} {inspection.model}</div>
+                              <div className="text-sm text-gray-900">
+                                {inspection.make} {inspection.model}
+                              </div>
                               <div className="text-sm text-gray-500">{inspection.registration}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{formatDate(inspection.timestamp)}</div>
+                              <div className="text-sm text-gray-900">
+                                {formatDate(inspection.timestamp)}
+                              </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
@@ -293,11 +320,7 @@ const InspectionHistory: React.FC = () => {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <Button 
-                                variant="outline"
-                                size="sm"
-                                onClick={onClick}
-                              >
+                              <Button variant="outline" size="sm" onClick={onClick}>
                                 View Details
                               </Button>
                             </td>

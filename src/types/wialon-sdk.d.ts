@@ -66,6 +66,10 @@ declare namespace W {
     getItems(type?: string): any[];
     getItem(id: number): any;
     logout(): void;
+    // Commonly used convenience methods (not always present in older SDK docs)
+    getCurrUser?(): { getName?: () => string } | null;
+    getServerTime?(): number;
+    getTokenExpiration?(): number;
   }
 
   // ====== Item Namespace ======

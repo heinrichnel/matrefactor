@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import Modal from '../../ui/Modal';
-import Button from '../../ui/Button';
-import { Input, TextArea } from '../../ui/FormElements';
-import { useAppContext } from '../../../context/AppContext';
-import { formatDate } from '../../../utils/helpers';
-import { CheckCircle, X, AlertTriangle, Info } from 'lucide-react';
-import { FLEETS_WITH_PROBES, DieselConsumptionRecord } from '../../../types';
-import { addAuditLogToFirebase } from '../../../firebase';
+import { AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useAppContext } from "../../../context/AppContext";
+import { addAuditLogToFirebase } from "../../../firebase";
+import { DieselConsumptionRecord, FLEETS_WITH_PROBES } from "../../../types";
+import { formatDate } from "../../../utils/helpers";
+import Button from "../../ui/Button";
+import { Input, TextArea } from "../../ui/FormElements";
+import Modal from "../../ui/Modal";
 
 interface EnhancedProbeVerificationModalProps {
   isOpen: boolean;
@@ -17,19 +17,19 @@ interface EnhancedProbeVerificationModalProps {
 const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalProps> = ({
   isOpen,
   onClose,
-  record
+  record,
 }) => {
   const { updateDieselRecord } = useAppContext();
-  
-  const [probeReading, setProbeReading] = useState(record.probeReading?.toString() || '');
-  const [verificationNotes, setVerificationNotes] = useState(record.verificationNotes || '');
+
+  const [probeReading, setProbeReading] = useState(record.probeReading?.toString() || "");
+  const [verificationNotes, setVerificationNotes] = useState(record.probeVerificationNotes || "");
   const [photoEvidence, setPhotoEvidence] = useState<File | null>(null);
-  const [witnessName, setWitnessName] = useState(record.witnessName || '');
+  const [witnessName, setWitnessName] = useState(record.witnessName || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [discrepancy, setDiscrepancy] = useState<number | null>(null);
   const [discrepancyPercentage, setDiscrepancyPercentage] = useState<number | null>(null);
-  
+
   // Calculate discrepancy when probe reading changes
   useEffect(() => {
     if (probeReading) {
@@ -37,7 +37,7 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
       if (!isNaN(probeValue)) {
         const diff = record.litresFilled - probeValue;
         setDiscrepancy(diff);
-        
+
         const percentage = (diff / record.litresFilled) * 100;
         setDiscrepancyPercentage(percentage);
       } else {
@@ -49,43 +49,43 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
       setDiscrepancyPercentage(null);
     }
   }, [probeReading, record.litresFilled]);
-  
+
   // Determine if the vehicle has a probe system
   const hasProbeSystem = FLEETS_WITH_PROBES.includes(record.fleetNumber);
-  
+
   // Validation function
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!probeReading) {
-      newErrors.probeReading = 'Probe reading is required';
+      newErrors.probeReading = "Probe reading is required";
     } else if (isNaN(parseFloat(probeReading))) {
-      newErrors.probeReading = 'Probe reading must be a number';
+      newErrors.probeReading = "Probe reading must be a number";
     }
-    
+
     if (!witnessName) {
-      newErrors.witnessName = 'Witness name is required for verification';
+      newErrors.witnessName = "Witness name is required for verification";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   // Handle form submission
   const handleSubmit = async () => {
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const probeValue = parseFloat(probeReading);
       const diff = record.litresFilled - probeValue;
       const percentage = (diff / record.litresFilled) * 100;
-      
+
       // Determine if the reading is verified based on discrepancy
       // If discrepancy is less than 5%, consider it verified
       const isVerified = Math.abs(percentage) <= 5;
-      
+
       // Update the diesel record
       // Upload photo evidence if available
       let photoUrl = record.photoEvidenceUrl;
@@ -96,25 +96,24 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
         console.log("Photo evidence would be uploaded here:", photoEvidence.name);
       }
 
-      await updateDieselRecord(record.id, {
+      await updateDieselRecord({
         ...record,
         probeReading: probeValue,
         probeDiscrepancy: diff,
         probeDiscrepancyPercentage: percentage,
-        verificationNotes,
+        probeVerificationNotes: verificationNotes,
         witnessName,
         verified: isVerified,
         verificationDate: new Date().toISOString(),
         photoEvidenceUrl: photoUrl,
         photoEvidenceName: photoEvidence?.name || record.photoEvidenceName,
-        // If there's a large discrepancy, flag the record for investigation
-        flagged: Math.abs(percentage) > 5
+        flagged: Math.abs(percentage) > 5,
       });
-      
+
       // Add audit log
       await addAuditLogToFirebase({
-        action: 'VERIFY_DIESEL_RECORD',
-        performedBy: 'Current User', // You would get this from auth
+        action: "VERIFY_DIESEL_RECORD",
+        performedBy: "Current User", // You would get this from auth
         timestamp: new Date().toISOString(),
         details: {
           recordId: record.id,
@@ -123,39 +122,39 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
           probeReading: probeValue,
           discrepancy: diff,
           discrepancyPercentage: percentage,
-          verified: isVerified
-        }
+          verified: isVerified,
+        },
       });
-      
+
       onClose();
     } catch (error) {
-      console.error('Error verifying diesel record:', error);
-      setErrors({ submit: 'Failed to verify record. Please try again.' });
+      console.error("Error verifying diesel record:", error);
+      setErrors({ submit: "Failed to verify record. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setPhotoEvidence(e.target.files[0]);
     }
   };
-  
+
   // Get status class based on discrepancy percentage
   const getStatusClass = () => {
-    if (discrepancyPercentage === null) return '';
-    
+    if (discrepancyPercentage === null) return "";
+
     if (Math.abs(discrepancyPercentage) <= 2) {
-      return 'text-green-600';
+      return "text-green-600";
     } else if (Math.abs(discrepancyPercentage) <= 5) {
-      return 'text-amber-600';
+      return "text-amber-600";
     } else {
-      return 'text-red-600';
+      return "text-red-600";
     }
   };
-  
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Verify Diesel Consumption with Probe" size="lg">
       <div className="space-y-6">
@@ -182,15 +181,15 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
             </div>
           </div>
         </div>
-        
+
         {/* Probe verification form */}
         <div>
           <h3 className="text-md font-medium mb-3">Probe Verification</h3>
-          
+
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Probe Reading (Litres) *</label>
               <Input
+                label="Probe Reading (Litres) *"
                 type="number"
                 value={probeReading}
                 onChange={(e) => setProbeReading(e.target.value)}
@@ -198,20 +197,24 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
                 placeholder="0.00"
               />
             </div>
-            
+
             {discrepancy !== null && discrepancyPercentage !== null && (
               <div className="bg-gray-50 p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Discrepancy</p>
-                    <p className={`text-lg font-semibold ${discrepancy > 0 ? 'text-red-600' : discrepancy < 0 ? 'text-green-600' : 'text-gray-600'}`}>
-                      {discrepancy > 0 ? '+' : ''}{discrepancy.toFixed(2)} L
+                    <p
+                      className={`text-lg font-semibold ${discrepancy > 0 ? "text-red-600" : discrepancy < 0 ? "text-green-600" : "text-gray-600"}`}
+                    >
+                      {discrepancy > 0 ? "+" : ""}
+                      {discrepancy.toFixed(2)} L
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Percentage</p>
                     <p className={`text-lg font-semibold ${getStatusClass()}`}>
-                      {discrepancyPercentage > 0 ? '+' : ''}{discrepancyPercentage.toFixed(2)}%
+                      {discrepancyPercentage > 0 ? "+" : ""}
+                      {discrepancyPercentage.toFixed(2)}%
                     </p>
                   </div>
                   <div>
@@ -221,7 +224,7 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
                         <>
                           <CheckCircle className="h-5 w-5 mr-1" />
                           <span className="font-medium">
-                            {Math.abs(discrepancyPercentage) <= 2 ? 'Verified' : 'Acceptable'}
+                            {Math.abs(discrepancyPercentage) <= 2 ? "Verified" : "Acceptable"}
                           </span>
                         </>
                       ) : (
@@ -235,11 +238,11 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
                 </div>
               </div>
             )}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Witness Name *</label>
                 <Input
+                  label="Witness Name *"
                   type="text"
                   value={witnessName}
                   onChange={(e) => setWitnessName(e.target.value)}
@@ -248,28 +251,25 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Photo Evidence (Optional)</label>
                 <Input
+                  label="Photo Evidence (Optional)"
                   type="file"
                   onChange={handleFileChange}
                   accept="image/*"
                 />
                 <p className="mt-1 text-xs text-gray-500">Upload a photo of the probe reading</p>
+                <TextArea
+                  label="Verification Notes"
+                  value={verificationNotes}
+                  onChange={(e) => setVerificationNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Add any notes about the verification process..."
+                />
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Verification Notes</label>
-              <TextArea
-                value={verificationNotes}
-                onChange={(e) => setVerificationNotes(e.target.value)}
-                rows={3}
-                placeholder="Add any notes about the verification process..."
-              />
             </div>
           </div>
         </div>
-        
+
         {/* Information box */}
         <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
           <div className="flex">
@@ -278,13 +278,13 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
             </div>
             <div className="ml-3">
               <p className="text-sm text-blue-700">
-                A discrepancy of less than 5% is considered acceptable due to measurement tolerances.
-                Discrepancies greater than 5% will be flagged for investigation.
+                A discrepancy of less than 5% is considered acceptable due to measurement
+                tolerances. Discrepancies greater than 5% will be flagged for investigation.
               </p>
             </div>
           </div>
         </div>
-        
+
         {/* Submit error message */}
         {errors.submit && (
           <div className="bg-red-50 border-l-4 border-red-400 p-4">
@@ -298,7 +298,7 @@ const EnhancedProbeVerificationModal: React.FC<EnhancedProbeVerificationModalPro
             </div>
           </div>
         )}
-        
+
         {/* Action buttons */}
         <div className="flex justify-end space-x-3 pt-4">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>

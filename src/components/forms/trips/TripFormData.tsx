@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useWialonUnits } from "../../../hooks/useWialonUnits";
+import { FLEET_NUMBERS } from "../../../types/index";
 import { CLIENTS, DRIVERS, Trip } from "../../../types/index";
 import Button from "../../ui/Button";
 import { Input, Select, TextArea } from "../../ui/FormElements";
+import { useWialonUnits } from "../../../hooks/useWialonUnits";
 
 interface TripFormProps {
   trip?: Trip;
@@ -109,7 +110,7 @@ export const TripForm: React.FC<TripFormProps> = ({
         <Select
           label="Fleet Number"
           value={fleetNumber}
-          onChange={(e) => {
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
             const selected = e.target.value;
             setFleetNumber(selected);
             const unit = wialonUnits?.find((u) => u.name === selected);
@@ -117,24 +118,29 @@ export const TripForm: React.FC<TripFormProps> = ({
           }}
           options={[
             { value: "", label: "Select fleet number..." },
-            ...(wialonUnits?.map((unit) => ({
-              value: unit.name,
-              label: `${unit.name} (${unit.registration || "No reg"})`,
-            })) || []),
+            ...(FLEET_NUMBERS || []).map((fleet: string) => ({ value: fleet, label: fleet })),
+            ...(wialonUnits
+              ?.filter((unit) => !FLEET_NUMBERS.includes(unit.name))
+              .map((unit) => ({
+                value: unit.name,
+                label: `${unit.name} (${unit.registration || "No reg"})`,
+              })) || []),
           ]}
         />
 
         <Select
           label="Client"
           value={clientName}
-          onChange={(e) => setClientName(e.target.value)}
-          options={(CLIENTS || []).map((client) => ({ value: client, label: client }))}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setClientName(e.target.value)}
+          options={(CLIENTS || []).map((client: string) => ({ value: client, label: client }))}
         />
 
         <Select
           label="Client Type"
           value={clientType}
-          onChange={(e) => setClientType(e.target.value as "internal" | "external")}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setClientType(e.target.value as "internal" | "external")
+          }
           options={[
             { value: "external", label: "External" },
             { value: "internal", label: "Internal" },
@@ -144,14 +150,14 @@ export const TripForm: React.FC<TripFormProps> = ({
         <Select
           label="Driver"
           value={driverName}
-          onChange={(e) => setDriverName(e.target.value)}
-          options={(DRIVERS || []).map((driver) => ({ value: driver, label: driver }))}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDriverName(e.target.value)}
+          options={(DRIVERS || []).map((driver: string) => ({ value: driver, label: driver }))}
         />
 
         <Input
           label="Route Name"
           value={route}
-          onChange={(e) => setRoute(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoute(e.target.value)}
           placeholder="e.g., JHB to CPT"
         />
 
@@ -159,34 +165,40 @@ export const TripForm: React.FC<TripFormProps> = ({
           label="Start Date"
           type="date"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)}
         />
 
         <Input
           label="End Date"
           type="date"
           value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value)}
         />
 
         <Input
           label="Distance (km)"
           type="number"
           value={distanceKm.toString()}
-          onChange={(e) => setDistanceKm(parseFloat(e.target.value) || 0)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setDistanceKm(parseFloat(e.target.value) || 0)
+          }
         />
 
         <Input
           label="Base Revenue"
           type="number"
           value={baseRevenue.toString()}
-          onChange={(e) => setBaseRevenue(parseFloat(e.target.value) || 0)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setBaseRevenue(parseFloat(e.target.value) || 0)
+          }
         />
 
         <Select
           label="Currency"
           value={revenueCurrency}
-          onChange={(e) => setRevenueCurrency(e.target.value as "USD" | "ZAR")}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setRevenueCurrency(e.target.value as "USD" | "ZAR")
+          }
           options={[
             { value: "ZAR", label: "ZAR" },
             { value: "USD", label: "USD" },

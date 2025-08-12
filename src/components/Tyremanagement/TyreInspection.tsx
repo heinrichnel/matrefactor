@@ -14,7 +14,6 @@ import {
   ShoppingBag,
   Upload,
 } from "lucide-react";
-import { tyreBrands, tyrePatterns, tyreSizes } from "../../data/tyreData";
 import {
   getPositionsByFleet,
   getTyresByBrand,
@@ -119,8 +118,8 @@ const TyreInspection: React.FC = () => {
   const [selectedTyre, setSelectedTyre] = useState<Tyre | null>(null);
 
   // Filtered tyre options based on selections
-  const [brandOptions, setBrandOptions] = useState<string[]>(tyreBrands);
-  const [patternOptions, setPatternOptions] = useState<string[]>(tyrePatterns);
+  const [brandOptions, setBrandOptions] = useState<string[]>(TyreBrands);
+  const [patternOptions, setPatternOptions] = useState<string[]>(TyrePatterns);
   // Track available positions for the selected fleet
   const [_, setPositionOptions] = useState<string[]>([]);
 
@@ -704,7 +703,7 @@ const TyreInspection: React.FC = () => {
                           label="Size"
                           value={formData.size}
                           onChange={(value) => handleChange("size", value)}
-                          options={tyreSizes.map((size) => ({ label: size, value: size }))}
+                          options={TyreSizes.map((size) => ({ label: size, value: size }))}
                         />
 
                         <div className="grid grid-cols-3 gap-2">

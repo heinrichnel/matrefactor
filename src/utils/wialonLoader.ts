@@ -168,9 +168,4 @@ export const getWialonSDKStatus = () => {
   };
 };
 
-// Global window interface extension
-declare global {
-  interface Window {
-    wialon: any;
-  }
-}
+// Rely on global typings in src/types/wialon-sdk.d.ts

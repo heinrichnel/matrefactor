@@ -1,23 +1,23 @@
+import DieselEditModal from "@/components/Models/Diesel/DieselEditModal";
+import DieselImportModal from "@/components/Models/Diesel/DieselImportModal";
+import DieselNormsModal from "@/components/Models/Diesel/DieselNormsModal";
+import EnhancedDieselDebriefModal from "@/components/Models/Diesel/EnhancedDieselDebriefModal";
+import ManualDieselEntryModal from "@/components/Models/Diesel/ManualDieselEntryModal";
+import TripLinkageModal from "@/components/Models/Trips/TripLinkageModal";
 import { Fuel } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import DieselEditModal from "../../components/Models/Diesel/DieselEditModal";
-import DieselImportModal from "../../components/Models/Diesel/DieselImportModal";
-import DieselNormsModal from "../../components/Models/Diesel/DieselNormsModal";
-import EnhancedDieselDebriefModal from "../../components/Models/Diesel/EnhancedDieselDebriefModal";
-import EnhancedProbeVerificationModal from "../../components/Models/Diesel/EnhancedProbeVerificationModal";
-import ManualDieselEntryModal from "../../components/Models/Diesel/ManualDieselEntryModal";
-import TripLinkageModal from "../../components/Models/Trips/TripLinkageModal";
+import DieselDashboardFilters from "../../components/diesel/DieselDashboardFilters";
+import DieselDashboardHeader from "../../components/diesel/DieselDashboardHeader";
+import DieselDashboardSummary from "../../components/diesel/DieselDashboardSummary";
+import DieselRecordsCards from "../../components/diesel/DieselRecordsCards";
+import DieselRecordsTable from "../../components/diesel/DieselRecordsTable";
+import AutomaticProbeVerificationModal from "../../components/Models/Diesel/AutomaticProbeVerificationModal";
 import Button from "../../components/ui/Button";
 import { Card, CardContent, CardHeader } from "../../components/ui/Card";
 import { useAppContext } from "../../context/AppContext";
 import { useSyncContext } from "../../context/SyncContext";
 import { DieselConsumptionRecord as BaseDieselConsumptionRecord } from "../../types";
 import { ExtendedDieselConsumptionRecord } from "../../types/types";
-import DieselDashboardHeader from "../../components/diesel/DieselDashboardHeader";
-import DieselDashboardFilters from "../../components/diesel/DieselDashboardFilters";
-import DieselDashboardSummary from "../../components/diesel/DieselDashboardSummary";
-import DieselRecordsTable from "../../components/diesel/DieselRecordsTable";
-import DieselRecordsCards from "../../components/diesel/DieselRecordsCards";
 
 interface DieselDashboardProps {
   className?: string;
@@ -368,13 +368,13 @@ const DieselDashboard: React.FC<DieselDashboardProps> = ({ className = "" }) => 
       )}
 
       {showProbeModal && selectedRecord && (
-        <EnhancedProbeVerificationModal
+        <AutomaticProbeVerificationModal
           isOpen={showProbeModal}
           onClose={() => {
             setShowProbeModal(false);
             setSelectedRecord(null);
           }}
-          record={selectedRecord}
+          dieselRecordId={selectedRecord.id}
         />
       )}
 
