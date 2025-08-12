@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { QrCode, Printer, ArrowLeft } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
-import Card, { CardContent, CardHeader } from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import { useFleetData, Vehicle } from '../../hooks/useFleetData';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { QrCode, Printer, ArrowLeft } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import Card, { CardContent, CardHeader } from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import { useFleetData, Vehicle } from "../../hooks/useFleetData";
 
-type QRCodeType = 'inspection' | 'jobcard' | 'fleet';
+type QRCodeType = "inspection" | "jobcard" | "fleet";
 
 export const QRCodeBatchGenerator: React.FC = () => {
   const navigate = useNavigate();
   const { vehicles, loading } = useFleetData();
-  const [qrType, setQrType] = useState<QRCodeType>('inspection');
+  const [qrType, setQrType] = useState<QRCodeType>("inspection");
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
 
   const generateQRValue = (fleetNumber: string, type: QRCodeType) => {
     const baseUrl = window.location.origin;
     switch (type) {
-      case 'inspection':
+      case "inspection":
         return `${baseUrl}/workshop/driver-inspection?fleet=${fleetNumber}`;
-      case 'jobcard':
+      case "jobcard":
         return `${baseUrl}/workshop/job-cards?fleet=${fleetNumber}`;
-      case 'fleet':
+      case "fleet":
         return `${baseUrl}/workshop/fleet/${fleetNumber}`;
       default:
         return `${baseUrl}/workshop/fleet/${fleetNumber}`;
@@ -37,10 +37,8 @@ export const QRCodeBatchGenerator: React.FC = () => {
   };
 
   const handleVehicleToggle = (fleetNumber: string) => {
-    setSelectedVehicles(prev => 
-      prev.includes(fleetNumber) 
-        ? prev.filter(fn => fn !== fleetNumber)
-        : [...prev, fleetNumber]
+    setSelectedVehicles((prev) =>
+      prev.includes(fleetNumber) ? prev.filter((fn) => fn !== fleetNumber) : [...prev, fleetNumber]
     );
   };
 
@@ -48,9 +46,10 @@ export const QRCodeBatchGenerator: React.FC = () => {
     window.print();
   };
 
-  const vehiclesToShow = selectedVehicles.length > 0 
-    ? vehicles.filter((v: Vehicle) => selectedVehicles.includes(v.fleetNumber))
-    : vehicles;
+  const vehiclesToShow =
+    selectedVehicles.length > 0
+      ? vehicles.filter((v: Vehicle) => selectedVehicles.includes(v.fleetNumber))
+      : vehicles;
 
   if (loading) {
     return (
@@ -71,10 +70,10 @@ export const QRCodeBatchGenerator: React.FC = () => {
                 <QrCode className="w-5 h-5" />
                 <h2 className="text-xl font-bold">QR Code Batch Generator</h2>
               </div>
-              <Button 
-                variant="ghost" 
-                className="flex items-center gap-1" 
-                onClick={onClick}
+              <Button
+                variant="outline" // Corrected from "ghost" to "outline"
+                className="flex items-center gap-1"
+                onClick={() => navigate(-1)} // Corrected `onClick` to a function call
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Single QR Generator
@@ -85,8 +84,8 @@ export const QRCodeBatchGenerator: React.FC = () => {
             <div className="flex flex-wrap gap-4 items-center">
               <div className="flex items-center gap-2">
                 <label className="text-sm font-medium">QR Code Type:</label>
-                <select 
-                  value={qrType} 
+                <select
+                  value={qrType}
                   onChange={(e) => setQrType(e.target.value as QRCodeType)}
                   className="border rounded px-3 py-1"
                 >
@@ -95,17 +94,17 @@ export const QRCodeBatchGenerator: React.FC = () => {
                   <option value="fleet">Fleet Details</option>
                 </select>
               </div>
-              
+
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onClick}
+                onClick={handleSelectAll} // Corrected `onClick` to a function call
               >
-                {selectedVehicles.length === vehicles.length ? 'Deselect All' : 'Select All'}
+                {selectedVehicles.length === vehicles.length ? "Deselect All" : "Select All"}
               </Button>
 
               <Button
-                onClick={onClick}
+                onClick={handlePrint} // Corrected `onClick` to a function call
                 className="flex items-center gap-2"
                 disabled={vehiclesToShow.length === 0}
               >
@@ -127,7 +126,7 @@ export const QRCodeBatchGenerator: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
               {vehicles.map((vehicle: Vehicle) => (
-                <label 
+                <label
                   key={vehicle.id}
                   className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
                 >
@@ -168,7 +167,9 @@ export const QRCodeBatchGenerator: React.FC = () => {
                 <div className="mt-3 space-y-1">
                   <div className="font-bold text-lg">{vehicle.fleetNumber}</div>
                   <div className="text-sm text-gray-600">{vehicle.registration}</div>
-                  <div className="text-xs text-gray-500">{vehicle.make} {vehicle.model}</div>
+                  <div className="text-xs text-gray-500">
+                    {vehicle.make} {vehicle.model}
+                  </div>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border">
                     {qrType.toUpperCase()}
                   </span>

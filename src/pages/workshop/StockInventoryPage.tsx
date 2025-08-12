@@ -65,7 +65,7 @@ const StockInventoryPage: React.FC<StockInventoryPageProps> = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Derived metrics
+  // Derived metrics - MOVED TO THE CORRECT LOCATION
   const totalInventoryValue: number = useMemo(() => {
     return stockItems.reduce((sum: number, item: StockItem) => {
       const unitCost = Number(item.cost) || 0;
@@ -375,7 +375,7 @@ const StockInventoryPage: React.FC<StockInventoryPageProps> = () => {
           </select>
         </div>
         <div className="text-sm text-gray-500">
-          {filteredItems.length} items • Total value: ${totalInventoryValue.toFixed(2)}
+          {filteredItems.length} items • Total value: **${totalInventoryValue.toFixed(2)}**
         </div>
       </div>
 
