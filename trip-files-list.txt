@@ -1,3 +1,5 @@
+/workspaces/matrefactor/.github/instructions/High‑level architecture(trips).md
+/workspaces/matrefactor/docs/trips-modals-wiring.md
 /workspaces/matrefactor/src/api/tripsApi.ts
 /workspaces/matrefactor/src/components/Models/Trips/TripStatusUpdateModal.tsx
 /workspaces/matrefactor/src/components/TripManagement/ActiveTrips.tsx

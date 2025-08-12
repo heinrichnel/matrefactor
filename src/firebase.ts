@@ -1,6 +1,4 @@
-// =============================================================================
-// CONSOLIDATED FIREBASE CONFIGURATION AND SERVICES
-// =============================================================================
+// Note: Firestore is initialized later with initializeFirestore and local cache settings.
 
 import { getAnalytics } from "firebase/analytics";
 import { FirebaseOptions, getApps, initializeApp } from "firebase/app";
@@ -13,19 +11,23 @@ import {
   deleteDoc,
   disableNetwork,
   doc,
-  enableIndexedDbPersistence,
   enableNetwork,
   getDoc,
   getDocs,
   getFirestore,
+  initializeFirestore,
+  memoryLocalCache,
   onSnapshot,
   orderBy,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   query,
   serverTimestamp,
   setDoc,
   Timestamp,
   updateDoc,
   where,
+  type Firestore,
 } from "firebase/firestore";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { connectStorageEmulator, getStorage } from "firebase/storage";
@@ -145,7 +147,41 @@ export const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig
 // =============================================================================
 
 // Initialize Firebase services
-export const firestore = getFirestore(firebaseApp);
+// Firestore: prefer persistent IndexedDB cache (multi-tab). Fallbacks ensure robust behavior in
+// unsupported environments (e.g., private mode, SSR, older browsers).
+let firestore: Firestore;
+try {
+  if (typeof window !== "undefined") {
+    try {
+      firestore = initializeFirestore(firebaseApp, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      });
+    } catch (e) {
+      console.warn("IndexedDB persistence unavailable; falling back to in-memory cache.", e);
+      try {
+        firestore = initializeFirestore(firebaseApp, {
+          localCache: memoryLocalCache(),
+        });
+      } catch (e2) {
+        console.warn(
+          "initializeFirestore with memory cache failed; falling back to default getFirestore().",
+          e2
+        );
+        firestore = getFirestore(firebaseApp);
+      }
+    }
+  } else {
+    // SSR/build environments
+    firestore = getFirestore(firebaseApp);
+  }
+} catch (e) {
+  // As a last resort, ensure firestore is available to prevent app crash
+  console.error("🔥 Firestore initialization failed; using default instance.", e);
+  firestore = getFirestore(firebaseApp);
+}
+export { firestore };
 export const auth = getAuth(firebaseApp);
 export const storage = getStorage(firebaseApp);
 export const functions = getFunctions(firebaseApp);
@@ -219,20 +255,7 @@ export const disableFirestoreNetwork = () => disableNetwork(firestore);
 // Alternative exports for compatibility with existing code
 export const db = firestore; // For backward compatibility, aliasing firestore as db
 
-// Enable offline persistence when possible
-try {
-  enableIndexedDbPersistence(firestore).catch((err) => {
-    if (err.code === "failed-precondition") {
-      // Multiple tabs open, persistence can only be enabled in one tab at a time
-      console.warn("Firebase persistence is only supported in one tab at a time");
-    } else if (err.code === "unimplemented") {
-      // The current browser does not support all of the features required
-      console.warn("Firebase persistence is not supported in this browser");
-    }
-  });
-} catch (error) {
-  console.error("Error enabling offline persistence:", error);
-}
+// Offline persistence is configured via initializeFirestore localCache above. No extra call needed.
 
 // =============================================================================
 // UTILITY FUNCTIONS

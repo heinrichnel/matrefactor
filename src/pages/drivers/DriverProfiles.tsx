@@ -1,5 +1,5 @@
 import { AlertCircle, Download, Filter, Search, UserPlus } from "lucide-react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui";
 import { useFirestoreQuery } from "../../hooks/useFirestoreQuery";
@@ -16,21 +16,47 @@ const DriverProfiles: React.FC = () => {
   // Fetch drivers from Firestore using the custom hook
   const { data: drivers, loading, error } = useFirestoreQuery<Driver>("drivers");
 
-  // Filter drivers based on search term and status filter
-  const filteredDrivers = (drivers || []).filter((driver) => {
-    const search = searchTerm.toLowerCase();
-    const firstName = (driver.firstName || "").toLowerCase();
-    const lastName = (driver.lastName || "").toLowerCase();
-    const id = (driver.id || "").toLowerCase();
-    const status = (driver.status || "").toLowerCase();
+  // Small util for flexible date parsing (supports ISO and DD/MM/YYYY)
+  const parseDate = (dateLike: any): Date | null => {
+    if (!dateLike) return null;
+    if (typeof dateLike === "object" && typeof dateLike.toDate === "function") {
+      try {
+        return dateLike.toDate();
+      } catch {}
+    }
+    if (typeof dateLike === "string") {
+      const iso = new Date(dateLike);
+      if (!Number.isNaN(iso.getTime())) return iso;
+      const m = dateLike.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (m) {
+        const [, dd, mm, yyyy] = m;
+        const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+        if (!Number.isNaN(d.getTime())) return d;
+      }
+    }
+    return null;
+  };
 
-    const matchesSearch =
-      firstName.includes(search) || lastName.includes(search) || id.includes(search);
+  // Normalize name and filter list
+  const filteredDrivers = useMemo(() => {
+    const list = (drivers || []).map((d: any) => {
+      const nameFromFirstLast = [d.firstName, d.lastName].filter(Boolean).join(" ");
+      const nameFromNameSurname = [d.name, d.surname].filter(Boolean).join(" ");
+      const displayName = nameFromFirstLast || nameFromNameSurname || d.id;
+      return { ...d, displayName } as any;
+    });
 
-    const matchesStatus = filterStatus === "all" || status === filterStatus.toLowerCase();
+    return list.filter((driver: any) => {
+      const search = searchTerm.toLowerCase();
+      const id = (driver.id || "").toLowerCase();
+      const status = (driver.status || "").toLowerCase();
+      const display = (driver.displayName || "").toLowerCase();
 
-    return matchesSearch && matchesStatus;
-  });
+      const matchesSearch = display.includes(search) || id.includes(search);
+      const matchesStatus = filterStatus === "all" || status === filterStatus.toLowerCase();
+      return matchesSearch && matchesStatus;
+    });
+  }, [drivers, searchTerm, filterStatus]);
 
   const renderContent = () => {
     if (loading) {
@@ -117,12 +143,12 @@ const DriverProfiles: React.FC = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredDrivers.map((driver) => {
+            {filteredDrivers.map((driver: any) => {
               const today = new Date();
-              const expiryDate = new Date(driver.licenseExpiry);
-              const daysUntilExpiry = Math.ceil(
-                (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-              );
+              const expiryDate = parseDate(driver.licenseExpiry);
+              const daysUntilExpiry = expiryDate
+                ? Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                : null;
 
               return (
                 <tr key={driver.id} className="hover:bg-gray-50">
@@ -130,7 +156,7 @@ const DriverProfiles: React.FC = () => {
                     <div className="flex items-center">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {driver.firstName} {driver.lastName}
+                          {driver.displayName}
                         </div>
                         <div className="text-sm text-gray-500">{driver.id}</div>
                       </div>
@@ -151,23 +177,25 @@ const DriverProfiles: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {new Date(driver.licenseExpiry).toLocaleDateString()}
+                      {expiryDate ? expiryDate.toLocaleDateString() : "—"}
                     </div>
-                    <div
-                      className={`text-xs ${
-                        daysUntilExpiry < 30
-                          ? "text-red-600 font-medium"
-                          : daysUntilExpiry < 60
-                            ? "text-amber-600"
-                            : "text-gray-500"
-                      }`}
-                    >
-                      {daysUntilExpiry < 0
-                        ? "Expired"
-                        : daysUntilExpiry === 0
-                          ? "Expires today"
-                          : `${daysUntilExpiry} days left`}
-                    </div>
+                    {daysUntilExpiry !== null && (
+                      <div
+                        className={`text-xs ${
+                          daysUntilExpiry < 30
+                            ? "text-red-600 font-medium"
+                            : daysUntilExpiry < 60
+                              ? "text-amber-600"
+                              : "text-gray-500"
+                        }`}
+                      >
+                        {daysUntilExpiry < 0
+                          ? "Expired"
+                          : daysUntilExpiry === 0
+                            ? "Expires today"
+                            : `${daysUntilExpiry} days left`}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {driver.phone}

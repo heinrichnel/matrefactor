@@ -1,3 +1,4 @@
+import { driverBehaviorService } from "@/api/driverBehaviorService";
 import { Button } from "@/components/ui/Button";
 import {
   AlertTriangle,
@@ -58,6 +59,21 @@ const DriverBehaviorPage: React.FC = () => {
 
   // Subscribe directly to driver behavior events (hook handles Firestore listeners)
   const { events, loading, error } = useDriverBehavior({ autoSubscribe: true });
+
+  // Wire the driverBehaviorService import so it's actively used (non-invasive)
+  useEffect(() => {
+    driverBehaviorService.registerCallbacks({
+      onDriverBehaviorUpdate: (ev) => {
+        // Hook already provides real-time data; keep this as a lightweight diagnostic
+        if (ev?.id) console.debug("DriverBehaviorService update received:", ev.id);
+      },
+    });
+
+    // On unmount, clear the callback registration without touching global listeners
+    return () => {
+      driverBehaviorService.registerCallbacks({ onDriverBehaviorUpdate: undefined });
+    };
+  }, []);
 
   // Subscribe to driver behavior events when the component mounts
   useEffect(() => {

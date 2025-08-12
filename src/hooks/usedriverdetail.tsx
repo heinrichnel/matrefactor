@@ -1,19 +1,29 @@
 // src/hooks/usedriverdetail.tsx
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   collection,
   doc,
   getDoc,
-  onSnapshot,
-  query,
-  where,
-  orderBy,
-  limit,
   getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
   Unsubscribe,
+  where,
 } from "firebase/firestore";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // 🔧 Adjust this to your Firestore client instance
 import { db } from "../firebase";
+
+// Defensive: ensure Firestore instance exists before using it to avoid
+// cryptic SDK errors (e.g., reading internal property 'wI' on undefined).
+function ensureDbOrSetError(dbInst: unknown, setErr: (e: Error) => void): dbInst is object {
+  const ok = !!dbInst && typeof dbInst === "object";
+  if (!ok) {
+    setErr(new Error("Firestore not initialized. Check firebase.ts initialization."));
+  }
+  return ok as any;
+}
 
 export type Driver = {
   id: string;
@@ -124,6 +134,10 @@ export function useDriverDetail({
     setError(null);
 
     try {
+      if (!ensureDbOrSetError(db, (e) => setError(e))) {
+        setLoading(false);
+        return;
+      }
       let foundDriver: Driver | null = null;
 
       if (driverId) {
@@ -178,6 +192,10 @@ export function useDriverDetail({
 
     (async () => {
       try {
+        if (!ensureDbOrSetError(db, (e) => setError(e))) {
+          setLoading(false);
+          return;
+        }
         let localDriverId: string | null = driverId ?? null;
         let localIdNo: string | null = idNo ?? null;
 
@@ -253,7 +271,13 @@ export function useDriverDetail({
     })();
 
     return () => {
-      unsubs.forEach((u) => u && u());
+      unsubs.forEach((u) => {
+        try {
+          if (typeof u === "function") u();
+        } catch {
+          /* ignore */
+        }
+      });
     };
   }, [realtime, idNo, driverId, loadOnce, reloadTick]);
 

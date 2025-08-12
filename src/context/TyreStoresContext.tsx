@@ -1,12 +1,8 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import type { TyreStore, StockEntry } from '@/types/tyre';
-import {
-  addTyreStore,
-  updateTyreStoreEntry,
-  listenToTyreStores
-} from '@/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { firestore } from '@/utils/firebaseConnectionHandler';
+import type { StockEntry, TyreStore } from "@/types/tyre";
+import { addTyreStore, listenToTyreStores, updateTyreStoreEntry } from "@/types/tyreStores";
+import { firestore } from "@/utils/firebaseConnectionHandler";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 // Context interface
 type TyreStoresContextType = {
@@ -14,11 +10,7 @@ type TyreStoresContextType = {
   addStore: (store: TyreStore) => Promise<void>;
   updateEntry: (storeId: string, entry: StockEntry) => Promise<void>;
   removeEntry: (storeId: string, tyreId: string) => Promise<void>;
-  moveEntry: (
-    fromStoreId: string,
-    toStoreId: string,
-    entry: StockEntry
-  ) => Promise<void>;
+  moveEntry: (fromStoreId: string, toStoreId: string, entry: StockEntry) => Promise<void>;
 };
 
 const TyreStoresContext = createContext<TyreStoresContextType | undefined>(undefined);
@@ -44,20 +36,16 @@ export const TyreStoresProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // remove a StockEntry from a store
   const removeEntryFn = async (storeId: string, tyreId: string) => {
-    const ref = doc(firestore, 'tyreStores', storeId);
+    const ref = doc(firestore, "tyreStores", storeId);
     const snap = await getDoc(ref);
     if (!snap.exists()) throw new Error(`Store ${storeId} not found`);
     const data = snap.data() as TyreStore;
-    const filtered = data.entries.filter(e => e.tyreId !== tyreId);
+    const filtered = data.entries.filter((e) => e.tyreId !== tyreId);
     await updateDoc(ref, { entries: filtered });
   };
 
   // move entry between two stores
-  const moveEntryFn = async (
-    fromStoreId: string,
-    toStoreId: string,
-    entry: StockEntry
-  ) => {
+  const moveEntryFn = async (fromStoreId: string, toStoreId: string, entry: StockEntry) => {
     // remove from source
     await removeEntryFn(fromStoreId, entry.tyreId);
     // insert/update in target
@@ -71,7 +59,7 @@ export const TyreStoresProvider: React.FC<{ children: ReactNode }> = ({ children
         addStore: addStoreFn,
         updateEntry: updateEntryFn,
         removeEntry: removeEntryFn,
-        moveEntry: moveEntryFn
+        moveEntry: moveEntryFn,
       }}
     >
       {children}
@@ -82,7 +70,7 @@ export const TyreStoresProvider: React.FC<{ children: ReactNode }> = ({ children
 export function useTyreStores(): TyreStoresContextType {
   const ctx = useContext(TyreStoresContext);
   if (!ctx) {
-    throw new Error('useTyreStores must be used within TyreStoresProvider');
+    throw new Error("useTyreStores must be used within TyreStoresProvider");
   }
   return ctx;
 }
