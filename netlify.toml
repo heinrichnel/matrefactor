@@ -1,10 +1,10 @@
 [build]
-  command = "./netlify-build.sh"
+  command = "bash ./netlify-build.sh"
   publish = "dist"
 
 [build.environment]
-  # Pin to LTS for toolchain stability
-  NODE_VERSION = "20"
+  # Pin to Node 22 to match Netlify build image
+  NODE_VERSION = "22"
   # Optional non-secret flags (consider moving to UI as well)
   VITE_ENV_MODE = "production"
   VITE_USE_EMULATOR = "false"
