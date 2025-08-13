@@ -29,11 +29,11 @@ APP_DIR="$ROOT_DIR"
 if [[ ! -f "package.json" ]]; then
   echo "❌ package.json NOT found in $(pwd)"
   echo "Searching repo (excluding Netlify internal plugin dirs):"
+  PKG_CANDIDATES=()
   mapfile -t PKG_CANDIDATES < <(find . -maxdepth 3 -name "package.json" -type f \
     -not -path "./.netlify/plugins/*" 2>/dev/null | sort)
-  printf '  %s\n' "${PKG_CANDIDATES[@]:-}"
-
-  if (( ${#PKG_CANDIDATES[@]:-0} > 0 )); then
+  if ((${#PKG_CANDIDATES[@]} > 0)); then
+    printf '  %s\n' "${PKG_CANDIDATES[@]}"
     # Prefer top-level folders like ./app, ./frontend, ./web if present
     PREFERRED=""
     for p in "./app/package.json" "./frontend/package.json" "./web/package.json"; do
