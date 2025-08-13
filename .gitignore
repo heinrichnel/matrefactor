@@ -32,7 +32,6 @@ ui-debug.log*
 
 # ───────── Local Scripts & Emulators ───────
 firebaseEmulators.ts
-webhookSenders.ts
 schemadashboard1.tsx
 
 # ───────── Coverage & Testing ──────────────
