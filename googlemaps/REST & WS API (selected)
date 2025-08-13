@@ -1,0 +1,35 @@
+# Listings
+
+GET /api/properties?bbox=&minPrice=&maxPrice=&type=
+GET /api/properties/:id
+POST /api/properties (owner)
+PATCH /api/properties/:id (owner)
+DELETE /api/properties/:id (owner)
+POST /api/properties/:id/images (owner)
+
+# Favorites & alerts
+
+GET /api/favorites (buyer)
+POST /api/favorites/:propertyId (buyer)
+DELETE /api/favorites/:propertyId (buyer)
+
+# Deliveries
+
+POST /api/deliveries (admin)
+GET /api/deliveries/:id (customer/driver)
+POST /api/deliveries/:id/dispatch (admin)
+POST /api/deliveries/:id/status (driver)
+POST /api/telemetry (driver)
+
+# Route planner
+
+POST /api/routes/optimize body: {mode, origin, waypoints[], destination}
+POST /api/trips save planned route
+GET /api/trips/:id
+
+# WebSocket (Socket.IO)
+
+connect with auth token
+join delivery:{id}
+recv delivery:loc {lat,lng,speed,heading,eta}
+recv delivery:status {status}

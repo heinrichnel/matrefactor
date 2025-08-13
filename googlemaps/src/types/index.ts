@@ -1,5 +1,11 @@
 // googlemaps/index.js - Standalone Google Maps implementation
-const API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY";
+declare global {
+  interface Window {
+    initMap: () => Promise<void>;
+  }
+}
+
+const API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyDTHkrpqeH0nj-cpbYybjKcZYwKgDNf8z8";
 
 /**
  * Initialize the Google Maps API
@@ -8,15 +14,21 @@ const API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KE
 async function initMap() {
   console.log("Maps JavaScript API loaded.");
   const center = { lat: -25.7479, lng: 28.2293 };
-  const map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 12,
-    center: center,
-  });
-  new google.maps.Marker({
-    position: center,
-    map: map,
-    title: "Pretoria",
-  });
+  const mapElement = document.getElementById("map");
+
+  if (mapElement) {
+    const map = new google.maps.Map(mapElement, {
+      zoom: 12,
+      center: center,
+    });
+    new google.maps.Marker({
+      position: center,
+      map: map,
+      title: "Pretoria",
+    });
+  } else {
+    console.error("Map element not found in the document");
+  }
 }
 
 /**

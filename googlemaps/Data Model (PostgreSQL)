@@ -1,0 +1,83 @@
+-- Users
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  firebase_uid TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  role TEXT NOT NULL CHECK (role IN ('buyer','owner','driver','admin')),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Properties
+CREATE TABLE properties (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  price NUMERIC(12,2) NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('house','apartment','land','commercial')),
+  status TEXT NOT NULL DEFAULT 'active',
+  lat DOUBLE PRECISION NOT NULL,
+  lng DOUBLE PRECISION NOT NULL,
+  address TEXT,
+  city TEXT,
+  country TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE property_images (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  position INT DEFAULT 0
+);
+
+CREATE TABLE favorites (
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  PRIMARY KEY (user_id, property_id)
+);
+
+-- Delivery domain
+CREATE TABLE deliveries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id UUID REFERENCES users(id),
+  driver_id UUID REFERENCES users(id),
+  status TEXT NOT NULL CHECK (status IN ('created','dispatched','in_transit','delivered','cancelled')),
+  pickup_lat DOUBLE PRECISION NOT NULL,
+  pickup_lng DOUBLE PRECISION NOT NULL,
+  dropoff_lat DOUBLE PRECISION NOT NULL,
+  dropoff_lng DOUBLE PRECISION NOT NULL,
+  pickup_address TEXT,
+  dropoff_address TEXT,
+  eta_minutes INT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE delivery_events (
+  id BIGSERIAL PRIMARY KEY,
+  delivery_id UUID REFERENCES deliveries(id) ON DELETE CASCADE,
+  type TEXT NOT NULL, -- status or telemetry
+  lat DOUBLE PRECISION,
+  lng DOUBLE PRECISION,
+  speed_kph DOUBLE PRECISION,
+  heading DOUBLE PRECISION,
+  note TEXT,
+  at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Route planner (saved trips)
+CREATE TABLE trips (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  mode TEXT NOT NULL CHECK (mode IN ('DRIVING','WALKING','BICYCLING','TRANSIT')),
+  waypoints JSONB NOT NULL, -- [{lat,lng,placeId,label}]
+  optimize_waypoints BOOLEAN DEFAULT true,
+  distance_m INT,
+  duration_s INT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);

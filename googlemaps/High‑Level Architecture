@@ -1,0 +1,21 @@
+┌──────────────────────────────────────── Web / Mobile (React + Vite) ────────────────────────────────────────┐
+│ UI (Tailwind + shadcn) Maps (Google Maps JS, Places, Directions, Distance Matrix) Socket.IO client │
+│ - Property Search/Map - Delivery Live Map & statuses - Route Planner (multi-stop, modes, ETAs) │
+│ - Favorites & Alerts - Owner Portal (listings CRUD) - Auth (Firebase) │
+└───────────────▲───────────────────────────────────────────────────────────────────────────────┬────────────┘
+│ HTTPS/WS │
+│ │
+┌───────┴───────────────── Backend (Node.js + Express) ─────────────────────────────────────▼───────┐
+│ REST APIs /api/\* WebSockets (Socket.IO) Background jobs (BullMQ + Redis) │
+│ - Listings, Media (GCS) - Delivery rooms per order - ETA recompute, notifications │
+│ - Favorites/Alerts - Driver position broadcasts - Geocoding/cleanup tasks │
+│ - Route optimization - Delivery status events - DB backups │
+│ │
+│ Google Maps Services via Server: Directions, Distance Matrix, Geocoding, Roads (optional) │
+└───────▲───────────────────────────────────────────────────────────────────────────────┬────────────┘
+│ │
+│ │
+┌────────────┴─────────────┐ ┌──────────────────────────────┐ ┌─────────────────┐
+│ PostgreSQL (Cloud SQL) │◄── Prisma ORM ───────►│ Redis (Pub/Sub + cache) │ │ Firebase Auth │
+│ Listings, Users, ... │ │ live location, session, ETA │ │ (JWT for API) │
+└───────────────────────────┘ └──────────────────────────────┘ └─────────────────┘
