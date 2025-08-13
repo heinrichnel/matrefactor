@@ -1,4 +1,12 @@
 #!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Guard against Windows CRLF line endings which can cause syntax errors on CI
+if file "$0" 2>/dev/null | grep -qi "CRLF"; then
+    echo "Converting CRLF to LF for $0"
+    sed -i 's/\r$//' "$0"
+fi
 
 # Netlify build debug script
 echo "=== Build Environment Debug ==="
