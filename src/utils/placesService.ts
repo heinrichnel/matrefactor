@@ -3,7 +3,7 @@
  * Provides functions for searching places, fetching place details, and autocomplete
  */
 
-import { PlaceResult } from '../types/mapTypes';
+import { PlaceResult } from "../types/mapTypes";
 
 /**
  * Initialize a Places service instance
@@ -12,11 +12,22 @@ import { PlaceResult } from '../types/mapTypes';
  */
 export const initPlacesService = (mapInstance: any): any => {
   if (!window.google?.maps?.places) {
-    console.error('Google Maps Places library not loaded');
+    console.error("Google Maps Places library not loaded");
     return null;
   }
-  
-  return new window.google.maps.places.PlacesService(mapInstance);
+
+  try {
+    // Add extra validation for Places service availability
+    if (!window.google.maps.places.PlacesService) {
+      console.error("PlacesService constructor not available");
+      return null;
+    }
+
+    return new window.google.maps.places.PlacesService(mapInstance);
+  } catch (error) {
+    console.error("Error initializing Places service:", error);
+    return null;
+  }
 };
 
 /**
@@ -29,41 +40,39 @@ export const initPlacesService = (mapInstance: any): any => {
 export const searchPlacesByText = (
   service: any,
   query: string,
-  options: { 
-    fields?: string[],
-    locationBias?: { lat: number, lng: number, radius?: number }
+  options: {
+    fields?: string[];
+    locationBias?: { lat: number; lng: number; radius?: number };
   } = {}
 ): Promise<PlaceResult[]> => {
   return new Promise((resolve, reject) => {
     if (!service) {
-      reject(new Error('Places service not initialized'));
+      reject(new Error("Places service not initialized"));
       return;
     }
-    
-    const defaultFields = [
-      'name', 'formatted_address', 'geometry', 'place_id', 'types'
-    ];
-    
+
+    const defaultFields = ["name", "formatted_address", "geometry", "place_id", "types"];
+
     const request: {
       query: string;
       fields: string[];
       locationBias?: any;
     } = {
       query,
-      fields: options.fields || defaultFields
+      fields: options.fields || defaultFields,
     };
-    
+
     // Add location bias if provided
     if (options.locationBias) {
       const { lat, lng, radius = 5000 } = options.locationBias;
       const center = new window.google.maps.LatLng(lat, lng);
       const circle = new window.google.maps.Circle({
         center,
-        radius
+        radius,
       });
       request.locationBias = circle;
     }
-    
+
     service.findPlaceFromQuery(request, (results: any, status: any) => {
       if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
         resolve(results);
@@ -83,28 +92,28 @@ export const searchPlacesByText = (
  */
 export const searchNearbyPlaces = (
   service: any,
-  location: { lat: number, lng: number },
+  location: { lat: number; lng: number },
   options: {
-    radius?: number,
-    type?: string,
-    keyword?: string,
-    rankBy?: any
+    radius?: number;
+    type?: string;
+    keyword?: string;
+    rankBy?: any;
   } = {}
 ): Promise<PlaceResult[]> => {
   return new Promise((resolve, reject) => {
     if (!service) {
-      reject(new Error('Places service not initialized'));
+      reject(new Error("Places service not initialized"));
       return;
     }
-    
+
     const request = {
       location: new window.google.maps.LatLng(location.lat, location.lng),
       radius: options.radius || 1000,
       type: options.type,
       keyword: options.keyword,
-      rankBy: options.rankBy
+      rankBy: options.rankBy,
     };
-    
+
     service.nearbySearch(request, (results: any, status: any) => {
       if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
         resolve(results);
@@ -125,19 +134,28 @@ export const searchNearbyPlaces = (
 export const getPlaceDetails = (
   service: any,
   placeId: string,
-  fields: string[] = ['name', 'formatted_address', 'geometry', 'photos', 'rating', 'reviews', 'website', 'formatted_phone_number']
+  fields: string[] = [
+    "name",
+    "formatted_address",
+    "geometry",
+    "photos",
+    "rating",
+    "reviews",
+    "website",
+    "formatted_phone_number",
+  ]
 ): Promise<PlaceResult> => {
   return new Promise((resolve, reject) => {
     if (!service) {
-      reject(new Error('Places service not initialized'));
+      reject(new Error("Places service not initialized"));
       return;
     }
-    
+
     const request = {
       placeId,
-      fields
+      fields,
     };
-    
+
     service.getDetails(request, (result: any, status: any) => {
       if (status === window.google.maps.places.PlacesServiceStatus.OK && result) {
         resolve(result);
@@ -155,15 +173,15 @@ export const getPlaceDetails = (
  */
 export const placeToLocation = (place: PlaceResult) => {
   if (!place.geometry?.location) {
-    throw new Error('Place has no location geometry');
+    throw new Error("Place has no location geometry");
   }
-  
+
   return {
     lat: place.geometry.location.lat(),
     lng: place.geometry.location.lng(),
-    title: place.name || 'Unnamed place',
+    title: place.name || "Unnamed place",
     address: place.formatted_address,
-    info: place.types?.join(', '),
+    info: place.types?.join(", "),
     // Add more fields as needed from the place result
   };
 };

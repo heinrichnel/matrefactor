@@ -1,7 +1,8 @@
-import React from 'react';
-import { logError, ErrorCategory, ErrorSeverity } from '../utils/errorHandling';
-import { AlertCircle, RefreshCw, ChevronDown, ChevronUp, Home, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { AlertCircle, ArrowLeft, ChevronDown, ChevronUp, Home, RefreshCw } from "lucide-react";
+import React from "react";
+import { Link } from "react-router-dom";
+import { normalizeError, safeLogError } from "../utils/error-utils";
+import { ErrorCategory, ErrorSeverity, logError } from "../utils/errorHandling";
 
 interface ErrorBoundaryProps extends React.PropsWithChildren<{}> {
   fallback?: React.ReactNode;
@@ -36,17 +37,25 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log the error to our centralized error handling
+    // Use enhanced error logging with detailed context
+    safeLogError(error, {
+      componentStack: errorInfo.componentStack,
+      errorBoundary: true,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Also log to existing system for compatibility
     logError(error, {
       category: ErrorCategory.RENDERING,
       severity: ErrorSeverity.ERROR,
       context: {
-        componentStack: errorInfo.componentStack
-      }
+        componentStack: errorInfo.componentStack,
+        normalized: normalizeError(error),
+      },
     });
 
     this.setState({
-      errorInfo: errorInfo
+      errorInfo: errorInfo,
     });
 
     // Call the onError prop if provided
@@ -57,11 +66,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   componentDidUpdate(prevProps: ErrorBoundaryProps) {
     // Reset the error boundary when specified props change
-    if (
-      this.state.hasError &&
-      this.props.resetOnPropsChange &&
-      this.props !== prevProps
-    ) {
+    if (this.state.hasError && this.props.resetOnPropsChange && this.props !== prevProps) {
       this.resetErrorBoundary();
     }
   }
@@ -75,8 +80,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   };
 
   toggleDetails = () => {
-    this.setState(prevState => ({
-      showDetails: !prevState.showDetails
+    this.setState((prevState) => ({
+      showDetails: !prevState.showDetails,
     }));
   };
 
@@ -90,7 +95,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       if (this.props.renderFallback) {
         return this.props.renderFallback({
           error: this.state.error!,
-          resetErrorBoundary: this.resetErrorBoundary
+          resetErrorBoundary: this.resetErrorBoundary,
         });
       }
 
@@ -108,13 +113,13 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                 <AlertCircle className="h-8 w-8 text-red-600" />
               </div>
             </div>
-            
+
             <h1 className="text-2xl font-bold text-gray-800 mb-2">Something went wrong</h1>
-            
+
             <p className="text-gray-600 mb-6">
-              {this.state.error?.message ?? 'An unexpected error occurred'}
+              {this.state.error?.message ?? "An unexpected error occurred"}
             </p>
-            
+
             <div className="flex flex-col space-y-3">
               <button
                 onClick={this.handleReload}
@@ -123,7 +128,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reload Page
               </button>
-              
+
               <Link
                 to="/"
                 className="flex items-center justify-center px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
@@ -132,7 +137,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                 <Home className="h-4 w-4 mr-2" />
                 Return to Dashboard
               </Link>
-              
+
               <button
                 onClick={() => window.history.back()}
                 className="flex items-center justify-center px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
@@ -140,7 +145,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Go Back
               </button>
-              
+
               {this.state.errorInfo && (
                 <button
                   onClick={this.toggleDetails}
@@ -160,7 +165,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                 </button>
               )}
             </div>
-            
+
             {this.state.showDetails && (
               <div className="mt-6">
                 <p className="text-sm font-medium text-gray-700 mb-2">Error Details:</p>
@@ -188,7 +193,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
  */
 export const withErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps: Omit<ErrorBoundaryProps, 'children'> = {}
+  errorBoundaryProps: Omit<ErrorBoundaryProps, "children"> = {}
 ): React.FC<P> => {
   const WrappedComponent = (props: P) => {
     return (
@@ -199,7 +204,7 @@ export const withErrorBoundary = <P extends object>(
   };
 
   // Set display name for better debugging
-  const displayName = Component.displayName || Component.name || 'Component';
+  const displayName = Component.displayName || Component.name || "Component";
   WrappedComponent.displayName = `withErrorBoundary(${displayName})`;
 
   return WrappedComponent;

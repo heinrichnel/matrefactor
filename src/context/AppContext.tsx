@@ -1,5 +1,5 @@
-import { addDoc, collection, deleteDoc, doc, getFirestore, Timestamp } from "firebase/firestore";
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { addDoc, collection, deleteDoc, doc, getFirestore } from "firebase/firestore";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   ActionItem,
   AdditionalCost,
@@ -23,7 +23,6 @@ import { VehicleInspection } from "../types/vehicle";
 import { JobCard as JobCardType } from "../types/workshop-job-card";
 import { loadGoogleMapsScript } from "../utils/googleMapsLoader";
 import { TyreInventoryItem } from "../utils/tyreConstants";
-import { DieselNorm } from "@/types/diesel";
 
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -425,9 +424,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       // In development mode, continue even if Maps fails to load
       try {
-        await loadGoogleMapsScript();
-        setIsGoogleMapsLoaded(true);
-        console.log("✅ Google Maps API loaded via singleton utility.");
+        await loadGoogleMapsScript("places");
+
+        // Add additional validation for Places API specifically
+        if (window.google?.maps?.places?.PlacesService) {
+          setIsGoogleMapsLoaded(true);
+          console.log("✅ Google Maps API with Places library loaded successfully.");
+        } else {
+          throw new Error("Places library not properly loaded");
+        }
       } catch (error) {
         // In development, treat as non-fatal
         if (import.meta.env.DEV) {
@@ -515,10 +520,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, []);
 
-  useEffect(() => {
-    // Set up all data subscriptions through the SyncService
-    // Register all data callbacks with SyncService
-    syncService.registerDataCallbacks({
+  // Stabilize the callbacks object to prevent infinite re-renders
+  const stableCallbacks = useMemo(
+    () => ({
       setTrips,
       setTripTemplates,
       setLoadPlans,
@@ -531,7 +535,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setWorkshopInventory,
       setClients,
       setJobCards, // Register job cards state
-    });
+    }),
+    [
+      setTrips,
+      setTripTemplates,
+      setLoadPlans,
+      setMissedLoads,
+      setDieselRecords,
+      setDriverBehaviorEvents,
+      setActionItems,
+      setCARReports,
+      setAuditLogs,
+      setWorkshopInventory,
+      setClients,
+      setJobCards,
+    ]
+  );
+
+  useEffect(() => {
+    // Set up all data subscriptions through the SyncService
+    // Register all data callbacks with SyncService
+    syncService.registerDataCallbacks(stableCallbacks);
 
     // Subscribe to all collections
     syncService.subscribeToAllTrips();
@@ -549,7 +573,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Let SyncService handle unsubscribing from all listeners
       syncService.cleanup();
     };
-  }, []);
+  }, [stableCallbacks]);
 
   // Add workshop inventory item
   const addWorkshopInventoryItem = async (

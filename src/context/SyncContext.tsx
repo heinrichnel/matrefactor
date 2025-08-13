@@ -1,7 +1,6 @@
-import React, { createContext, useContext } from 'react';
-import syncService from '../utils/syncService';
-import type { SyncService } from '../utils/syncService';
-import { getConnectionStatus } from '../utils/firebaseConnectionHandler';
+import React, { createContext, useContext } from "react";
+import type { SyncService } from "../utils/syncService";
+import syncService from "../utils/syncService";
 
 const SyncContext = createContext<SyncService | undefined>(undefined);
 
@@ -11,23 +10,17 @@ interface SyncProviderProps {
 
 export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
   // Initialize syncService
-  return (
-    <SyncContext.Provider value={syncService}>
-      {children}
-    </SyncContext.Provider>
-  );
+  return <SyncContext.Provider value={syncService}>{children}</SyncContext.Provider>;
 };
 
 export const useSyncContext = (): SyncService => {
   const context = useContext(SyncContext);
   if (!context) {
-    throw new Error('useSyncContext must be used within a SyncProvider');
+    throw new Error("useSyncContext must be used within a SyncProvider");
   }
-  
-  // Update isOnline property based on connection status
-  const connectionStatus = getConnectionStatus();
-  context.isOnline = connectionStatus.status === 'connected';
-  
+
+  // Create a stable reference that doesn't mutate the original context
+  // The connection status should be managed elsewhere to avoid instability
   return context;
 };
 
@@ -48,9 +41,9 @@ export const useTripSync = (tripId: string | null): { isSyncing: boolean } => {
         // is made for the same tripId
       };
     }
-  }, [tripId, syncContext]);
+  }, [tripId]); // Remove syncContext from dependencies as it should be stable
 
   return {
-    isSyncing: syncContext.syncStatus === 'syncing'
+    isSyncing: syncContext.syncStatus === "syncing",
   };
 };

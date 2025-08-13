@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Card, { CardContent, CardHeader } from "../../components/ui/Card";
 import LoadingIndicator from "../../components/ui/LoadingIndicator";
 import { useAppContext } from "../../context/AppContext";
+import { normalizeError, safeLogError } from "../../utils/error-utils";
 import { isGoogleMapsAPILoaded, useLoadGoogleMaps } from "../../utils/googleMapsLoader";
 
 // Map container styles
@@ -91,8 +92,15 @@ const RoutePlanningPage: React.FC = () => {
           waypoints: filteredWaypoints,
         };
       } catch (err: any) {
-        console.error("Direction service error:", err);
-        setError(err.message || "Failed to calculate route");
+        const normalized = normalizeError(err);
+        safeLogError(err, {
+          context: "DirectionsService",
+          operation: "calculateRoute",
+          origin: originValue,
+          destination: destinationValue,
+          waypoints: waypointsValue,
+        });
+        setError(normalized.message || "Failed to calculate route");
         return null;
       }
     },
@@ -108,7 +116,13 @@ const RoutePlanningPage: React.FC = () => {
       await planRoute(tripId, routeData.origin, routeData.destination, routeData.waypoints);
       alert("Route saved successfully!");
     } catch (err: any) {
-      setError(err.message || "Failed to save route");
+      const normalized = normalizeError(err);
+      safeLogError(err, {
+        context: "TripRouteManagement",
+        operation: "saveRoute",
+        tripId,
+      });
+      setError(normalized.message || "Failed to save route");
     }
   }, [tripId, calculateRoute, planRoute]);
 
@@ -128,7 +142,13 @@ const RoutePlanningPage: React.FC = () => {
       }
       alert("Route optimized successfully!");
     } catch (err: any) {
-      setError(err.message || "Failed to optimize route");
+      const normalized = normalizeError(err);
+      safeLogError(err, {
+        context: "RouteOptimization",
+        operation: "optimizeRoute",
+        tripId,
+      });
+      setError(normalized.message || "Failed to optimize route");
     }
   }, [tripId, optimizeRoute, getTrip, calculateRoute]);
 
@@ -285,12 +305,27 @@ const RoutePlanningPage: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Origin</label>
                     <Autocomplete
-                      onLoad={(autocomplete) => setOriginRef(autocomplete)}
+                      onLoad={(autocomplete) => {
+                        // Add safety check before setting ref
+                        if (autocomplete && window.google?.maps?.places) {
+                          setOriginRef(autocomplete);
+                        }
+                      }}
                       onPlaceChanged={() => {
-                        if (originRef) {
-                          const place = originRef.getPlace();
-                          if (place.formatted_address) {
-                            setOrigin(place.formatted_address);
+                        // Add comprehensive safety checks
+                        if (originRef && window.google?.maps?.places) {
+                          try {
+                            const place = originRef.getPlace();
+                            if (place && place.formatted_address) {
+                              setOrigin(place.formatted_address);
+                            }
+                          } catch (error) {
+                            safeLogError(error, {
+                              context: "GoogleMapsAutocomplete",
+                              operation: "getPlace",
+                              location: "origin",
+                            });
+                            // Gracefully handle the error without breaking the UI
                           }
                         }
                       }}
@@ -310,12 +345,27 @@ const RoutePlanningPage: React.FC = () => {
                       Destination
                     </label>
                     <Autocomplete
-                      onLoad={(autocomplete) => setDestinationRef(autocomplete)}
+                      onLoad={(autocomplete) => {
+                        // Add safety check before setting ref
+                        if (autocomplete && window.google?.maps?.places) {
+                          setDestinationRef(autocomplete);
+                        }
+                      }}
                       onPlaceChanged={() => {
-                        if (destinationRef) {
-                          const place = destinationRef.getPlace();
-                          if (place.formatted_address) {
-                            setDestination(place.formatted_address);
+                        // Add comprehensive safety checks
+                        if (destinationRef && window.google?.maps?.places) {
+                          try {
+                            const place = destinationRef.getPlace();
+                            if (place && place.formatted_address) {
+                              setDestination(place.formatted_address);
+                            }
+                          } catch (error) {
+                            safeLogError(error, {
+                              context: "GoogleMapsAutocomplete",
+                              operation: "getPlace",
+                              location: "destination",
+                            });
+                            // Gracefully handle the error without breaking the UI
                           }
                         }
                       }}
@@ -356,16 +406,29 @@ const RoutePlanningPage: React.FC = () => {
                           <div key={index} className="flex space-x-2">
                             <Autocomplete
                               onLoad={(autocomplete) => {
-                                const newRefs = [...waypointRefs];
-                                newRefs[index] = autocomplete;
-                                setWaypointRefs(newRefs);
+                                // Add safety check before setting ref
+                                if (autocomplete && window.google?.maps?.places) {
+                                  const newRefs = [...waypointRefs];
+                                  newRefs[index] = autocomplete;
+                                  setWaypointRefs(newRefs);
+                                }
                               }}
                               onPlaceChanged={() => {
                                 const ref = waypointRefs[index];
-                                if (ref) {
-                                  const place = ref.getPlace();
-                                  if (place.formatted_address) {
-                                    updateWaypoint(index, place.formatted_address);
+                                // Add comprehensive safety checks
+                                if (ref && window.google?.maps?.places) {
+                                  try {
+                                    const place = ref.getPlace();
+                                    if (place && place.formatted_address) {
+                                      updateWaypoint(index, place.formatted_address);
+                                    }
+                                  } catch (error) {
+                                    safeLogError(error, {
+                                      context: "GoogleMapsAutocomplete",
+                                      operation: "getPlace",
+                                      location: `waypoint-${index}`,
+                                    });
+                                    // Gracefully handle the error without breaking the UI
                                   }
                                 }
                               }}

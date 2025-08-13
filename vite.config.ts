@@ -28,12 +28,20 @@ export default defineConfig(() => {
         },
       },
     },
+    ssr: {
+      // Prevent SSR optimizer from pulling Node builds into client
+      noExternal: [],
+      external: ["firebase-admin", "googleapis", "@sentry/node", "v8", "jiti"],
+    },
     resolve: {
       alias: {
         "@": "/src",
         "~/components/TyreManagement": resolve(__dirname, "src/components/Tyremanagement"),
         "@vis.gl/react-google-maps/examples.js":
           "https://visgl.github.io/react-google-maps/scripts/examples.js",
+        // Temporary shims for Node.js modules (last resort)
+        v8: resolve(__dirname, "src/shims/empty.js"),
+        jiti: resolve(__dirname, "src/shims/empty.js"),
       },
     },
     optimizeDeps: {
@@ -47,7 +55,7 @@ export default defineConfig(() => {
         "date-fns",
         "@capacitor-community/barcode-scanner",
       ],
-      exclude: ["lucide-react"],
+      exclude: ["lucide-react", "firebase-admin", "googleapis", "@sentry/node", "v8", "jiti"],
     },
     build: {
       outDir: "dist",
@@ -56,7 +64,16 @@ export default defineConfig(() => {
       emptyOutDir: true,
       assetsDir: "assets",
       rollupOptions: {
-        external: ["/src/components/TyreManagement/TyreReports", "jiti", "v8", "perf_hooks"],
+        external: [
+          "/src/components/TyreManagement/TyreReports",
+          "firebase-admin",
+          "googleapis",
+          "@sentry/node",
+          "jiti",
+          "v8",
+          "perf_hooks",
+          "node:*", // Exclude all Node.js built-in modules
+        ],
         output: {
           manualChunks: {
             "react-vendor": ["react", "react-dom", "react-router-dom"],

@@ -61,6 +61,7 @@ import DeploymentFallback from "./components/DeploymentFallback";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FirestoreConnectionError from "./components/ui/FirestoreConnectionError";
 import OfflineBanner from "./components/ui/OfflineBanner";
+import { normalizeError, safeStringify } from "./utils/error-utils";
 import {
   ErrorCategory,
   ErrorSeverity,
@@ -84,6 +85,7 @@ enum AppStatus {
 const App: React.FC = () => {
   const [status, setStatus] = useState<AppStatus>(AppStatus.Loading);
   const [connectionError, setConnectionError] = useState<Error | null>(null);
+  const [emitError, setEmitError] = useState<((error: any) => void) | null>(null);
 
   useEffect(() => {
     const initializeServices = async () => {
@@ -95,13 +97,49 @@ const App: React.FC = () => {
           return;
         }
 
-        const unregisterErrorHandler = registerErrorHandler((error) => {
-          console.error("Error handler triggered:", error);
-          if (error.severity === ErrorSeverity.FATAL) {
-            setConnectionError(error.originalError);
+        const unregisterErrorHandler = registerErrorHandler((errLike) => {
+          const err = normalizeError(errLike);
+
+          // High-signal logs with grouped formatting
+          console.groupCollapsed(
+            `[AppError] ${err.name}${err.code ? ` (${err.code})` : ""}: ${err.message}`
+          );
+          if (err.stack) console.log("📍 Stack:", err.stack);
+          if (err.status) console.log("🔢 Status:", err.status);
+          console.log("📦 Original:", err.original);
+          console.log("🛠️ Serialized:", safeStringify(err.original));
+          console.groupEnd();
+
+          // Existing severity handling
+          if ((errLike as any)?.severity === ErrorSeverity.FATAL) {
+            setConnectionError(err.original as any);
             setStatus(AppStatus.Error);
           }
         });
+
+        // Store the error emitter for other components to use
+        setEmitError(() => (error: any) => {
+          const normalized = normalizeError(error);
+          // Manually call each registered handler
+          registerErrorHandler(() => {}); // This returns the unregister function
+          // Instead, we'll log the error and let existing system handle it
+          console.error("🚨 Manual Error Emission:", normalized);
+        });
+
+        // Global error handlers for unhandled cases
+        const handleUnhandledRejection = (evt: PromiseRejectionEvent) => {
+          const normalized = normalizeError(evt.reason);
+          console.error("🚨 Unhandled Promise Rejection:", normalized);
+        };
+
+        const handleGlobalError = (evt: ErrorEvent) => {
+          const normalized = normalizeError(evt.error ?? evt.message);
+          console.error("🚨 Global Script Error:", normalized);
+        };
+
+        // Register global handlers
+        window.addEventListener("unhandledrejection", handleUnhandledRejection);
+        window.addEventListener("error", handleGlobalError);
 
         // Initialize services and handle potential errors
         try {
@@ -139,6 +177,8 @@ const App: React.FC = () => {
 
         return () => {
           window.removeEventListener("online", handleOnline);
+          window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+          window.removeEventListener("error", handleGlobalError);
           unregisterErrorHandler();
         };
       } catch (error) {
@@ -167,7 +207,17 @@ const App: React.FC = () => {
   }
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        const normalized = normalizeError(error);
+        console.error("🚨 React Error Boundary triggered:", normalized);
+
+        // Use our stored error emitter if available
+        if (emitError) {
+          emitError(normalized);
+        }
+      }}
+    >
       <AppProviders>
         {/* Application alerts and notifications */}
         <div className="fixed top-0 left-0 right-0 z-50 p-4">
