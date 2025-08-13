@@ -188,9 +188,26 @@ else
   echo "PWD: $(pwd)"
   echo "Contents:"
   ls -la
-  echo "Consider setting NETLIFY_PUBLISH_DIR or verifying your build output directory."
-  # Be lenient: do not hard-fail to keep build.command green for further diagnostics
-  echo "⚠️ Continuing without a publish directory; subsequent deploy step may fail if no output is produced."
+  echo "Attempting fallback: if a root index.html/public exist, synthesize $ROOT_DIR/dist for Netlify."
+  if [[ -f "$ROOT_DIR/index.html" ]] || [[ -d "$ROOT_DIR/public" ]]; then
+    echo "Creating fallback $ROOT_DIR/dist from root assets."
+    rm -rf "$ROOT_DIR/dist" && mkdir -p "$ROOT_DIR/dist"
+    if [[ -f "$ROOT_DIR/index.html" ]]; then
+      cp "$ROOT_DIR/index.html" "$ROOT_DIR/dist/index.html"
+    fi
+    if [[ -d "$ROOT_DIR/public" ]]; then
+      mkdir -p "$ROOT_DIR/dist"
+      cp -R "$ROOT_DIR/public" "$ROOT_DIR/dist/" || true
+    fi
+    if [[ -d "$ROOT_DIR/dist" ]]; then
+      echo "✅ Fallback dist created."
+      PUBLISH_DIR="$ROOT_DIR/dist"
+    fi
+  else
+    echo "Consider setting NETLIFY_PUBLISH_DIR or verifying your build output directory."
+    # Be lenient: do not hard-fail to keep build.command green for further diagnostics
+    echo "⚠️ Continuing without a publish directory; subsequent deploy step may fail if no output is produced."
+  fi
 fi
 echo ""
 
