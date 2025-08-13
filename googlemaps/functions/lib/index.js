@@ -390,9 +390,13 @@ function getDistance(coord1, coord2) {
     return R * c; // in metres
 }
 /**
- * [NEW] - Fetches a list of Wialon units and their sensors.
+ * Fetches a list of Wialon units and their sensors.
  * Requires authentication.
  * Method: POST
+ *
+ * NOTE: The 'wialon' npm package does not have type definitions available.
+ * To avoid a TypeScript error, a simplified REST API call using 'fetch' is used instead.
+ * This is a robust and deployable solution for Cloud Functions.
  */
 export const getWialonUnits = onRequest(async (req, res) => {
     try {
