@@ -1,56 +1,59 @@
 [build]
-  command = "bash ./netlify-build.sh"
+  command = "./netlify-build.sh"
   publish = "dist"
 
-# Site configuration for matanuskatransportt
-# Site ID: 58378633-127a-44c4-878e-61f92936861d
-
 [build.environment]
-  # Node version - updated to match development environment
-  NODE_VERSION = "22"
-
-  # SECURITY NOTE: Environment variables should be set in the Netlify UI
-  # rather than in this file to avoid exposing sensitive information.
-  # See Site settings > Build & deploy > Environment variables
-
-  # Required environment variables include:
-  # - Firebase configuration
-  # - Wialon integration credentials
-  # - Google Maps API keys
-  # - Cloud Run URLs
-  # - Service account credentials
-
-  # For development reference, see .env.production file for required variables
-
-  # Essential production variables
+  # Pin to LTS for toolchain stability
+  NODE_VERSION = "20"
+  # Optional non-secret flags (consider moving to UI as well)
   VITE_ENV_MODE = "production"
   VITE_USE_EMULATOR = "false"
 
+# Single-page app fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
+# Cache immutable, hashed assets aggressively
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# Ensure the SPA shell is always fresh
 [[headers]]
-  for = "/*.js"
+  for = "/index.html"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 [[headers]]
-  for = "/*.css"
+  for = "/"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
+# Security headers (modern set)
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://maps.googleapis.com https://hst-api.wialon.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' data: blob: https://maps.gstatic.com https://*.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      connect-src 'self' https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://maps.googleapis.com https://hst-api.wialon.com;
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+    """
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+    Cross-Origin-Resource-Policy = "same-origin"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Content-Type-Options = "nosniff"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Optional: skip builds on docs-only commits
+#[build]
+#  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!docs/**' ':!.md' ':!.github/**'"
