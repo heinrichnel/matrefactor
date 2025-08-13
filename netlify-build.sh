@@ -9,6 +9,9 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 set -x
 
+# Remember repo root
+ROOT_DIR="$(pwd -P)"
+
 echo "=== Build Environment Debug ==="
 echo "Current directory: $(pwd)"
 echo "Node version: $(node --version)"
@@ -21,13 +24,37 @@ ls -la
 echo ""
 
 echo "=== Checking for package.json ==="
+# Will cd into APP_DIR if package.json isn't at repo root
+APP_DIR="$ROOT_DIR"
 if [[ ! -f "package.json" ]]; then
   echo "❌ package.json NOT found in $(pwd)"
-  echo "Searching repo:"
-  find . -maxdepth 3 -name "package.json" -type f 2>/dev/null || true
-  exit 1
+  echo "Searching repo (excluding Netlify internal plugin dirs):"
+  mapfile -t PKG_CANDIDATES < <(find . -maxdepth 3 -name "package.json" -type f \
+    -not -path "./.netlify/plugins/*" 2>/dev/null | sort)
+  printf '  %s\n' "${PKG_CANDIDATES[@]:-}"
+
+  if (( ${#PKG_CANDIDATES[@]:-0} > 0 )); then
+    # Prefer top-level folders like ./app, ./frontend, ./web if present
+    PREFERRED=""
+    for p in "./app/package.json" "./frontend/package.json" "./web/package.json"; do
+      if printf '%s\n' "${PKG_CANDIDATES[@]}" | grep -Fxq "$p"; then
+        PREFERRED="$p"; break
+      fi
+    done
+    TARGET_PKG="${PREFERRED:-${PKG_CANDIDATES[0]}}"
+    APP_DIR="$(cd "$(dirname "$TARGET_PKG")" && pwd -P)"
+    echo "➡️  Using package.json at: $APP_DIR/package.json"
+    cd "$APP_DIR"
+  else
+    echo "⚠️ No package.json found in repository. Skipping install/build and relying on prebuilt artifacts, if any."
+  fi
 fi
-echo "✅ package.json found: $(node -p 'require("./package.json").name')"
+
+if [[ -f "package.json" ]]; then
+  echo "✅ package.json found: $(node -p 'require("./package.json").name')"
+else
+  echo "⚠️ Still no package.json in $(pwd)."
+fi
 echo ""
 
 # ---- Choose package manager -------------------------------------------------
@@ -50,24 +77,28 @@ node -e 'console.log(JSON.stringify(require("./package.json").scripts, null, 2))
 echo ""
 
 # ---- Install dependencies ---------------------------------------------------
-echo "=== Installing dependencies ==="
-case "$PKG_MGR" in
-  pnpm)
-    pnpm install --frozen-lockfile
-    ;;
-  yarn)
-    yarn install --frozen-lockfile
-    ;;
-  npm)
-    if [[ -f package-lock.json ]]; then
-      npm ci
-    else
-      echo "No package-lock.json found; running npm install"
-      npm install
-    fi
-    ;;
-esac
-echo ""
+if [[ -f "package.json" ]]; then
+  echo "=== Installing dependencies ==="
+  case "$PKG_MGR" in
+    pnpm)
+      pnpm install --frozen-lockfile
+      ;;
+    yarn)
+      yarn install --frozen-lockfile
+      ;;
+    npm)
+      if [[ -f package-lock.json ]]; then
+        npm ci
+      else
+        echo "No package-lock.json found; running npm install"
+        npm install
+      fi
+      ;;
+  esac
+  echo ""
+else
+  echo "⏭️  Skipping dependency install (no package.json)."
+fi
 
 # ---- Optional: TypeScript typecheck (fast fail) -----------------------------
 if [[ -f "tsconfig.json" ]]; then
@@ -80,21 +111,53 @@ if [[ -f "tsconfig.json" ]]; then
 fi
 
 # ---- Build ------------------------------------------------------------------
-echo "=== Building application ==="
-case "$PKG_MGR" in
-  pnpm) pnpm run build ;;
-  yarn) yarn build ;;
-  npm)  npm run build ;;
-esac
-echo ""
+if [[ -f "package.json" ]]; then
+  echo "=== Building application ==="
+  case "$PKG_MGR" in
+    pnpm) pnpm run build ;;
+    yarn) yarn build ;;
+    npm)  npm run build ;;
+  esac
+  echo ""
+else
+  echo "⏭️  Skipping build (no package.json)."
+fi
+
+# If we built from a subdirectory, copy common output dirs back to repo root/dist for Netlify publish
+if [[ "$APP_DIR" != "$ROOT_DIR" ]]; then
+  echo "=== Syncing build output to repo root ==="
+  CANDIDATES=("dist" "out" "build")
+  SYNCED=0
+  for candidate in "${CANDIDATES[@]}"; do
+    if [[ -d "$candidate" ]]; then
+      echo "Found $candidate in $PWD; syncing to $ROOT_DIR/dist"
+      mkdir -p "$ROOT_DIR/dist"
+      # Prefer rsync if available for clean sync; fallback to cp
+      if command -v rsync >/dev/null 2>&1; then
+        rsync -a --delete "$candidate/" "$ROOT_DIR/dist/"
+      else
+        rm -rf "$ROOT_DIR/dist"
+        mkdir -p "$ROOT_DIR/dist"
+        cp -R "$candidate/." "$ROOT_DIR/dist/"
+      fi
+      SYNCED=1
+      break
+    fi
+  done
+  if [[ "$SYNCED" -eq 0 ]]; then
+    echo "⚠️ No known output directory (dist/out/build) found in $APP_DIR; nothing to sync."
+  fi
+  # Return to repo root for subsequent checks
+  cd "$ROOT_DIR"
+fi
 
 # ---- Detect publish dir -----------------------------------------------------
-# Default to Vite's dist/, but allow override via env or framework
-PUBLISH_DIR="${NETLIFY_PUBLISH_DIR:-dist}"
+# Default to Vite's dist/ at repo root, but allow override via env
+PUBLISH_DIR="${NETLIFY_PUBLISH_DIR:-$ROOT_DIR/dist}"
 
-# If dist doesn't exist, try common alternatives (Next.js / CRA)
+# If dist doesn't exist, try common alternatives under root
 if [[ ! -d "$PUBLISH_DIR" ]]; then
-  for candidate in "out" "build" ".next"; do
+  for candidate in "$ROOT_DIR/out" "$ROOT_DIR/build" "$ROOT_DIR/.next"; do
     if [[ -d "$candidate" ]]; then
       PUBLISH_DIR="$candidate"
       break
