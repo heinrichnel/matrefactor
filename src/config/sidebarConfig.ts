@@ -52,6 +52,8 @@ export const sidebarConfig: SidebarItem[] = [
     ],
   },
 
+  // Dev utilities removed
+
   // Trips
   {
     id: "trips",
