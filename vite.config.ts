@@ -39,9 +39,10 @@ export default defineConfig(() => {
         "~/components/TyreManagement": resolve(__dirname, "src/components/Tyremanagement"),
         "@vis.gl/react-google-maps/examples.js":
           "https://visgl.github.io/react-google-maps/scripts/examples.js",
-        // Temporary shims for Node.js modules (last resort)
-        v8: resolve(__dirname, "src/shims/empty.js"),
-        jiti: resolve(__dirname, "src/shims/empty.js"),
+        // Specific shims for Node.js modules
+        v8: resolve(__dirname, "src/shims/v8.js"),
+        jiti: resolve(__dirname, "src/shims/jiti"),
+        "jiti/*": resolve(__dirname, "src/shims/jiti/*"),
       },
     },
     optimizeDeps: {
@@ -73,6 +74,9 @@ export default defineConfig(() => {
           "v8",
           "perf_hooks",
           "node:*", // Exclude all Node.js built-in modules
+          // Prevent babel/core and related from being resolved incorrectly
+          "@babel/core",
+          "babel-core",
         ],
         output: {
           manualChunks: {
